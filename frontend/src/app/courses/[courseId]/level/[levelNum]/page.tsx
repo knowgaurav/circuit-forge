@@ -5,8 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/services/api';
 import { loadCircuitFromBlueprint, validateBlueprint } from '@/services/blueprintLoader';
-import { Canvas } from '@/components/circuit/Canvas';
+import { Canvas, SimulationOverlay } from '@/components/circuit';
 import { useCircuitStore } from '@/stores/circuitStore';
+import type { SimulationResult } from '@/services/simulation';
 import type { CoursePlan, LevelContent, LevelOutline, CircuitComponent, Wire, Position } from '@/types';
 
 export default function LevelPage() {
@@ -25,7 +26,12 @@ export default function LevelPage() {
     const [blueprintLoaded, setBlueprintLoaded] = useState(false);
     const [blueprintErrors, setBlueprintErrors] = useState<string[]>([]);
 
+    // Simulation state
+    const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
+    const [isSimulationRunning, setIsSimulationRunning] = useState(false);
+
     // Circuit store actions
+    const circuitStore = useCircuitStore();
     const setComponents = useCircuitStore((s) => s.setComponents);
     const setWires = useCircuitStore((s) => s.setWires);
     const addComponent = useCircuitStore((s) => s.addComponent);
@@ -88,6 +94,8 @@ export default function LevelPage() {
         setTimeout(() => clearInterval(interval), 120000);
     };
 
+    const practical = levelContent?.practical;
+
     const handleLoadBlueprint = useCallback(() => {
         if (!practical?.circuitBlueprint) {
             setBlueprintErrors(['No circuit blueprint available for this level']);
@@ -102,13 +110,19 @@ export default function LevelPage() {
         }
 
         // Load the blueprint
-        const { components, wires, errors } = loadCircuitFromBlueprint(practical.circuitBlueprint);
+        const { components, wires, errors, warnings } = loadCircuitFromBlueprint(practical.circuitBlueprint);
 
+        // Only show actual errors, not warnings (warnings are for skipped wires)
         if (errors.length > 0) {
             setBlueprintErrors(errors);
+        } else if (warnings.length > 0) {
+            // Show warnings but still load the circuit
+            setBlueprintErrors(warnings.map(w => `⚠️ ${w}`));
+        } else {
+            setBlueprintErrors([]);
         }
 
-        // Set the circuit state
+        // Set the circuit state (even if there are warnings)
         setComponents(components);
         setWires(wires);
         setBlueprintLoaded(true);
@@ -219,7 +233,6 @@ export default function LevelPage() {
     }
 
     const theory = levelContent?.theory;
-    const practical = levelContent?.practical;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -410,7 +423,23 @@ export default function LevelPage() {
                         <div className="bg-white rounded-lg shadow p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold">🔌 Build Your Circuit</h2>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 items-center">
+                                    {/* Simulation Controls */}
+                                    <SimulationOverlay
+                                        canSimulate={true}
+                                        isRunning={isSimulationRunning}
+                                        remoteResult={null}
+                                        onStart={() => setIsSimulationRunning(true)}
+                                        onStop={() => {
+                                            setIsSimulationRunning(false);
+                                            setSimulationResult(null);
+                                        }}
+                                        onSimulationResult={setSimulationResult}
+                                        onSimulationStateChange={setIsSimulationRunning}
+                                    />
+
+                                    <div className="w-px h-6 bg-gray-300" />
+
                                     {practical.circuitBlueprint && !blueprintLoaded && (
                                         <button
                                             onClick={handleLoadBlueprint}
@@ -438,9 +467,9 @@ export default function LevelPage() {
 
                             {/* Blueprint errors */}
                             {blueprintErrors.length > 0 && (
-                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                                    <p className="text-sm font-medium text-red-800 mb-1">Blueprint Loading Errors:</p>
-                                    <ul className="text-sm text-red-700 list-disc list-inside">
+                                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p className="text-sm font-medium text-yellow-800 mb-1">⚠️ Some wires could not be connected:</p>
+                                    <ul className="text-sm text-yellow-700 list-disc list-inside">
                                         {blueprintErrors.map((err, i) => (
                                             <li key={i}>{err}</li>
                                         ))}
@@ -449,10 +478,10 @@ export default function LevelPage() {
                             )}
 
                             {/* Blueprint loaded indicator */}
-                            {blueprintLoaded && (
+                            {blueprintLoaded && blueprintErrors.length === 0 && (
                                 <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                                     <p className="text-sm text-green-700">
-                                        ✓ Example circuit loaded! You can modify it or build your own.
+                                        ✓ Example circuit loaded! Click the Play button to run the simulation.
                                     </p>
                                 </div>
                             )}
@@ -460,11 +489,16 @@ export default function LevelPage() {
                             {/* Canvas */}
                             <div className="bg-gray-900 rounded-lg overflow-hidden" style={{ height: '500px' }}>
                                 <Canvas
+                                    simulationResult={simulationResult}
+                                    isSimulationRunning={isSimulationRunning}
                                     onComponentAdd={handleComponentAdd}
                                     onComponentMove={handleComponentMove}
                                     onComponentDelete={handleComponentDelete}
                                     onWireCreate={handleWireCreate}
                                     onWireDelete={handleWireDelete}
+                                    onSwitchToggle={(componentId) => {
+                                        circuitStore.toggleSwitchState(componentId);
+                                    }}
                                 />
                             </div>
 

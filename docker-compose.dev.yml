@@ -33,7 +33,7 @@ services:
       - DEBUG=true
       - LOG_LEVEL=DEBUG
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.ohmygpt.com/v1/chat/completions}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://ai.megallm.io/v1/chat/completions}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
       - OPENAI_MAX_TOKENS=${OPENAI_MAX_TOKENS:-4000}
       - OPENAI_TEMPERATURE=${OPENAI_TEMPERATURE:-0.7}
