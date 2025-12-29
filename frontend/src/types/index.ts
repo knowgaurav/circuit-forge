@@ -491,12 +491,31 @@ export interface ValidationCriteria {
     requiredConnections: RequiredConnection[];
 }
 
+// Circuit Blueprint Types (for LLM-generated circuits)
+export interface BlueprintComponent {
+    type: string;
+    label: string;
+    position: Position;
+    properties?: Record<string, unknown>;
+}
+
+export interface BlueprintWire {
+    from: string;  // e.g., "AND1:Y" (label:pinName)
+    to: string;    // e.g., "LED1:A"
+}
+
+export interface CircuitBlueprint {
+    components: BlueprintComponent[];
+    wires: BlueprintWire[];
+}
+
 export interface PracticalSection {
     componentsNeeded: ComponentSpec[];
     steps: BuildStep[];
     expectedBehavior: string;
     validationCriteria: ValidationCriteria;
     commonMistakes: string[];
+    circuitBlueprint?: CircuitBlueprint;
 }
 
 export interface LevelContent {

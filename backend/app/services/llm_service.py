@@ -9,6 +9,7 @@ import httpx
 from app.core.config import settings
 from app.models.circuit import ComponentType
 from app.models.course import (
+    CircuitBlueprint,
     CoursePlan,
     Difficulty,
     LevelContent,
@@ -74,6 +75,25 @@ Rules:
 4. Validation criteria should be specific and testable
 5. Include 2-4 learning objectives
 6. Include real-world examples to make concepts relatable
+7. IMPORTANT: Include a circuitBlueprint with positioned components and wire connections
+
+Component Pin Reference (use these exact pin names):
+- AND_2, OR_2, NAND_2, NOR_2, XOR_2: inputs "A", "B", output "Y"
+- NOT, BUFFER: input "A", output "Y"
+- SWITCH_TOGGLE, SWITCH_PUSH: output "OUT"
+- LED_RED, LED_GREEN, LED_YELLOW, LED_BLUE: input "IN"
+- VCC_5V, VCC_3V3, CONST_HIGH: output "OUT" or "VCC"
+- GROUND, CONST_LOW: output "OUT" or "GND"
+- D_FLIPFLOP: inputs "D", "CLK", outputs "Q", "Q'"
+- CLOCK: output "CLK"
+
+Position Guidelines:
+- Canvas is 800x600 pixels
+- Place inputs on the left (x: 100-200)
+- Place logic gates in the middle (x: 300-500)
+- Place outputs on the right (x: 600-700)
+- Vertical spacing: 80-100 pixels between components
+- Start y positions around 150-200
 
 Output must be valid JSON matching this schema:
 {{
@@ -91,7 +111,16 @@ Output must be valid JSON matching this schema:
       "requiredComponents": [{{"type": "COMPONENT_TYPE", "minCount": 1}}],
       "requiredConnections": [{{"from": "TYPE:index:pin", "to": "TYPE:index:pin"}}]
     }},
-    "commonMistakes": ["mistake 1"]
+    "commonMistakes": ["mistake 1"],
+    "circuitBlueprint": {{
+      "components": [
+        {{"type": "SWITCH_TOGGLE", "label": "SW1", "position": {{"x": 150, "y": 200}}, "properties": {{}}}},
+        {{"type": "LED_RED", "label": "LED1", "position": {{"x": 650, "y": 200}}, "properties": {{}}}}
+      ],
+      "wires": [
+        {{"from": "SW1:OUT", "to": "LED1:IN"}}
+      ]
+    }}
   }}
 }}"""
 
@@ -271,12 +300,23 @@ class LLMService:
 
         # Parse practical section
         practical_data = content["practical"]
+        
+        # Parse circuit blueprint if present
+        circuit_blueprint = None
+        if "circuitBlueprint" in practical_data:
+            blueprint_data = practical_data["circuitBlueprint"]
+            circuit_blueprint = CircuitBlueprint(
+                components=blueprint_data.get("components", []),
+                wires=blueprint_data.get("wires", []),
+            )
+        
         practical = PracticalSection(
             componentsNeeded=practical_data["componentsNeeded"],
             steps=practical_data["steps"],
             expectedBehavior=practical_data["expectedBehavior"],
             validationCriteria=practical_data["validationCriteria"],
             commonMistakes=practical_data.get("commonMistakes", []),
+            circuitBlueprint=circuit_blueprint,
         )
 
         return theory, practical, token_usage

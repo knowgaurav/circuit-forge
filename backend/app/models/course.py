@@ -138,6 +138,45 @@ class ValidationCriteria(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+# --- Circuit Blueprint Models ---
+
+
+class Position(BaseModel):
+    """Position on the canvas."""
+
+    x: float
+    y: float
+
+
+class BlueprintComponent(BaseModel):
+    """A component in the circuit blueprint."""
+
+    type: str  # Must match CircuitForge ComponentType
+    label: str  # e.g., "AND1", "LED1"
+    position: Position
+    properties: Dict[str, Any] = Field(default_factory=dict)
+
+    model_config = {"populate_by_name": True}
+
+
+class BlueprintWire(BaseModel):
+    """A wire connection in the circuit blueprint."""
+
+    from_spec: str = Field(alias="from")  # e.g., "AND1:Y" (label:pinName)
+    to_spec: str = Field(alias="to")  # e.g., "LED1:A"
+
+    model_config = {"populate_by_name": True}
+
+
+class CircuitBlueprint(BaseModel):
+    """Complete circuit blueprint that can be loaded onto the canvas."""
+
+    components: List[BlueprintComponent] = Field(default_factory=list)
+    wires: List[BlueprintWire] = Field(default_factory=list)
+
+    model_config = {"populate_by_name": True}
+
+
 class PracticalSection(BaseModel):
     """Practical section of a level."""
 
@@ -146,6 +185,9 @@ class PracticalSection(BaseModel):
     expected_behavior: str = Field(alias="expectedBehavior", min_length=20)
     validation_criteria: ValidationCriteria = Field(alias="validationCriteria")
     common_mistakes: List[str] = Field(alias="commonMistakes", default_factory=list)
+    circuit_blueprint: Optional[CircuitBlueprint] = Field(
+        default=None, alias="circuitBlueprint"
+    )
 
     model_config = {"populate_by_name": True}
 

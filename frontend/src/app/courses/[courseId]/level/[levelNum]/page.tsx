@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/services/api';
-import type { CoursePlan, LevelContent, LevelOutline } from '@/types';
+import { loadCircuitFromBlueprint, validateBlueprint } from '@/services/blueprintLoader';
+import { Canvas } from '@/components/circuit/Canvas';
+import { useCircuitStore } from '@/stores/circuitStore';
+import type { CoursePlan, LevelContent, LevelOutline, CircuitComponent, Wire, Position } from '@/types';
 
 export default function LevelPage() {
     const router = useRouter();
@@ -19,10 +22,26 @@ export default function LevelPage() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'theory' | 'practical'>('theory');
+    const [blueprintLoaded, setBlueprintLoaded] = useState(false);
+    const [blueprintErrors, setBlueprintErrors] = useState<string[]>([]);
+
+    // Circuit store actions
+    const setComponents = useCircuitStore((s) => s.setComponents);
+    const setWires = useCircuitStore((s) => s.setWires);
+    const addComponent = useCircuitStore((s) => s.addComponent);
+    const addWire = useCircuitStore((s) => s.addWire);
+    const moveComponent = useCircuitStore((s) => s.moveComponent);
+    const deleteComponent = useCircuitStore((s) => s.deleteComponent);
+    const deleteWire = useCircuitStore((s) => s.deleteWire);
+    const reset = useCircuitStore((s) => s.reset);
 
     useEffect(() => {
         loadLevel();
-    }, [courseId, levelNum]);
+        // Reset circuit when level changes
+        reset();
+        setBlueprintLoaded(false);
+        setBlueprintErrors([]);
+    }, [courseId, levelNum, reset]);
 
     const loadLevel = async () => {
         setIsLoading(true);
@@ -68,6 +87,67 @@ export default function LevelPage() {
         // Stop polling after 2 minutes
         setTimeout(() => clearInterval(interval), 120000);
     };
+
+    const handleLoadBlueprint = useCallback(() => {
+        if (!practical?.circuitBlueprint) {
+            setBlueprintErrors(['No circuit blueprint available for this level']);
+            return;
+        }
+
+        // Validate blueprint first
+        const validationErrors = validateBlueprint(practical.circuitBlueprint);
+        if (validationErrors.length > 0) {
+            setBlueprintErrors(validationErrors);
+            return;
+        }
+
+        // Load the blueprint
+        const { components, wires, errors } = loadCircuitFromBlueprint(practical.circuitBlueprint);
+
+        if (errors.length > 0) {
+            setBlueprintErrors(errors);
+        }
+
+        // Set the circuit state
+        setComponents(components);
+        setWires(wires);
+        setBlueprintLoaded(true);
+    }, [practical?.circuitBlueprint, setComponents, setWires]);
+
+    const handleClearCircuit = useCallback(() => {
+        reset();
+        setBlueprintLoaded(false);
+        setBlueprintErrors([]);
+    }, [reset]);
+
+    // Canvas event handlers
+    const handleComponentAdd = useCallback((component: unknown) => {
+        addComponent(component as CircuitComponent);
+    }, [addComponent]);
+
+    const handleComponentMove = useCallback((componentId: string, position: Position) => {
+        moveComponent(componentId, position);
+    }, [moveComponent]);
+
+    const handleComponentDelete = useCallback((componentId: string) => {
+        deleteComponent(componentId);
+    }, [deleteComponent]);
+
+    const handleWireCreate = useCallback((fromComponentId: string, fromPinId: string, toComponentId: string, toPinId: string) => {
+        const wire: Wire = {
+            id: `wire-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            fromComponentId,
+            fromPinId,
+            toComponentId,
+            toPinId,
+            waypoints: [],
+        };
+        addWire(wire);
+    }, [addWire]);
+
+    const handleWireDelete = useCallback((wireId: string) => {
+        deleteWire(wireId);
+    }, [deleteWire]);
 
     const handleCompleteLevel = async () => {
         const participantId = localStorage.getItem('participantId');
@@ -190,8 +270,8 @@ export default function LevelPage() {
                     <button
                         onClick={() => setActiveTab('theory')}
                         className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'theory'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
                     >
                         📖 Theory
@@ -199,8 +279,8 @@ export default function LevelPage() {
                     <button
                         onClick={() => setActiveTab('practical')}
                         className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'practical'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
                     >
                         🔧 Practical
@@ -326,23 +406,74 @@ export default function LevelPage() {
                             </div>
                         )}
 
-                        {/* Circuit Canvas Placeholder */}
+                        {/* Circuit Canvas */}
                         <div className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold mb-4">🔌 Build Your Circuit</h2>
-                            <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
-                                <div className="text-center text-gray-500">
-                                    <p className="text-lg mb-2">Circuit Canvas</p>
-                                    <p className="text-sm">
-                                        Integration with CircuitForge canvas coming soon!
-                                    </p>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold">🔌 Build Your Circuit</h2>
+                                <div className="flex gap-2">
+                                    {practical.circuitBlueprint && !blueprintLoaded && (
+                                        <button
+                                            onClick={handleLoadBlueprint}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                                        >
+                                            Load Example Circuit
+                                        </button>
+                                    )}
+                                    {blueprintLoaded && (
+                                        <button
+                                            onClick={handleClearCircuit}
+                                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300"
+                                        >
+                                            Clear Circuit
+                                        </button>
+                                    )}
                                     <Link
                                         href="/playground"
-                                        className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
                                     >
-                                        Open Playground
+                                        Open Full Playground
                                     </Link>
                                 </div>
                             </div>
+
+                            {/* Blueprint errors */}
+                            {blueprintErrors.length > 0 && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-sm font-medium text-red-800 mb-1">Blueprint Loading Errors:</p>
+                                    <ul className="text-sm text-red-700 list-disc list-inside">
+                                        {blueprintErrors.map((err, i) => (
+                                            <li key={i}>{err}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Blueprint loaded indicator */}
+                            {blueprintLoaded && (
+                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <p className="text-sm text-green-700">
+                                        ✓ Example circuit loaded! You can modify it or build your own.
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Canvas */}
+                            <div className="bg-gray-900 rounded-lg overflow-hidden" style={{ height: '500px' }}>
+                                <Canvas
+                                    onComponentAdd={handleComponentAdd}
+                                    onComponentMove={handleComponentMove}
+                                    onComponentDelete={handleComponentDelete}
+                                    onWireCreate={handleWireCreate}
+                                    onWireDelete={handleWireDelete}
+                                />
+                            </div>
+
+                            {/* No blueprint available message */}
+                            {!practical.circuitBlueprint && (
+                                <p className="mt-3 text-sm text-gray-500">
+                                    💡 No pre-built circuit available for this level. Build your own following the steps above!
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
