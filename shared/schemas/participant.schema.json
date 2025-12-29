@@ -1,0 +1,86 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://circuitforge.io/schemas/participant.json",
+    "title": "Participant",
+    "description": "Session participant",
+    "type": "object",
+    "required": [
+        "id",
+        "sessionCode",
+        "displayName",
+        "role",
+        "canEdit",
+        "color",
+        "isActive",
+        "lastSeenAt"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "UUID stored in localStorage"
+        },
+        "sessionCode": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{6}$"
+        },
+        "displayName": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 20,
+            "pattern": "^[a-zA-Z0-9 ]+$",
+            "description": "3-20 characters, alphanumeric and spaces only"
+        },
+        "role": {
+            "type": "string",
+            "enum": [
+                "teacher",
+                "student"
+            ]
+        },
+        "canEdit": {
+            "type": "boolean"
+        },
+        "color": {
+            "type": "string",
+            "description": "Assigned cursor color (hex)"
+        },
+        "isActive": {
+            "type": "boolean"
+        },
+        "lastSeenAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "definitions": {
+        "EditRequest": {
+            "type": "object",
+            "required": [
+                "participantId",
+                "displayName",
+                "requestedAt",
+                "status"
+            ],
+            "properties": {
+                "participantId": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "requestedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "approved",
+                        "denied"
+                    ]
+                }
+            }
+        }
+    }
+}

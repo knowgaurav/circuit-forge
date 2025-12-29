@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --border: #e5e7eb;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --canvas-bg: #F8FAFC;
+  --canvas-grid: #E2E8F0;
+
+  /* Homepage dark theme colors */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #111827;
+  --bg-card: rgba(17, 24, 39, 0.8);
+  --accent-purple: #8b5cf6;
+  --accent-blue: #3b82f6;
+  --accent-pink: #ec4899;
+  --glassmorphism-bg: rgba(255, 255, 255, 0.05);
+  --glassmorphism-border: rgba(255, 255, 255, 0.1);
+}
+
+html.dark {
+  --background: #111827;
+  --foreground: #f3f4f6;
+  --card: #1f2937;
+  --card-foreground: #f3f4f6;
+  --border: #374151;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+  --canvas-bg: #1f2937;
+  --canvas-grid: #374151;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Glassmorphism utility */
+@layer components {
+  .glass {
+    background: var(--glassmorphism-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glassmorphism-border);
+    border-radius: 16px;
+  }
+
+  .glass-card {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-border {
+    position: relative;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .gradient-btn {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    transition: all 0.3s ease;
+  }
+
+  .gradient-btn:hover {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .glow-effect {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+}
+
+/* Animation keyframes */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-fade-in-up,
+  .animate-fade-in,
+  .animate-glow-pulse,
+  .animate-float {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .gradient-btn:hover {
+    transform: none;
+  }
+}

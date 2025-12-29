@@ -1,0 +1,117 @@
+# Implementation Plan
+
+- [x] 1. Update global styles and add animation utilities
+  - [x] 1.1 Update globals.css with dark theme color variables and glassmorphism utilities
+    - Add CSS variables for dark theme colors (--bg-primary, --accent-purple, etc.)
+    - Add glassmorphism utility class (.glass)
+    - Add animation keyframes (fade-in-up, glow)
+    - _Requirements: 1.1, 4.1, 7.4_
+  - [x] 1.2 Create useInView hook for viewport-triggered animations
+    - Implement Intersection Observer based hook
+    - Support reduced-motion preference
+    - _Requirements: 9.1, 9.3_
+
+- [x] 2. Create reusable UI components
+  - [x] 2.1 Create GradientText component
+    - Apply purple-to-blue gradient to children text
+    - Support custom className prop
+    - _Requirements: 1.2, 4.2, 7.1_
+  - [x] 2.2 Create AnimatedCounter component
+    - Animate from 0 to target value on viewport entry
+    - Support suffix, duration, label, and icon props
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [x] 2.3 Create CategoryCard component
+    - Display icon, name, description, and count
+    - Apply glassmorphism styling with hover effects
+    - Navigate to filtered templates page on click
+    - _Requirements: 5.3, 5.4, 5.5_
+  - [x] 2.4 Write property test for CategoryCard
+    - **Property 2: Category cards contain required elements**
+    - **Validates: Requirements 5.3**
+  - [x] 2.5 Create TemplateCard component
+    - Display name, difficulty badge, and category tag
+    - Apply glassmorphism styling
+    - Navigate to template detail on click
+    - _Requirements: 6.3, 6.4, 6.5_
+  - [x] 2.6 Write property test for TemplateCard
+    - **Property 5: Template cards contain required elements**
+    - **Validates: Requirements 6.3**
+
+- [x] 3. Implement homepage sections
+  - [x] 3.1 Implement HeroSection with dark theme
+    - Dark gradient background
+    - GradientText headline
+    - Subheadline and CTA buttons with glow effects
+    - Placeholder for hero illustration (to be replaced with generated image)
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+  - [x] 3.2 Implement StatsBar section
+    - Glassmorphism container
+    - 4 AnimatedCounter components for stats
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+  - [x] 3.3 Implement FeaturesSection with split layout
+    - Feature list with icons on one side
+    - Editor preview placeholder on other side
+    - Glassmorphism cards for features
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+  - [x] 3.4 Write property test for FeaturesSection
+    - **Property 1: Feature list contains expected count**
+    - **Validates: Requirements 3.2**
+  - [x] 3.5 Implement InteractivePracticeSection
+    - Gradient-bordered container
+    - Benefits list with checkmarks
+    - "Try Playground" CTA button
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [x] 3.6 Implement TopicsSection with category grid
+    - "Explore Topics" heading
+    - 8 CategoryCard components in responsive grid
+    - _Requirements: 5.1, 5.2_
+  - [x] 3.7 Write property test for TopicsSection
+    - **Property 3: Topics section displays correct card count**
+    - **Property 4: Category card navigation**
+    - **Validates: Requirements 5.2, 5.5**
+  - [x] 3.8 Implement TemplatesSection with featured templates
+    - "Featured Templates" heading
+    - 6 TemplateCard components in grid
+    - _Requirements: 6.1, 6.2_
+  - [x] 3.9 Write property test for TemplatesSection
+    - **Property 6: Templates section displays correct card count**
+    - **Property 7: Template card navigation**
+    - **Validates: Requirements 6.2, 6.5**
+  - [x] 3.10 Implement FinalCTASection
+    - Large headline with GradientText on "Journey"
+    - Motivational subheadline
+    - Gradient CTA button
+    - _Requirements: 7.1, 7.2, 7.3, 7.4_
+
+- [x] 4. Update Navigation and integrate page
+  - [x] 4.1 Update Navigation with glassmorphism and gradient CTA
+    - Fixed position with backdrop blur
+    - Gradient "Create Session" button
+    - Shadow on scroll
+    - _Requirements: 8.1, 8.2, 8.3_
+  - [x] 4.2 Integrate all sections into page.tsx
+    - Replace existing homepage content
+    - Add viewport animations with staggered delays
+    - Wire up all navigation and CTAs
+    - _Requirements: 9.1, 9.2_
+  - [x] 4.3 Implement mobile responsive layout
+    - Hamburger menu for mobile navigation
+    - Stack sections vertically
+    - Adjust grid columns for mobile
+    - _Requirements: 10.1, 10.2, 10.3_
+
+- [x] 5. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 6. Final polish and image integration
+  - [x] 6.1 Add placeholder images and prepare for real assets
+    - Add hero illustration placeholder
+    - Add editor preview placeholder
+    - Document image paths for replacement
+    - _Requirements: 1.5, 3.4_
+  - [x] 6.2 Add reduced-motion support
+    - Disable animations when prefers-reduced-motion is set
+    - _Requirements: 9.3_
+
+- [x] 7. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

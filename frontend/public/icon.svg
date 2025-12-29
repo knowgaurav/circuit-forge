@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background with gradient -->
+  <rect width="32" height="32" rx="6" fill="url(#bg-gradient)"/>
+  
+  <!-- Lightning bolt / Zap icon representing circuits -->
+  <path d="M18 4L8 18H15L14 28L24 14H17L18 4Z" fill="white" stroke="white" stroke-width="0.5" stroke-linejoin="round"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+  </defs>
+</svg>

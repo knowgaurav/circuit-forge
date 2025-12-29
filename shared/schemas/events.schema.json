@@ -1,0 +1,246 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://circuitforge.io/schemas/events.json",
+    "title": "CircuitEvent",
+    "description": "Event sourcing events for circuit operations",
+    "oneOf": [
+        {
+            "$ref": "#/definitions/ComponentAddedEvent"
+        },
+        {
+            "$ref": "#/definitions/ComponentMovedEvent"
+        },
+        {
+            "$ref": "#/definitions/ComponentDeletedEvent"
+        },
+        {
+            "$ref": "#/definitions/WireAddedEvent"
+        },
+        {
+            "$ref": "#/definitions/WireDeletedEvent"
+        },
+        {
+            "$ref": "#/definitions/AnnotationAddedEvent"
+        },
+        {
+            "$ref": "#/definitions/AnnotationDeletedEvent"
+        }
+    ],
+    "definitions": {
+        "BaseEvent": {
+            "type": "object",
+            "required": [
+                "sessionCode",
+                "version",
+                "type",
+                "userId",
+                "timestamp"
+            ],
+            "properties": {
+                "sessionCode": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "type": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        },
+        "ComponentAddedEvent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseEvent"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "COMPONENT_ADDED"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "required": [
+                                "component"
+                            ],
+                            "properties": {
+                                "component": {
+                                    "$ref": "circuit.schema.json#/definitions/CircuitComponent"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "ComponentMovedEvent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseEvent"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "COMPONENT_MOVED"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "required": [
+                                "componentId",
+                                "position"
+                            ],
+                            "properties": {
+                                "componentId": {
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "$ref": "circuit.schema.json#/definitions/Position"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "ComponentDeletedEvent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseEvent"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "COMPONENT_DELETED"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "required": [
+                                "componentId"
+                            ],
+                            "properties": {
+                                "componentId": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "WireAddedEvent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseEvent"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "WIRE_ADDED"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "required": [
+                                "wire"
+                            ],
+                            "properties": {
+                                "wire": {
+                                    "$ref": "circuit.schema.json#/definitions/Wire"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "WireDeletedEvent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseEvent"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "WIRE_DELETED"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "required": [
+                                "wireId"
+                            ],
+                            "properties": {
+                                "wireId": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "AnnotationAddedEvent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseEvent"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "ANNOTATION_ADDED"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "required": [
+                                "annotation"
+                            ],
+                            "properties": {
+                                "annotation": {
+                                    "$ref": "circuit.schema.json#/definitions/Annotation"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "AnnotationDeletedEvent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseEvent"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "const": "ANNOTATION_DELETED"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "required": [
+                                "annotationId"
+                            ],
+                            "properties": {
+                                "annotationId": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

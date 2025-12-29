@@ -1,0 +1,145 @@
+# Implementation Plan: Session Management Improvements
+
+- [x] 1. Set up testing infrastructure and core types
+  - [x] 1.1 Install fast-check for property-based testing
+    - Add fast-check as dev dependency
+    - Configure Jest/Vitest to work with fast-check
+    - _Requirements: Testing Strategy_
+  - [x] 1.2 Create TypeScript interfaces for session management
+    - Create `SyncState`, `SyncAction`, `SessionLock`, `BroadcastMessage` types in `types/index.ts`
+    - Create `PersistedSession` interface for localStorage persistence
+    - _Requirements: Data Models_
+
+- [x] 2. Implement SessionPersistence service
+  - [x] 2.1 Create SessionPersistence class with save/load/clear methods
+    - Implement `saveSession(data: PersistedSession)` to store in localStorage
+    - Implement `loadSession()` to retrieve from localStorage
+    - Implement `clearSession()` to remove from localStorage
+    - Implement `isSessionValid(data)` to check 24-hour expiry
+    - _Requirements: 3.1, 3.5, 3.6_
+  - [x] 2.2 Write property test for session persistence round-trip
+    - **Property 6: Session Persistence Round-Trip**
+    - **Validates: Requirements 3.5, 3.6, 3.7**
+
+- [x] 3. Implement TabSyncManager service
+  - [x] 3.1 Create TabSyncManager class with leader election
+    - Generate unique tab ID on initialization
+    - Implement `acquireLock()` using localStorage with timestamp
+    - Implement `releaseLock()` for cleanup
+    - Implement `isLeader()` to check current leadership status
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [x] 3.2 Write property test for lock acquisition based on state
+    - **Property 7: Lock Acquisition Based on State**
+    - **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
+  - [x] 3.3 Implement leader heartbeat mechanism
+    - Start heartbeat interval (every 2 seconds) when becoming leader
+    - Update `lastHeartbeat` timestamp in localStorage
+    - Stop heartbeat when releasing leadership
+    - _Requirements: 4.5_
+  - [x] 3.4 Write property test for leader heartbeat maintenance
+    - **Property 8: Leader Heartbeat Maintenance**
+    - **Validates: Requirements 4.5**
+  - [x] 3.5 Implement BroadcastChannel communication
+    - Create channel with session-specific name
+    - Implement `broadcastState(state)` for leader to send state
+    - Implement `requestStateFromLeader()` for followers
+    - Handle incoming messages with type discrimination
+    - _Requirements: 2.4, 2.5_
+  - [x] 3.6 Write property test for state broadcast consistency
+    - **Property 4: State Broadcast Consistency**
+    - **Validates: Requirements 2.4**
+  - [x] 3.7 Implement leader failover detection
+    - Monitor leader heartbeats in follower tabs
+    - Attempt leadership acquisition after 5-second timeout
+    - Implement deterministic tie-breaker (lowest tab ID wins)
+    - _Requirements: 4.6, 4.7_
+  - [x] 3.8 Write property tests for leader succession and tie-breaking
+    - **Property 3: Leader Succession**
+    - **Property 10: Deterministic Leadership Tie-Breaking**
+    - **Validates: Requirements 2.3, 4.6, 4.7**
+  - [x] 3.9 Write property test for single leader invariant
+    - **Property 2: Single Leader Invariant**
+    - **Validates: Requirements 2.2**
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 5. Implement SessionCloseGuard service
+  - [x] 5.1 Create SessionCloseGuard class with beforeunload handling
+    - Implement `enable(options)` to register beforeunload handler
+    - Implement `disable()` to unregister handler
+    - Track student count for teacher warning logic
+    - _Requirements: 1.1, 1.5_
+  - [x] 5.2 Write property test for close protection registration
+    - **Property 1: Close Protection Registration**
+    - **Validates: Requirements 1.1, 1.5**
+  - [x] 5.3 Create LeaveConfirmModal component
+    - Display student count when teacher attempts to leave
+    - Provide "Stay" and "Leave" buttons
+    - Call appropriate callbacks on user action
+    - _Requirements: 1.2, 1.3, 1.4_
+
+- [x] 6. Implement action forwarding for follower tabs
+  - [x] 6.1 Extend WebSocketClient to support leader/follower mode
+    - Add `setMode(mode)` and `getMode()` methods
+    - In follower mode, forward actions via BroadcastChannel instead of WebSocket
+    - _Requirements: 5.4_
+  - [x] 6.2 Implement action result broadcasting in leader tab
+    - Leader receives forwarded actions from BroadcastChannel
+    - Leader sends action via WebSocket
+    - Leader broadcasts result back to all tabs
+    - _Requirements: 5.5_
+  - [x] 6.3 Write property test for action forwarding and broadcasting
+    - **Property 11: Action Forwarding and Broadcasting**
+    - **Validates: Requirements 5.4, 5.5**
+
+- [x] 7. Create React hooks for session management
+  - [x] 7.1 Create useTabSync hook
+    - Initialize TabSyncManager on mount
+    - Expose `isLeader`, `connectionStatus` state
+    - Handle cleanup on unmount
+    - _Requirements: 2.1, 2.2, 2.6, 2.7_
+  - [x] 7.2 Create useCloseGuard hook
+    - Accept session state and participant info
+    - Enable/disable protection based on session state
+    - Handle cleanup on unmount
+    - _Requirements: 1.1, 1.5, 1.6_
+  - [x] 7.3 Create useSessionRecovery hook
+    - Check for persisted session on mount
+    - Expose `pendingSession` and `clearPendingSession` methods
+    - _Requirements: 3.2, 3.3, 3.4_
+  - [x] 7.4 Write property test for new tab state synchronization
+    - **Property 5: New Tab State Synchronization**
+    - **Validates: Requirements 2.1, 2.5**
+
+- [x] 8. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 9. Integrate with session page
+  - [x] 9.1 Update session page to use useTabSync hook
+    - Initialize tab sync on session load
+    - Display leader/follower status indicator
+    - Handle state updates from other tabs
+    - _Requirements: 5.1, 5.2, 5.3_
+  - [x] 9.2 Update session page to use useCloseGuard hook
+    - Enable close protection when session is active
+    - Show LeaveConfirmModal when teacher with students clicks leave
+    - _Requirements: 1.2, 1.3, 1.4, 1.6_
+  - [x] 9.3 Update session page WebSocket integration
+    - Use enhanced WebSocketClient with leader/follower mode
+    - Forward actions in follower mode
+    - Process forwarded actions in leader mode
+    - _Requirements: 5.4, 5.5_
+
+- [x] 10. Integrate with homepage
+  - [x] 10.1 Update homepage to use useSessionRecovery hook
+    - Display "Rejoin Session" prompt when pending session exists
+    - Handle rejoin and dismiss actions
+    - _Requirements: 3.2, 3.3, 3.4_
+  - [x] 10.2 Add session persistence on session page unload
+    - Save session state to localStorage when leaving
+    - Clear persistence when explicitly leaving via button
+    - _Requirements: 3.1_
+
+- [x] 11. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

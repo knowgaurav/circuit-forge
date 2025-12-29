@@ -1,0 +1,326 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://circuitforge.io/schemas/circuit.json",
+    "title": "CircuitState",
+    "description": "Complete state of a circuit board",
+    "type": "object",
+    "required": [
+        "sessionId",
+        "version",
+        "schemaVersion",
+        "components",
+        "wires",
+        "annotations",
+        "updatedAt"
+    ],
+    "properties": {
+        "sessionId": {
+            "type": "string",
+            "description": "Session identifier"
+        },
+        "version": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Event version number"
+        },
+        "schemaVersion": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Schema version (semver format)"
+        },
+        "components": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/CircuitComponent"
+            }
+        },
+        "wires": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Wire"
+            }
+        },
+        "annotations": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Annotation"
+            }
+        },
+        "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "definitions": {
+        "Position": {
+            "type": "object",
+            "required": [
+                "x",
+                "y"
+            ],
+            "properties": {
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                }
+            }
+        },
+        "Pin": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "type",
+                "position"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "input",
+                        "output"
+                    ]
+                },
+                "position": {
+                    "$ref": "#/definitions/Position"
+                }
+            }
+        },
+        "ComponentType": {
+            "type": "string",
+            "enum": [
+                "AND_2",
+                "AND_3",
+                "AND_4",
+                "OR_2",
+                "OR_3",
+                "OR_4",
+                "NOT",
+                "NAND_2",
+                "NAND_3",
+                "NOR_2",
+                "NOR_3",
+                "XOR_2",
+                "XNOR_2",
+                "BUFFER",
+                "SR_LATCH",
+                "D_FLIPFLOP",
+                "JK_FLIPFLOP",
+                "T_FLIPFLOP",
+                "MUX_2TO1",
+                "MUX_4TO1",
+                "DEMUX_1TO2",
+                "DECODER_2TO4",
+                "ADDER_4BIT",
+                "COMPARATOR_4BIT",
+                "COUNTER_4BIT",
+                "SHIFT_REGISTER_8BIT",
+                "SWITCH_TOGGLE",
+                "SWITCH_PUSH",
+                "DIP_SWITCH_4",
+                "CLOCK",
+                "CONST_HIGH",
+                "CONST_LOW",
+                "NUMERIC_INPUT",
+                "LED_RED",
+                "LED_GREEN",
+                "LED_YELLOW",
+                "LED_BLUE",
+                "LED_RGB",
+                "DISPLAY_7SEG",
+                "DISPLAY_LCD",
+                "BUZZER",
+                "MOTOR_DC",
+                "MOTOR_SERVO",
+                "MOTOR_STEPPER",
+                "RESISTOR",
+                "CAPACITOR",
+                "INDUCTOR",
+                "DIODE",
+                "ZENER",
+                "TRANSISTOR_NPN",
+                "TRANSISTOR_PNP",
+                "SENSOR_LIGHT",
+                "SENSOR_TEMP",
+                "SENSOR_PROXIMITY",
+                "SENSOR_ULTRASONIC",
+                "POTENTIOMETER",
+                "VCC_5V",
+                "VCC_3V3",
+                "GROUND",
+                "BATTERY",
+                "JUNCTION",
+                "BUS_4BIT",
+                "BUS_8BIT",
+                "PIN_INPUT",
+                "PIN_OUTPUT",
+                "PROBE"
+            ]
+        },
+        "Rotation": {
+            "type": "integer",
+            "enum": [
+                0,
+                90,
+                180,
+                270
+            ]
+        },
+        "CircuitComponent": {
+            "type": "object",
+            "required": [
+                "id",
+                "type",
+                "position",
+                "rotation",
+                "properties",
+                "pins"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/ComponentType"
+                },
+                "position": {
+                    "$ref": "#/definitions/Position"
+                },
+                "rotation": {
+                    "$ref": "#/definitions/Rotation"
+                },
+                "properties": {
+                    "type": "object"
+                },
+                "pins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pin"
+                    }
+                }
+            }
+        },
+        "Wire": {
+            "type": "object",
+            "required": [
+                "id",
+                "fromComponentId",
+                "fromPinId",
+                "toComponentId",
+                "toPinId",
+                "waypoints"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fromComponentId": {
+                    "type": "string"
+                },
+                "fromPinId": {
+                    "type": "string"
+                },
+                "toComponentId": {
+                    "type": "string"
+                },
+                "toPinId": {
+                    "type": "string"
+                },
+                "waypoints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Position"
+                    }
+                }
+            }
+        },
+        "StrokeData": {
+            "type": "object",
+            "required": [
+                "points",
+                "color",
+                "width"
+            ],
+            "properties": {
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Position"
+                    }
+                },
+                "color": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer",
+                    "enum": [
+                        2,
+                        4,
+                        8
+                    ]
+                }
+            }
+        },
+        "TextData": {
+            "type": "object",
+            "required": [
+                "content",
+                "position",
+                "fontSize"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "position": {
+                    "$ref": "#/definitions/Position"
+                },
+                "fontSize": {
+                    "type": "number"
+                }
+            }
+        },
+        "Annotation": {
+            "type": "object",
+            "required": [
+                "id",
+                "type",
+                "userId",
+                "data"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "stroke",
+                        "text"
+                    ]
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "data": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/StrokeData"
+                        },
+                        {
+                            "$ref": "#/definitions/TextData"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
