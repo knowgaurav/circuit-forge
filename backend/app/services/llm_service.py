@@ -450,19 +450,67 @@ AND gate circuit:
         logger.info("Using fallback mode with embedded component info")
         result = await self._call_openai(enhanced_prompt, user_prompt)
         
-        # Post-generation validation for level content
+        # Post-generation validation and auto-fix for level content
         content = result.get("content", {})
         if "practical" in content and "circuitBlueprint" in content.get("practical", {}):
             blueprint = content["practical"]["circuitBlueprint"]
             validation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": blueprint})
             
             if not validation.get("success"):
-                logger.warning(f"Blueprint validation failed: {validation.get('errors', [])}")
-                # Add validation errors to result for debugging
-                result["validation_errors"] = validation.get("errors", [])
-                result["validation_warnings"] = validation.get("warnings", [])
+                errors = validation.get("errors", [])
+                logger.warning(f"Blueprint validation failed: {errors}")
+                
+                # Auto-fix common errors
+                fixed_blueprint = self._auto_fix_blueprint(blueprint, errors)
+                
+                # Validate again
+                revalidation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": fixed_blueprint})
+                
+                if revalidation.get("success"):
+                    logger.info("Blueprint auto-fixed successfully")
+                    content["practical"]["circuitBlueprint"] = fixed_blueprint
+                    result["content"] = content
+                else:
+                    logger.error(f"Blueprint auto-fix failed: {revalidation.get('errors', [])}")
+                    result["validation_errors"] = revalidation.get("errors", [])
         
         return result
+    
+    def _auto_fix_blueprint(self, blueprint: Dict[str, Any], errors: List[str]) -> Dict[str, Any]:
+        """Attempt to automatically fix common blueprint errors."""
+        fixed = {
+            "components": list(blueprint.get("components", [])),
+            "wires": list(blueprint.get("wires", []))
+        }
+        
+        # Build component map
+        comp_map = {c["label"]: c for c in fixed["components"]}
+        
+        # Track wires to remove
+        wires_to_remove = []
+        
+        for i, wire in enumerate(fixed["wires"]):
+            from_str = wire.get("from", "")
+            to_str = wire.get("to", "")
+            
+            # Fix 1: Remove wires with invalid pins
+            for error in errors:
+                if "Invalid pin" in error and (from_str in error or to_str in error):
+                    logger.info(f"Removing wire with invalid pin: {from_str} -> {to_str}")
+                    wires_to_remove.append(i)
+                    break
+                
+                # Fix 2: Remove wires causing multiple drivers
+                if "multiple drivers" in error and to_str in error:
+                    logger.info(f"Removing wire causing multiple drivers: {from_str} -> {to_str}")
+                    wires_to_remove.append(i)
+                    break
+        
+        # Remove problematic wires (in reverse to maintain indices)
+        for i in sorted(wires_to_remove, reverse=True):
+            fixed["wires"].pop(i)
+        
+        return fixed
 
     async def generate_course_plan(self, topic: str, use_tools: bool = True) -> tuple[CoursePlan, int]:
         """Generate a course plan for the given topic.
