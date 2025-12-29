@@ -149,6 +149,9 @@ export default function HomePage() {
               <Link href="/templates" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
                 Templates
               </Link>
+              <Link href="/courses/create" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+                AI Courses
+              </Link>
               <Link href="/playground" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
                 Playground
               </Link>
@@ -183,6 +186,7 @@ export default function HomePage() {
             <Link href="#features" className="block text-gray-400 hover:text-white text-sm font-medium">Features</Link>
             <Link href="#topics" className="block text-gray-400 hover:text-white text-sm font-medium">Topics</Link>
             <Link href="/templates" className="block text-gray-400 hover:text-white text-sm font-medium">Templates</Link>
+            <Link href="/courses/create" className="block text-gray-400 hover:text-white text-sm font-medium">AI Courses</Link>
             <Link href="/playground" className="block text-gray-400 hover:text-white text-sm font-medium">Playground</Link>
             <div className="pt-3 border-t border-white/10 space-y-2">
               <Button variant="ghost" size="sm" onClick={() => setShowJoinModal(true)} className="w-full text-gray-300">
@@ -509,6 +513,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-8 text-sm text-gray-400">
               <Link href="/templates" className="hover:text-white transition-colors">Templates</Link>
+              <Link href="/courses/create" className="hover:text-white transition-colors">AI Courses</Link>
               <Link href="/playground" className="hover:text-white transition-colors">Playground</Link>
               <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             </div>
