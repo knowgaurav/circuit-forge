@@ -43,10 +43,23 @@ class ApiClient {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json().catch(() => ({
-                error: { code: 'UNKNOWN', message: 'An unknown error occurred' },
-            }));
-            throw new Error(error.error.message);
+            let errorMessage = 'An unknown error occurred';
+            try {
+                const errorData = await response.json();
+                // Handle both {error: {message}} and {detail: {error: {message}}} formats
+                if (errorData?.detail?.error?.message) {
+                    errorMessage = errorData.detail.error.message;
+                } else if (errorData?.error?.message) {
+                    errorMessage = errorData.error.message;
+                } else if (errorData?.detail) {
+                    errorMessage = typeof errorData.detail === 'string'
+                        ? errorData.detail
+                        : JSON.stringify(errorData.detail);
+                }
+            } catch {
+                errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
         }
 
         return response.json();
