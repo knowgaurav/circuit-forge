@@ -104,11 +104,11 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
                                                 {/* Info button */}
                                                 <button
                                                     onClick={(e) => handleInfoClick(e, comp)}
-                                                    className="absolute top-1 right-1 p-0.5 rounded opacity-0 group-hover:opacity-100 
-                                                               hover:bg-blue-200 dark:hover:bg-blue-600 transition-all z-10"
+                                                    className="absolute top-0.5 right-0.5 p-0.5 rounded opacity-0 group-hover:opacity-100 
+                                                               hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity z-10"
                                                     title="View details"
                                                 >
-                                                    <Info className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                                                    <Info className="w-3 h-3 text-gray-500 dark:text-gray-400" />
                                                 </button>
                                                 
                                                 <div className={`
