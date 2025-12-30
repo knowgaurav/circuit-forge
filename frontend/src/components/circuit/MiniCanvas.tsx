@@ -45,7 +45,7 @@ export function MiniCanvas({ blueprint, width = 400, height = 200 }: MiniCanvasP
         }
     }, [components, wires, isSimulating]);
 
-    // Clock timer - toggle clock components periodically
+    // Simulation tick - advances clock phase for proper clock behavior
     useEffect(() => {
         if (!isSimulating) return;
         
@@ -53,14 +53,15 @@ export function MiniCanvas({ blueprint, width = 400, height = 200 }: MiniCanvasP
         if (!hasClocks) return;
 
         const interval = setInterval(() => {
+            // Increment phase on clock components - simulation engine uses phase to determine output
             setComponents(prev =>
                 prev.map(c =>
                     c.type === 'CLOCK'
-                        ? { ...c, properties: { ...c.properties, state: !c.properties.state } }
+                        ? { ...c, properties: { ...c.properties, phase: ((c.properties.phase as number) ?? 0) + 1 } }
                         : c
                 )
             );
-        }, 500); // 500ms = 1Hz clock
+        }, 500); // 500ms per tick = 1Hz clock
 
         return () => clearInterval(interval);
     }, [isSimulating, components.length]);
