@@ -21,9 +21,9 @@ class Event:
     """Simulation event at a specific time."""
     time: int
     seq: int = field(default=0, compare=True)
-    component_id: str = field(compare=False)
-    pin_id: str = field(compare=False)
-    value: Signal = field(compare=False)
+    component_id: str = field(default="", compare=False)
+    pin_id: str = field(default="", compare=False)
+    value: Signal = field(default=Signal.X, compare=False)
 
 
 @dataclass
