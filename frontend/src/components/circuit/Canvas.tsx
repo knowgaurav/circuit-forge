@@ -301,10 +301,12 @@ export function Canvas({
                 const prevCanvasPos = screenToCanvas(dragStart.x, dragStart.y);
                 const dx = canvasPos.x - prevCanvasPos.x;
                 const dy = canvasPos.y - prevCanvasPos.y;
+                // Get fresh state and update store directly
+                const store = useCircuitStore.getState();
                 selectedComponentIds.forEach((id: string) => {
-                    const component = components.find((c: CircuitComponent) => c.id === id);
+                    const component = store.components.find((c: CircuitComponent) => c.id === id);
                     if (component) {
-                        onComponentMove?.(id, { x: component.position.x + dx, y: component.position.y + dy });
+                        store.moveComponent(id, { x: component.position.x + dx, y: component.position.y + dy });
                     }
                 });
                 setDragStart(screenPos);
@@ -336,6 +338,17 @@ export function Canvas({
                 data: { points: currentStroke, color: selectedColor, width: strokeWidth },
             };
             onAnnotationCreate?.(annotation);
+        }
+
+        // Notify about final positions of moved components (for autosave)
+        if (selectedTool === 'select' && selectedComponentIds.length > 0 && isDragging) {
+            const freshComponents = useCircuitStore.getState().components;
+            selectedComponentIds.forEach((id: string) => {
+                const component = freshComponents.find((c: CircuitComponent) => c.id === id);
+                if (component) {
+                    onComponentMove?.(id, component.position);
+                }
+            });
         }
 
         setIsDragging(false);
