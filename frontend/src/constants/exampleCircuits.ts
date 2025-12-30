@@ -197,7 +197,7 @@ export const CLOCK_EXAMPLE: ExampleCircuit = {
             { type: 'LED_GREEN', label: 'LED1', position: pos(220, 90) },
         ],
         wires: [
-            { from: 'CLK1:OUT', to: 'LED1:IN' },
+            { from: 'CLK1:CLK', to: 'LED1:IN' },
         ],
     },
 };
@@ -254,20 +254,18 @@ export const LED_EXAMPLE: ExampleCircuit = {
 export const DISPLAY_7SEG_EXAMPLE: ExampleCircuit = {
     id: '7seg-example',
     name: '7-Segment Display Demo',
-    description: '4-bit counter driving a display',
+    description: 'Control individual segments with switches',
     blueprint: {
         components: [
-            { type: 'SWITCH_TOGGLE', label: 'D0', position: pos(50, 40) },
-            { type: 'SWITCH_TOGGLE', label: 'D1', position: pos(50, 90) },
-            { type: 'SWITCH_TOGGLE', label: 'D2', position: pos(50, 140) },
-            { type: 'SWITCH_TOGGLE', label: 'D3', position: pos(50, 190) },
-            { type: 'DISPLAY_7SEG', label: 'DISP1', position: pos(220, 100) },
+            { type: 'SWITCH_TOGGLE', label: 'A', position: pos(50, 50) },
+            { type: 'SWITCH_TOGGLE', label: 'B', position: pos(50, 90) },
+            { type: 'SWITCH_TOGGLE', label: 'G', position: pos(50, 130) },
+            { type: 'DISPLAY_7SEG', label: 'DISP', position: pos(200, 90) },
         ],
         wires: [
-            { from: 'D0:OUT', to: 'DISP1:D0' },
-            { from: 'D1:OUT', to: 'DISP1:D1' },
-            { from: 'D2:OUT', to: 'DISP1:D2' },
-            { from: 'D3:OUT', to: 'DISP1:D3' },
+            { from: 'A:OUT', to: 'DISP:A' },
+            { from: 'B:OUT', to: 'DISP:B' },
+            { from: 'G:OUT', to: 'DISP:G' },
         ],
     },
 };
@@ -286,13 +284,13 @@ export const D_FLIPFLOP_EXAMPLE: ExampleCircuit = {
             { type: 'SWITCH_PUSH', label: 'CLK', position: pos(50, 130) },
             { type: 'D_FLIPFLOP', label: 'DFF1', position: pos(180, 90) },
             { type: 'LED_GREEN', label: 'Q', position: pos(310, 70) },
-            { type: 'LED_RED', label: 'Qn', position: pos(310, 120) },
+            { type: 'LED_RED', label: 'QB', position: pos(310, 120) },
         ],
         wires: [
             { from: 'DATA:OUT', to: 'DFF1:D' },
             { from: 'CLK:OUT', to: 'DFF1:CLK' },
             { from: 'DFF1:Q', to: 'Q:IN' },
-            { from: 'DFF1:Qn', to: 'Qn:IN' },
+            { from: "DFF1:Q'", to: 'QB:IN' },
         ],
     },
 };
@@ -307,13 +305,13 @@ export const SR_LATCH_EXAMPLE: ExampleCircuit = {
             { type: 'SWITCH_PUSH', label: 'RST', position: pos(50, 130) },
             { type: 'SR_LATCH', label: 'SR1', position: pos(180, 90) },
             { type: 'LED_GREEN', label: 'Q', position: pos(310, 70) },
-            { type: 'LED_RED', label: 'Qn', position: pos(310, 120) },
+            { type: 'LED_RED', label: 'QB', position: pos(310, 120) },
         ],
         wires: [
             { from: 'SET:OUT', to: 'SR1:S' },
             { from: 'RST:OUT', to: 'SR1:R' },
             { from: 'SR1:Q', to: 'Q:IN' },
-            { from: 'SR1:Qn', to: 'Qn:IN' },
+            { from: "SR1:Q'", to: 'QB:IN' },
         ],
     },
 };
@@ -329,14 +327,14 @@ export const JK_FLIPFLOP_EXAMPLE: ExampleCircuit = {
             { type: 'SWITCH_TOGGLE', label: 'K', position: pos(50, 150) },
             { type: 'JK_FLIPFLOP', label: 'JK1', position: pos(180, 100) },
             { type: 'LED_GREEN', label: 'Q', position: pos(310, 80) },
-            { type: 'LED_RED', label: 'Qn', position: pos(310, 130) },
+            { type: 'LED_RED', label: 'QB', position: pos(310, 130) },
         ],
         wires: [
             { from: 'J:OUT', to: 'JK1:J' },
             { from: 'CLK:OUT', to: 'JK1:CLK' },
             { from: 'K:OUT', to: 'JK1:K' },
             { from: 'JK1:Q', to: 'Q:IN' },
-            { from: 'JK1:Qn', to: 'Qn:IN' },
+            { from: "JK1:Q'", to: 'QB:IN' },
         ],
     },
 };
@@ -344,21 +342,22 @@ export const JK_FLIPFLOP_EXAMPLE: ExampleCircuit = {
 export const COUNTER_EXAMPLE: ExampleCircuit = {
     id: 'counter-example',
     name: '4-Bit Counter Demo',
-    description: 'Counter with 7-segment display',
+    description: 'Counter with LED outputs showing binary',
     blueprint: {
         components: [
-            { type: 'SWITCH_PUSH', label: 'CLK', position: pos(50, 80) },
-            { type: 'SWITCH_PUSH', label: 'RST', position: pos(50, 140) },
-            { type: 'COUNTER_4BIT', label: 'CNT1', position: pos(180, 100) },
-            { type: 'DISPLAY_7SEG', label: 'DISP1', position: pos(320, 100) },
+            { type: 'SWITCH_PUSH', label: 'CLK', position: pos(50, 90) },
+            { type: 'COUNTER_4BIT', label: 'CNT1', position: pos(160, 90) },
+            { type: 'LED_RED', label: 'Q0', position: pos(280, 50) },
+            { type: 'LED_RED', label: 'Q1', position: pos(280, 90) },
+            { type: 'LED_RED', label: 'Q2', position: pos(280, 130) },
+            { type: 'LED_RED', label: 'Q3', position: pos(280, 170) },
         ],
         wires: [
             { from: 'CLK:OUT', to: 'CNT1:CLK' },
-            { from: 'RST:OUT', to: 'CNT1:RST' },
-            { from: 'CNT1:Q0', to: 'DISP1:D0' },
-            { from: 'CNT1:Q1', to: 'DISP1:D1' },
-            { from: 'CNT1:Q2', to: 'DISP1:D2' },
-            { from: 'CNT1:Q3', to: 'DISP1:D3' },
+            { from: 'CNT1:Q0', to: 'Q0:IN' },
+            { from: 'CNT1:Q1', to: 'Q1:IN' },
+            { from: 'CNT1:Q2', to: 'Q2:IN' },
+            { from: 'CNT1:Q3', to: 'Q3:IN' },
         ],
     },
 };
@@ -380,8 +379,8 @@ export const MUX_EXAMPLE: ExampleCircuit = {
             { type: 'LED_GREEN', label: 'OUT', position: pos(310, 90) },
         ],
         wires: [
-            { from: 'IN0:OUT', to: 'MUX1:D0' },
-            { from: 'IN1:OUT', to: 'MUX1:D1' },
+            { from: 'IN0:OUT', to: 'MUX1:A' },
+            { from: 'IN1:OUT', to: 'MUX1:B' },
             { from: 'SEL:OUT', to: 'MUX1:S' },
             { from: 'MUX1:Y', to: 'OUT:IN' },
         ],
