@@ -3,6 +3,8 @@
 import { Modal } from '@/components/ui';
 import { ComponentDefinition } from '@/constants/components';
 import { getComponentDetail } from '@/constants/componentDetails';
+import { getExampleCircuit } from '@/constants/exampleCircuits';
+import { MiniCanvas } from './MiniCanvas';
 
 interface ComponentDetailModalProps {
     component: ComponentDefinition | null;
@@ -89,19 +91,24 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                     </div>
                 )}
 
-                {/* Usage Example - canvas amber accent */}
-                {detail?.usageExample && (
-                    <div>
-                        <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                            Example Usage
-                        </h4>
-                        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700/50">
-                            <p className="text-sm text-gray-700 dark:text-gray-300">
-                                {detail.usageExample}
-                            </p>
+                {/* Interactive Example Circuit */}
+                {(() => {
+                    const exampleCircuit = getExampleCircuit(component.type);
+                    if (!exampleCircuit) return null;
+                    return (
+                        <div>
+                            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                                Interactive Demo
+                            </h4>
+                            <div className="flex flex-col items-center">
+                                <MiniCanvas blueprint={exampleCircuit.blueprint} width={380} height={180} />
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                    {exampleCircuit.description}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* Tips */}
                 {detail?.tips && detail.tips.length > 0 && (
