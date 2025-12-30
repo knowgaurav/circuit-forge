@@ -94,7 +94,7 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
                                                 className={`
                                                     relative flex flex-col items-center justify-center p-2 rounded-md border-2
                                                     cursor-grab active:cursor-grabbing transition-all duration-150
-                                                    h-[72px] group
+                                                    min-h-[80px] group
                                                     ${disabled
                                                         ? 'bg-gray-50 dark:bg-gray-700 text-gray-400 cursor-not-allowed border-gray-200 dark:border-gray-600'
                                                         : 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-400 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600'
@@ -121,7 +121,7 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
                                                 `}>
                                                     <ComponentIcon type={comp.type} />
                                                 </div>
-                                                <span className="text-[10px] font-medium text-center leading-tight line-clamp-2">
+                                                <span className="text-[11px] font-medium text-center leading-tight max-w-full px-0.5">
                                                     {comp.name}
                                                 </span>
                                             </div>
