@@ -775,53 +775,20 @@ function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActiv
     ctx.textBaseline = 'middle';
     ctx.fillText('M', 0, 0);
     
-    // Direction arrow (when running) - draw outside the motor circle
+    // Direction indicator (when running)
     if (isRunning) {
-        ctx.strokeStyle = '#22C55E';
         ctx.fillStyle = '#22C55E';
-        ctx.lineWidth = 3;
-        const r = Math.min(w, h) / 2 + 4;
-        
-        // Draw curved arrow around motor
-        if (direction > 0) {
-            // CLOCKWISE (FWD): arc from top-left to bottom-right
-            const startAngle = -Math.PI * 0.7;
-            const endAngle = Math.PI * 0.2;
-            ctx.beginPath();
-            ctx.arc(0, 0, r, startAngle, endAngle);
-            ctx.stroke();
-            // Arrowhead - tangent points DOWN-LEFT (continuing clockwise)
-            const ax = r * Math.cos(endAngle);
-            const ay = r * Math.sin(endAngle);
-            ctx.beginPath();
-            ctx.moveTo(ax - 6, ay + 6);  // tip points down-left
-            ctx.lineTo(ax + 2, ay - 4);  // back-right
-            ctx.lineTo(ax - 6, ay - 6);  // back-left  
-            ctx.closePath();
-            ctx.fill();
-        } else {
-            // COUNTER-CLOCKWISE (REV): arc from top-right to bottom-left
-            const startAngle = -Math.PI * 0.3;
-            const endAngle = Math.PI * 0.8;
-            ctx.beginPath();
-            ctx.arc(0, 0, r, startAngle, endAngle);
-            ctx.stroke();
-            // Arrowhead - tangent points DOWN-RIGHT (continuing counter-clockwise)
-            const ax = r * Math.cos(endAngle);
-            const ay = r * Math.sin(endAngle);
-            ctx.beginPath();
-            ctx.moveTo(ax + 6, ay + 6);  // tip points down-right
-            ctx.lineTo(ax - 2, ay - 4);  // back-left
-            ctx.lineTo(ax + 6, ay - 6);  // back-right
-            ctx.closePath();
-            ctx.fill();
-        }
-        
-        // Status text
-        ctx.fillStyle = '#22C55E';
-        ctx.font = '8px sans-serif';
+        ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(direction > 0 ? 'FWD' : 'REV', 0, h/2 + 20);
+        ctx.textBaseline = 'middle';
+        
+        // Draw rotation symbol using Unicode arrows
+        const symbol = direction > 0 ? '↻' : '↺';
+        ctx.fillText(symbol, w/2 + 8, -h/2 + 8);
+        
+        // Status text below
+        ctx.font = '9px sans-serif';
+        ctx.fillText(direction > 0 ? 'CW' : 'CCW', 0, h/2 + 18);
     }
 }
 

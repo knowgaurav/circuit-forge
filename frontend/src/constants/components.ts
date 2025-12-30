@@ -387,6 +387,27 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
             outputPin('A<B', 50, 15),
         ],
     },
+    {
+        type: 'BCD_TO_7SEG',
+        name: 'BCD to 7-Segment',
+        category: 'Combinational',
+        description: 'BCD to 7-segment decoder (displays 0-9)',
+        width: 80,
+        height: 100,
+        pins: [
+            inputPin('D0', -40, -30),
+            inputPin('D1', -40, -10),
+            inputPin('D2', -40, 10),
+            inputPin('D3', -40, 30),
+            outputPin('A', 40, -40),
+            outputPin('B', 40, -27),
+            outputPin('C', 40, -13),
+            outputPin('D', 40, 0),
+            outputPin('E', 40, 13),
+            outputPin('F', 40, 27),
+            outputPin('G', 40, 40),
+        ],
+    },
 
     // Sequential
     {

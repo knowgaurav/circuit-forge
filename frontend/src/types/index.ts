@@ -29,7 +29,7 @@ export type ComponentType =
     // Flip-Flops
     | 'SR_LATCH' | 'D_FLIPFLOP' | 'JK_FLIPFLOP' | 'T_FLIPFLOP'
     // Combinational
-    | 'MUX_2TO1' | 'MUX_4TO1' | 'DEMUX_1TO2' | 'DECODER_2TO4' | 'ADDER_4BIT' | 'COMPARATOR_4BIT'
+    | 'MUX_2TO1' | 'MUX_4TO1' | 'DEMUX_1TO2' | 'DECODER_2TO4' | 'ADDER_4BIT' | 'COMPARATOR_4BIT' | 'BCD_TO_7SEG'
     // Sequential
     | 'COUNTER_4BIT' | 'SHIFT_REGISTER_8BIT' | 'TRAFFIC_LIGHT_CTRL'
     // Input Devices
