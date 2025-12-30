@@ -53,19 +53,22 @@ function resolvePin(
     
     if (pinName) {
         // Explicit pin name - validate it exists
-        const pin = pins.find(p => p.id.toLowerCase() === pinName.toLowerCase() || p.name?.toLowerCase() === pinName.toLowerCase());
+        const pin = pins.find(p => 
+            (p.id && p.id.toLowerCase() === pinName.toLowerCase()) || 
+            (p.name && p.name.toLowerCase() === pinName.toLowerCase())
+        );
         if (!pin) {
-            const available = pins.map(p => p.id).join(', ');
+            const available = pins.map(p => p.id || p.name || 'unknown').join(', ');
             throw new Error(`${direction} pin "${pinName}" not found on ${compType} (${label}). Available: ${available}`);
         }
-        return `${label}:${pin.id}`;
+        return `${label}:${pin.id || pin.name}`;
     }
     
     // No pin specified - use first pin of that direction
     if (pins.length === 0) {
         throw new Error(`No ${direction} pins on ${compType} (${label})`);
     }
-    return `${label}:${pins[0].id}`;
+    return `${label}:${pins[0].id || pins[0].name}`;
 }
 
 /**
