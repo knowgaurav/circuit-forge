@@ -285,15 +285,23 @@ export const LED_EXAMPLE: ExampleCircuit = {
 export const DISPLAY_7SEG_EXAMPLE: ExampleCircuit = {
     id: '7seg-example',
     name: '7-Segment Display Demo',
-    description: 'Control individual segments with switches',
+    description: 'Toggle switches to display digits 0-9',
     blueprint: circuit([
-        { type: 'SWITCH_TOGGLE', label: 'A', position: pos(100, 55) },
-        { type: 'SWITCH_TOGGLE', label: 'B', position: pos(100, 100) },
-        { type: 'SWITCH_TOGGLE', label: 'G', position: pos(100, 145) },
-        { type: 'DISPLAY_7SEG', label: 'DISP', position: pos(280, 100) },
+        { type: 'SWITCH_TOGGLE', label: 'A', position: pos(50, 30) },
+        { type: 'SWITCH_TOGGLE', label: 'B', position: pos(90, 30) },
+        { type: 'SWITCH_TOGGLE', label: 'C', position: pos(130, 30) },
+        { type: 'SWITCH_TOGGLE', label: 'D', position: pos(50, 70) },
+        { type: 'SWITCH_TOGGLE', label: 'E', position: pos(90, 70) },
+        { type: 'SWITCH_TOGGLE', label: 'F', position: pos(130, 70) },
+        { type: 'SWITCH_TOGGLE', label: 'G', position: pos(90, 110) },
+        { type: 'DISPLAY_7SEG', label: 'DISP', position: pos(250, 70) },
     ], [
         ['A', 'DISP:A'],
         ['B', 'DISP:B'],
+        ['C', 'DISP:C'],
+        ['D', 'DISP:D'],
+        ['E', 'DISP:E'],
+        ['F', 'DISP:F'],
         ['G', 'DISP:G'],
     ]),
 };

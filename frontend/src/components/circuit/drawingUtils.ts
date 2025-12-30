@@ -542,52 +542,48 @@ function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number, segme
     ctx.fill();
     ctx.stroke();
     
-    // 7-segment layout (sized to fit the component):
-    //   AAA
-    //  F   B
-    //   GGG
-    //  E   C
-    //   DDD
-    const segLen = 12;  // Length of each segment
-    const segThick = 3; // Thickness of each segment
-    const gap = 1;      // Gap between segments
-    const offColor = '#4b5563';
+    // 7-segment layout:
+    //    AAA
+    //   F   B
+    //    GGG
+    //   E   C
+    //    DDD
+    const t = 3;  // segment thickness
+    const offColor = '#374151';
     const onColor = '#22C55E';
     
-    // Center the digit in the display
-    const top = -20;
-    const mid = 0;
-    const bot = 20;
-    const left = -8;
-    const right = 8;
+    // Digit bounding box (centered in display)
+    const x1 = -10, x2 = 10;  // left and right edges
+    const y1 = -22, y2 = 22;  // top and bottom edges
+    const ym = 0;              // middle y
     
     // Segment A (top horizontal)
     ctx.fillStyle = segments['A'] ? onColor : offColor;
-    ctx.fillRect(left + gap, top, segLen, segThick);
+    ctx.fillRect(x1 + t, y1, x2 - x1 - 2*t, t);
     
-    // Segment B (top right vertical)
+    // Segment B (upper right vertical)
     ctx.fillStyle = segments['B'] ? onColor : offColor;
-    ctx.fillRect(right - segThick, top + gap, segThick, segLen);
+    ctx.fillRect(x2 - t, y1 + t, t, ym - y1 - t);
     
-    // Segment C (bottom right vertical)
+    // Segment C (lower right vertical)
     ctx.fillStyle = segments['C'] ? onColor : offColor;
-    ctx.fillRect(right - segThick, mid + gap, segThick, segLen);
+    ctx.fillRect(x2 - t, ym + t, t, y2 - ym - 2*t);
     
     // Segment D (bottom horizontal)
     ctx.fillStyle = segments['D'] ? onColor : offColor;
-    ctx.fillRect(left + gap, bot - segThick, segLen, segThick);
+    ctx.fillRect(x1 + t, y2 - t, x2 - x1 - 2*t, t);
     
-    // Segment E (bottom left vertical)
+    // Segment E (lower left vertical)
     ctx.fillStyle = segments['E'] ? onColor : offColor;
-    ctx.fillRect(left, mid + gap, segThick, segLen);
+    ctx.fillRect(x1, ym + t, t, y2 - ym - 2*t);
     
-    // Segment F (top left vertical)
+    // Segment F (upper left vertical)
     ctx.fillStyle = segments['F'] ? onColor : offColor;
-    ctx.fillRect(left, top + gap, segThick, segLen);
+    ctx.fillRect(x1, y1 + t, t, ym - y1 - t);
     
     // Segment G (middle horizontal)
     ctx.fillStyle = segments['G'] ? onColor : offColor;
-    ctx.fillRect(left + gap, mid - segThick/2, segLen, segThick);
+    ctx.fillRect(x1 + t, ym - t/2, x2 - x1 - 2*t, t);
 }
 
 function drawMux(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -765,31 +761,35 @@ function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActiv
     if (isRunning) {
         ctx.strokeStyle = '#22C55E';
         ctx.fillStyle = '#22C55E';
-        ctx.lineWidth = 2.5;
-        const r = Math.min(w, h) / 2 + 2; // Outside the motor
+        ctx.lineWidth = 3;
+        const r = Math.min(w, h) / 2 + 4;
         
+        // Draw curved arrow around motor
+        ctx.beginPath();
         if (direction > 0) {
-            // Clockwise arrow (FWD) - arc on right side
-            ctx.beginPath();
-            ctx.arc(0, 0, r, -Math.PI * 0.6, Math.PI * 0.3);
+            // CLOCKWISE (FWD): arrow curves right, arrowhead at bottom
+            ctx.arc(0, 0, r, -Math.PI * 0.75, Math.PI * 0.25);
             ctx.stroke();
-            // Arrow head pointing clockwise direction
+            // Arrowhead at end pointing DOWN-RIGHT (clockwise direction)
+            const ax = r * Math.cos(Math.PI * 0.25);
+            const ay = r * Math.sin(Math.PI * 0.25);
             ctx.beginPath();
-            ctx.moveTo(r * Math.cos(Math.PI * 0.3), r * Math.sin(Math.PI * 0.3));
-            ctx.lineTo(r * Math.cos(Math.PI * 0.3) - 3, r * Math.sin(Math.PI * 0.3) - 7);
-            ctx.lineTo(r * Math.cos(Math.PI * 0.3) + 5, r * Math.sin(Math.PI * 0.3) - 3);
+            ctx.moveTo(ax, ay);
+            ctx.lineTo(ax - 8, ay - 2);
+            ctx.lineTo(ax - 4, ay - 8);
             ctx.closePath();
             ctx.fill();
         } else {
-            // Counter-clockwise arrow (REV) - arc on left side
-            ctx.beginPath();
-            ctx.arc(0, 0, r, Math.PI * 0.6, Math.PI * 1.3);
+            // COUNTER-CLOCKWISE (REV): arrow curves left, arrowhead at bottom
+            ctx.arc(0, 0, r, -Math.PI * 0.25, Math.PI * 0.75);
             ctx.stroke();
-            // Arrow head pointing counter-clockwise direction
+            // Arrowhead at end pointing DOWN-LEFT (counter-clockwise direction)
+            const ax = r * Math.cos(Math.PI * 0.75);
+            const ay = r * Math.sin(Math.PI * 0.75);
             ctx.beginPath();
-            ctx.moveTo(r * Math.cos(Math.PI * 0.6), r * Math.sin(Math.PI * 0.6));
-            ctx.lineTo(r * Math.cos(Math.PI * 0.6) + 3, r * Math.sin(Math.PI * 0.6) - 7);
-            ctx.lineTo(r * Math.cos(Math.PI * 0.6) - 5, r * Math.sin(Math.PI * 0.6) - 3);
+            ctx.moveTo(ax, ay);
+            ctx.lineTo(ax + 8, ay - 2);
+            ctx.lineTo(ax + 4, ay - 8);
             ctx.closePath();
             ctx.fill();
         }
