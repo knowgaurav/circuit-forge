@@ -25,7 +25,7 @@ export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
                 <div
                     className={clsx(
                         'absolute px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg',
-                        'whitespace-nowrap pointer-events-none',
+                        'max-w-[200px] text-center pointer-events-none',
                         'transition-opacity duration-150',
                         {
                             'bottom-full left-1/2 -translate-x-1/2 mb-2': position === 'top',
