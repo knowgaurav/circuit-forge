@@ -795,7 +795,7 @@ export default function SessionPage() {
                 {/* Component Palette */}
                 {canEdit && (
                     <div
-                        className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 relative transition-all duration-200"
+                        className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 relative ${isResizing ? '' : 'transition-all duration-200'}`}
                         style={{ width: leftSidebarCollapsed ? 0 : leftSidebarWidth }}
                     >
                         {!leftSidebarCollapsed && (
@@ -818,7 +818,7 @@ export default function SessionPage() {
                 {canEdit && (
                     <button
                         onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                        className="absolute top-1/2 -translate-y-1/2 z-20 bg-blue-500 hover:bg-blue-600 text-white border-0 rounded-r-md px-2 py-4 shadow-lg transition-colors"
+                        className={`absolute top-1/2 -translate-y-1/2 z-20 bg-blue-500 hover:bg-blue-600 text-white border-0 rounded-r-md px-2 py-4 shadow-lg ${isResizing ? '' : 'transition-all duration-200'}`}
                         style={{ left: leftSidebarCollapsed ? 48 : 48 + leftSidebarWidth }}
                         title={leftSidebarCollapsed ? 'Show Components' : 'Hide Components'}
                     >
