@@ -542,36 +542,44 @@ function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number, segme
     ctx.fill();
     ctx.stroke();
     
-    // 7-segment layout:
+    // 7-segment layout (sized to fit the component):
     //   AAA
     //  F   B
     //   GGG
     //  E   C
     //   DDD
-    const segW = 10, segH = 3;
-    const cx = 0, cy = 0;
-    const offColor = '#374151';
+    const segLen = 12;  // Length of each segment
+    const segThick = 3; // Thickness of each segment
+    const gap = 1;      // Gap between segments
+    const offColor = '#4b5563';
     const onColor = '#22C55E';
+    
+    // Center the digit in the display
+    const top = -20;
+    const mid = 0;
+    const bot = 20;
+    const left = -8;
+    const right = 8;
     
     // Segment A (top horizontal)
     ctx.fillStyle = segments['A'] ? onColor : offColor;
-    ctx.fillRect(cx - segW/2, cy - 12, segW, segH);
+    ctx.fillRect(left + gap, top, segLen, segThick);
     
     // Segment B (top right vertical)
     ctx.fillStyle = segments['B'] ? onColor : offColor;
-    ctx.fillRect(cx + segW/2 - 1, cy - 12, segH, segW);
+    ctx.fillRect(right - segThick, top + gap, segThick, segLen);
     
     // Segment C (bottom right vertical)
     ctx.fillStyle = segments['C'] ? onColor : offColor;
-    ctx.fillRect(cx + segW/2 - 1, cy + 2, segH, segW);
+    ctx.fillRect(right - segThick, mid + gap, segThick, segLen);
     
     // Segment D (bottom horizontal)
     ctx.fillStyle = segments['D'] ? onColor : offColor;
-    ctx.fillRect(cx - segW/2, cy + 10, segW, segH);
+    ctx.fillRect(left + gap, bot - segThick, segLen, segThick);
     
     // Segment E (bottom left vertical)
     ctx.fillStyle = segments['E'] ? onColor : offColor;
-    ctx.fillRect(cx - segW/2 - 2, cy + 2, segH, segW);
+    ctx.fillRect(left, mid + gap, segThick, segLen);
     
     // Segment F (top left vertical)
     ctx.fillStyle = segments['F'] ? onColor : offColor;
@@ -756,37 +764,46 @@ function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActiv
     // Direction arrow (when running)
     if (isRunning) {
         ctx.strokeStyle = '#22C55E';
+        ctx.fillStyle = '#22C55E';
         ctx.lineWidth = 2;
-        const r = Math.min(w, h) / 2 - 8;
+        const r = Math.min(w, h) / 2 - 6;
         
-        // Draw rotating arrow
-        ctx.beginPath();
         if (direction > 0) {
-            // Clockwise arrow (FWD)
-            ctx.arc(0, 0, r, -Math.PI/4, Math.PI/4);
-            // Arrow head
-            const endX = r * Math.cos(Math.PI/4);
-            const endY = r * Math.sin(Math.PI/4);
+            // Clockwise arrow (FWD) - arc from top going right
+            ctx.beginPath();
+            ctx.arc(0, 0, r, -Math.PI * 0.7, Math.PI * 0.2);
+            ctx.stroke();
+            // Arrow head at end (pointing down-right for CW)
+            const endAngle = Math.PI * 0.2;
+            const endX = r * Math.cos(endAngle);
+            const endY = r * Math.sin(endAngle);
+            ctx.beginPath();
             ctx.moveTo(endX, endY);
-            ctx.lineTo(endX - 6, endY - 2);
-            ctx.moveTo(endX, endY);
-            ctx.lineTo(endX - 2, endY - 6);
+            ctx.lineTo(endX - 5, endY - 5);
+            ctx.lineTo(endX + 2, endY - 6);
+            ctx.closePath();
+            ctx.fill();
         } else {
-            // Counter-clockwise arrow (REV)
-            ctx.arc(0, 0, r, Math.PI - Math.PI/4, Math.PI + Math.PI/4);
-            // Arrow head
-            const endX = r * Math.cos(Math.PI + Math.PI/4);
-            const endY = r * Math.sin(Math.PI + Math.PI/4);
+            // Counter-clockwise arrow (REV) - arc from top going left
+            ctx.beginPath();
+            ctx.arc(0, 0, r, -Math.PI * 0.3, Math.PI * 0.7, true); // true = counter-clockwise
+            ctx.stroke();
+            // Arrow head at end (pointing down-left for CCW)
+            const endAngle = Math.PI * 0.7;
+            const endX = r * Math.cos(endAngle);
+            const endY = r * Math.sin(endAngle);
+            ctx.beginPath();
             ctx.moveTo(endX, endY);
-            ctx.lineTo(endX + 6, endY + 2);
-            ctx.moveTo(endX, endY);
-            ctx.lineTo(endX + 2, endY + 6);
+            ctx.lineTo(endX + 5, endY - 5);
+            ctx.lineTo(endX - 2, endY - 6);
+            ctx.closePath();
+            ctx.fill();
         }
-        ctx.stroke();
         
         // Status text
         ctx.fillStyle = '#22C55E';
         ctx.font = '8px sans-serif';
+        ctx.textAlign = 'center';
         ctx.fillText(direction > 0 ? 'FWD' : 'REV', 0, h/2 + 20);
     }
 }
