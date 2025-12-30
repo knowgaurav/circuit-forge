@@ -8,9 +8,9 @@ import { IconButton } from './IconButton';
 export interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-    title?: string;
+    title?: ReactNode;
     children: ReactNode;
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
@@ -45,7 +45,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         >
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50 transition-opacity"
+                className="absolute inset-0 bg-black/30 transition-opacity"
                 onClick={onClose}
                 aria-hidden="true"
             />
@@ -53,18 +53,20 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {/* Modal content */}
             <div
                 className={clsx(
-                    'relative bg-white dark:bg-[#2a2a3e] rounded-lg shadow-xl',
+                    'relative bg-white dark:bg-gray-800 rounded-lg shadow-xl',
                     'max-h-[90vh] overflow-auto',
                     {
                         'w-full max-w-sm': size === 'sm',
                         'w-full max-w-md': size === 'md',
                         'w-full max-w-lg': size === 'lg',
+                        'w-full max-w-xl': size === 'xl',
+                        'w-full max-w-2xl': size === '2xl',
                     }
                 )}
             >
                 {/* Header */}
                 {title && (
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-[#3d3d5c]">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                         <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-white">
                             {title}
                         </h2>

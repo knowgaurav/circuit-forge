@@ -123,13 +123,8 @@ class CourseService:
         """Generate a new course plan for the given topic."""
         logger.info(f"Generating course plan for topic: {topic}")
 
-        # Check if we already have a plan for this exact topic
-        existing = await self.course_plan_repo.get_by_topic(topic)
-        if existing:
-            logger.info(f"Found existing course plan for topic: {topic}")
-            return existing
-
-        # Generate new plan using LLM
+        # Always generate new plan (don't use cached plans)
+        # This ensures fresh content each time
         course_plan, token_usage = await llm_service.generate_course_plan(topic)
         course_plan.creator_participant_id = participant_id
 
@@ -154,18 +149,16 @@ class CourseService:
         level_number: int,
     ) -> Optional[LevelContent]:
         """Get level content, generating if needed."""
-        # Check if content exists
-        content = await self.level_content_repo.get_by_course_and_level(
-            course_plan_id, level_number
-        )
-
-        if content and content.generation_state == GenerationState.GENERATED:
-            return content
-
-        # Need to generate content
+        # Always regenerate content (don't use cached content)
+        # This ensures fresh blueprints each time
         course_plan = await self.course_plan_repo.get_by_id(course_plan_id)
         if not course_plan:
             return None
+
+        # Check if content record exists
+        content = await self.level_content_repo.get_by_course_and_level(
+            course_plan_id, level_number
+        )
 
         # Create or update level content record
         if not content:

@@ -35,6 +35,7 @@ const LOGIC_GATES = new Set<ComponentType>([
 const COMBINATIONAL_LOGIC = new Set<ComponentType>([
     'MUX_2TO1', 'MUX_4TO1',
     'DEMUX_1TO2', 'DECODER_2TO4',
+    'ADDER_4BIT', 'COMPARATOR_4BIT', 'BCD_TO_7SEG',
 ] as ComponentType[]);
 
 // Sequential logic (flip-flops, latches, counters)
@@ -66,6 +67,11 @@ const OUTPUT_DEVICES = new Set<ComponentType>([
 // Junction/splitter components
 const JUNCTION_COMPONENTS = new Set<ComponentType>([
     'JUNCTION',
+] as ComponentType[]);
+
+// Passive components (pass signal through)
+const PASSIVE_COMPONENTS = new Set<ComponentType>([
+    'RESISTOR', 'CAPACITOR', 'DIODE',
 ] as ComponentType[]);
 
 /**
@@ -430,6 +436,8 @@ export class SimulationEngine {
             this.evaluateSequential(comp, pinStates);
         } else if (JUNCTION_COMPONENTS.has(comp.type)) {
             this.evaluateJunction(comp, pinStates);
+        } else if (PASSIVE_COMPONENTS.has(comp.type)) {
+            this.evaluatePassive(comp, pinStates);
         } else if (OUTPUT_DEVICES.has(comp.type)) {
             this.evaluateOutputDevice(comp, pinStates);
         }
@@ -460,7 +468,8 @@ export class SimulationEngine {
         const feedbackComponents = this.findFeedbackComponents(circuit);
 
         for (const comp of circuit.components) {
-            if (INPUT_DEVICES.has(comp.type)) continue;
+            // Skip input devices and output devices (output devices don't require all inputs)
+            if (INPUT_DEVICES.has(comp.type) || OUTPUT_DEVICES.has(comp.type)) continue;
 
             for (const pin of comp.pins) {
                 if (pin.type === 'input') {
@@ -699,6 +708,34 @@ export class SimulationEngine {
                     compPins[pin.id] = 'HIGH';
                 }
             }
+        } else if (comp.type === 'DIP_SWITCH_4') {
+            // 4-bit DIP switch: sw0, sw1, sw2, sw3 -> Q0, Q1, Q2, Q3
+            for (const pin of comp.pins) {
+                if (pin.type === 'output') {
+                    const match = pin.name.match(/Q(\d)/i) || pin.id.match(/q(\d)/i);
+                    if (match && match[1]) {
+                        const idx = parseInt(match[1], 10);
+                        const switchState = props[`sw${idx}`] === true;
+                        compPins[pin.id] = switchState ? 'HIGH' : 'LOW';
+                    } else {
+                        compPins[pin.id] = 'LOW';
+                    }
+                }
+            }
+        } else if (comp.type === 'NUMERIC_INPUT') {
+            // Numeric input: value (0-15) -> Q0, Q1, Q2, Q3 as binary
+            const value = ((props.value as number) ?? 0) & 0xF; // Clamp to 0-15
+            for (const pin of comp.pins) {
+                if (pin.type === 'output') {
+                    const match = pin.name.match(/Q(\d)/i) || pin.id.match(/q(\d)/i);
+                    if (match && match[1]) {
+                        const bitIdx = parseInt(match[1], 10);
+                        compPins[pin.id] = ((value >> bitIdx) & 1) === 1 ? 'HIGH' : 'LOW';
+                    } else {
+                        compPins[pin.id] = 'LOW';
+                    }
+                }
+            }
         } else {
             // Default: all outputs LOW
             for (const pin of comp.pins) {
@@ -879,6 +916,90 @@ export class SimulationEngine {
                 if (outputPins[0]) compPins[outputPins[0].id] = 'LOW';
                 if (outputPins[1]) compPins[outputPins[1].id] = d;
             }
+        } else if (comp.type === 'ADDER_4BIT') {
+            // 4-bit Adder: A0-A3, B0-B3 -> S0-S3, Cout
+            const inputPins = comp.pins.filter(p => p.type === 'input');
+            let a = 0, b = 0;
+            for (let i = 0; i < inputPins.length; i++) {
+                const pin = inputPins[i];
+                if (!pin) continue;
+                const signal = inputs[i] ?? 'LOW';
+                const val = signal === 'HIGH' ? 1 : 0;
+                const aMatch = pin.name.match(/A(\d)/i) || pin.id.match(/a(\d)/i);
+                const bMatch = pin.name.match(/B(\d)/i) || pin.id.match(/b(\d)/i);
+                if (aMatch && aMatch[1]) a |= (val << parseInt(aMatch[1], 10));
+                if (bMatch && bMatch[1]) b |= (val << parseInt(bMatch[1], 10));
+            }
+            const sum = a + b;
+            const outputPins = comp.pins.filter(p => p.type === 'output');
+            for (const pin of outputPins) {
+                const sMatch = pin.name.match(/S(\d)/i) || pin.id.match(/s(\d)/i);
+                if (sMatch && sMatch[1]) {
+                    const bit = parseInt(sMatch[1], 10);
+                    compPins[pin.id] = ((sum >> bit) & 1) === 1 ? 'HIGH' : 'LOW';
+                } else if (pin.name.match(/Cout/i) || pin.id.match(/cout/i)) {
+                    compPins[pin.id] = sum > 15 ? 'HIGH' : 'LOW';
+                }
+            }
+        } else if (comp.type === 'COMPARATOR_4BIT') {
+            // 4-bit Comparator: A0-A3, B0-B3 -> A>B, A=B, A<B
+            const inputPins = comp.pins.filter(p => p.type === 'input');
+            let a = 0, b = 0;
+            for (let i = 0; i < inputPins.length; i++) {
+                const pin = inputPins[i];
+                if (!pin) continue;
+                const signal = inputs[i] ?? 'LOW';
+                const val = signal === 'HIGH' ? 1 : 0;
+                const aMatch = pin.name.match(/A(\d)/i) || pin.id.match(/a(\d)/i);
+                const bMatch = pin.name.match(/B(\d)/i) || pin.id.match(/b(\d)/i);
+                if (aMatch && aMatch[1]) a |= (val << parseInt(aMatch[1], 10));
+                if (bMatch && bMatch[1]) b |= (val << parseInt(bMatch[1], 10));
+            }
+            const outputPins = comp.pins.filter(p => p.type === 'output');
+            for (const pin of outputPins) {
+                if (pin.name === 'A>B' || pin.id.match(/a>b/i)) {
+                    compPins[pin.id] = a > b ? 'HIGH' : 'LOW';
+                } else if (pin.name === 'A=B' || pin.id.match(/a=b/i)) {
+                    compPins[pin.id] = a === b ? 'HIGH' : 'LOW';
+                } else if (pin.name === 'A<B' || pin.id.match(/a<b/i)) {
+                    compPins[pin.id] = a < b ? 'HIGH' : 'LOW';
+                }
+            }
+        } else if (comp.type === 'BCD_TO_7SEG') {
+            // BCD to 7-Segment Decoder: D0-D3 -> A,B,C,D,E,F,G
+            // Truth table for digits 0-9
+            const segmentTable: Record<number, string> = {
+                0: 'ABCDEF',  // 0: all except G
+                1: 'BC',      // 1: right side
+                2: 'ABDEG',   // 2
+                3: 'ABCDG',   // 3
+                4: 'BCFG',    // 4
+                5: 'ACDFG',   // 5
+                6: 'ACDEFG',  // 6
+                7: 'ABC',     // 7
+                8: 'ABCDEFG', // 8: all
+                9: 'ABCDFG',  // 9
+            };
+            const inputPins = comp.pins.filter(p => p.type === 'input');
+            let value = 0;
+            for (let i = 0; i < inputPins.length; i++) {
+                const pin = inputPins[i];
+                if (!pin) continue;
+                const signal = inputs[i] ?? 'LOW';
+                const val = signal === 'HIGH' ? 1 : 0;
+                const match = pin.name.match(/D(\d)/i);
+                if (match && match[1]) {
+                    value |= (val << parseInt(match[1], 10));
+                }
+            }
+            // Clamp to 0-9
+            if (value > 9) value = value % 10;
+            const activeSegs = segmentTable[value] || '';
+            const outputPins = comp.pins.filter(p => p.type === 'output');
+            for (const pin of outputPins) {
+                const segName = pin.name.toUpperCase();
+                compPins[pin.id] = activeSegs.includes(segName) ? 'HIGH' : 'LOW';
+            }
         }
     }
 
@@ -999,6 +1120,24 @@ export class SimulationEngine {
 
         // Junction passes input signal to all outputs
         const inputSignal = inputs[0] ?? 'UNDEFINED';
+
+        for (const pin of comp.pins) {
+            if (pin.type === 'output') {
+                compPins[pin.id] = inputSignal;
+            }
+        }
+    }
+
+    private evaluatePassive(
+        comp: CircuitComponent,
+        pinStates: Record<string, Record<string, SignalState>>
+    ): void {
+        const inputs = this.getInputSignals(comp, pinStates);
+        const compPins = pinStates[comp.id] ?? {};
+        pinStates[comp.id] = compPins;
+
+        // Passive components pass signal from input to output
+        const inputSignal = inputs[0] ?? 'LOW';
 
         for (const pin of comp.pins) {
             if (pin.type === 'output') {

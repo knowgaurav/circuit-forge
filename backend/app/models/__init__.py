@@ -15,7 +15,10 @@ from app.models.circuit import (
     Wire,
 )
 from app.models.course import (
+    BlueprintComponent,
+    BlueprintWire,
     BuildStep,
+    CircuitBlueprint,
     ComponentSpec,
     CoursePlan,
     CourseEnrollment,
@@ -58,7 +61,10 @@ __all__ = [
     "TextData",
     "Wire",
     # Course models
+    "BlueprintComponent",
+    "BlueprintWire",
     "BuildStep",
+    "CircuitBlueprint",
     "ComponentSpec",
     "CoursePlan",
     "CourseEnrollment",

@@ -175,6 +175,34 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
             outputPin('OUT', 15, 0),
         ],
     },
+    {
+        type: 'DIP_SWITCH_4',
+        name: '4-bit DIP Switch',
+        category: 'Input Devices',
+        description: '4-bit DIP switch array',
+        width: 60,
+        height: 60,
+        pins: [
+            outputPin('Q0', 30, -20),
+            outputPin('Q1', 30, -7),
+            outputPin('Q2', 30, 7),
+            outputPin('Q3', 30, 20),
+        ],
+    },
+    {
+        type: 'NUMERIC_INPUT',
+        name: 'Numeric Input',
+        category: 'Input Devices',
+        description: 'Numeric value input (0-15)',
+        width: 50,
+        height: 60,
+        pins: [
+            outputPin('Q0', 25, -20),
+            outputPin('Q1', 25, -7),
+            outputPin('Q2', 25, 7),
+            outputPin('Q3', 25, 20),
+        ],
+    },
 
     // Output Devices
     {
@@ -359,6 +387,27 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
             outputPin('A<B', 50, 15),
         ],
     },
+    {
+        type: 'BCD_TO_7SEG',
+        name: 'BCD to 7-Segment',
+        category: 'Combinational',
+        description: 'BCD to 7-segment decoder (displays 0-9)',
+        width: 80,
+        height: 100,
+        pins: [
+            inputPin('D0', -40, -30),
+            inputPin('D1', -40, -10),
+            inputPin('D2', -40, 10),
+            inputPin('D3', -40, 30),
+            outputPin('A', 40, -40),
+            outputPin('B', 40, -27),
+            outputPin('C', 40, -13),
+            outputPin('D', 40, 0),
+            outputPin('E', 40, 13),
+            outputPin('F', 40, 27),
+            outputPin('G', 40, 40),
+        ],
+    },
 
     // Sequential
     {
@@ -424,6 +473,17 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         ],
     },
     {
+        type: 'VCC_3V3',
+        name: 'VCC +3.3V',
+        category: 'Power',
+        description: '+3.3V power supply',
+        width: 30,
+        height: 30,
+        pins: [
+            outputPin('VCC', 0, 15),
+        ],
+    },
+    {
         type: 'GROUND',
         name: 'Ground',
         category: 'Power',
@@ -432,6 +492,44 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         height: 30,
         pins: [
             inputPin('GND', 0, -15),
+        ],
+    },
+
+    // Passive Components
+    {
+        type: 'RESISTOR',
+        name: 'Resistor',
+        category: 'Passive Components',
+        description: 'Resistor for current limiting',
+        width: 60,
+        height: 20,
+        pins: [
+            inputPin('IN', -30, 0),
+            outputPin('OUT', 30, 0),
+        ],
+    },
+    {
+        type: 'CAPACITOR',
+        name: 'Capacitor',
+        category: 'Passive Components',
+        description: 'Capacitor for filtering',
+        width: 30,
+        height: 40,
+        pins: [
+            inputPin('IN', 0, -20),
+            outputPin('OUT', 0, 20),
+        ],
+    },
+    {
+        type: 'DIODE',
+        name: 'Diode',
+        category: 'Passive Components',
+        description: 'Diode for one-way current flow',
+        width: 50,
+        height: 20,
+        pins: [
+            inputPin('A', -25, 0),
+            outputPin('K', 25, 0),
         ],
     },
 
@@ -507,6 +605,8 @@ const LABEL_PREFIXES: Record<string, string> = {
     'DECODER_2TO4': 'DEC',
     'SWITCH_TOGGLE': 'SW',
     'SWITCH_PUSH': 'BTN',
+    'DIP_SWITCH_4': 'DIP',
+    'NUMERIC_INPUT': 'NUM',
     'CLOCK': 'CLK',
     'CONST_HIGH': 'VCC',
     'CONST_LOW': 'GND',
@@ -521,6 +621,9 @@ const LABEL_PREFIXES: Record<string, string> = {
     'VCC_5V': 'VCC',
     'VCC_3V3': 'VCC',
     'GROUND': 'GND',
+    'RESISTOR': 'R',
+    'CAPACITOR': 'C',
+    'DIODE': 'D',
     'JUNCTION': 'J',
     'PROBE': 'PRB',
 };

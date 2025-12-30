@@ -29,7 +29,7 @@ export type ComponentType =
     // Flip-Flops
     | 'SR_LATCH' | 'D_FLIPFLOP' | 'JK_FLIPFLOP' | 'T_FLIPFLOP'
     // Combinational
-    | 'MUX_2TO1' | 'MUX_4TO1' | 'DEMUX_1TO2' | 'DECODER_2TO4' | 'ADDER_4BIT' | 'COMPARATOR_4BIT'
+    | 'MUX_2TO1' | 'MUX_4TO1' | 'DEMUX_1TO2' | 'DECODER_2TO4' | 'ADDER_4BIT' | 'COMPARATOR_4BIT' | 'BCD_TO_7SEG'
     // Sequential
     | 'COUNTER_4BIT' | 'SHIFT_REGISTER_8BIT' | 'TRAFFIC_LIGHT_CTRL'
     // Input Devices
@@ -491,12 +491,31 @@ export interface ValidationCriteria {
     requiredConnections: RequiredConnection[];
 }
 
+// Circuit Blueprint Types (for LLM-generated circuits)
+export interface BlueprintComponent {
+    type: string;
+    label: string;
+    position: Position;
+    properties?: Record<string, unknown>;
+}
+
+export interface BlueprintWire {
+    from: string;  // e.g., "AND1:Y" (label:pinName)
+    to: string;    // e.g., "LED1:A"
+}
+
+export interface CircuitBlueprint {
+    components: BlueprintComponent[];
+    wires: BlueprintWire[];
+}
+
 export interface PracticalSection {
     componentsNeeded: ComponentSpec[];
     steps: BuildStep[];
     expectedBehavior: string;
     validationCriteria: ValidationCriteria;
     commonMistakes: string[];
+    circuitBlueprint?: CircuitBlueprint;
 }
 
 export interface LevelContent {
