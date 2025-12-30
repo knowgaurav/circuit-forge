@@ -48,7 +48,7 @@ export function drawComponent(
     }
 
     // Draw component symbol
-    drawComponentSymbol(ctx, type, width, height, isDarkMode, inputSignal, component.properties);
+    drawComponentSymbol(ctx, type, width, height, isDarkMode, inputSignal, component.properties, component.pins, pinStates);
 
     // Draw label
     if (showLabel && label) {
@@ -80,7 +80,9 @@ export function drawComponentSymbol(
     height: number,
     isDarkMode = false,
     signalState?: SignalState,
-    properties?: Record<string, unknown>
+    properties?: Record<string, unknown>,
+    pins?: { id: string; name: string; type: 'input' | 'output'; position: { x: number; y: number } }[],
+    pinStates?: Record<string, SignalState>
 ) {
     // Logic Gates
     if (type.startsWith('AND') || type.startsWith('NAND')) {
@@ -109,7 +111,16 @@ export function drawComponentSymbol(
         const color = type === 'LED_RED' ? '#EF4444' : type === 'LED_GREEN' ? '#22C55E' : type === 'LED_BLUE' ? '#3B82F6' : '#FBBF24';
         drawLed(ctx, width, height, color, signalState === 'HIGH');
     } else if (type === 'DISPLAY_7SEG') {
-        draw7Segment(ctx, width, height);
+        // Get segment states from pinStates
+        const segments: Record<string, boolean> = {};
+        if (pins && pinStates) {
+            for (const pin of pins) {
+                if (pin.type === 'input') {
+                    segments[pin.name] = pinStates[pin.id] === 'HIGH';
+                }
+            }
+        }
+        draw7Segment(ctx, width, height, segments);
     }
     // Sequential Logic
     else if (type === 'D_FLIPFLOP' || type === 'SR_LATCH' || type === 'JK_FLIPFLOP' || type === 'T_FLIPFLOP') {
@@ -144,6 +155,24 @@ export function drawComponentSymbol(
         drawJunction(ctx, width, height);
     } else if (type === 'PROBE') {
         drawProbe(ctx, width, height, signalState === 'HIGH');
+    }
+    // Motor
+    else if (type === 'MOTOR_DC') {
+        // Check FWD and REV pin states
+        let fwdHigh = false;
+        let revHigh = false;
+        if (pinStates && pins) {
+            const fwdPin = pins.find(p => p.name === 'FWD');
+            const revPin = pins.find(p => p.name === 'REV');
+            if (fwdPin) fwdHigh = pinStates[fwdPin.id] === 'HIGH';
+            if (revPin) revHigh = pinStates[revPin.id] === 'HIGH';
+        }
+        drawMotor(ctx, width, height, fwdHigh, revHigh);
+    }
+    // Buzzer
+    else if (type === 'BUZZER') {
+        const isActive = signalState === 'HIGH';
+        drawBuzzer(ctx, width, height, isActive);
     }
     // Default
     else {
@@ -504,7 +533,7 @@ function drawShiftRegister(ctx: CanvasRenderingContext2D, w: number, h: number) 
     ctx.fillText('SHIFT', 0, 0);
 }
 
-function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number) {
+function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number, segments: Record<string, boolean> = {}) {
     ctx.fillStyle = '#1f2937';
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
@@ -512,12 +541,45 @@ function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number) {
     ctx.rect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8);
     ctx.fill();
     ctx.stroke();
-    // Draw "8" segments
-    ctx.strokeStyle = '#22C55E';
-    ctx.lineWidth = 2;
-    const sw = 8, sh = 6;
-    ctx.strokeRect(-sw / 2, -sh - 2, sw, sh);
-    ctx.strokeRect(-sw / 2, 2, sw, sh);
+    
+    // 7-segment layout:
+    //   AAA
+    //  F   B
+    //   GGG
+    //  E   C
+    //   DDD
+    const segW = 10, segH = 3;
+    const cx = 0, cy = 0;
+    const offColor = '#374151';
+    const onColor = '#22C55E';
+    
+    // Segment A (top horizontal)
+    ctx.fillStyle = segments['A'] ? onColor : offColor;
+    ctx.fillRect(cx - segW/2, cy - 12, segW, segH);
+    
+    // Segment B (top right vertical)
+    ctx.fillStyle = segments['B'] ? onColor : offColor;
+    ctx.fillRect(cx + segW/2 - 1, cy - 12, segH, segW);
+    
+    // Segment C (bottom right vertical)
+    ctx.fillStyle = segments['C'] ? onColor : offColor;
+    ctx.fillRect(cx + segW/2 - 1, cy + 2, segH, segW);
+    
+    // Segment D (bottom horizontal)
+    ctx.fillStyle = segments['D'] ? onColor : offColor;
+    ctx.fillRect(cx - segW/2, cy + 10, segW, segH);
+    
+    // Segment E (bottom left vertical)
+    ctx.fillStyle = segments['E'] ? onColor : offColor;
+    ctx.fillRect(cx - segW/2 - 2, cy + 2, segH, segW);
+    
+    // Segment F (top left vertical)
+    ctx.fillStyle = segments['F'] ? onColor : offColor;
+    ctx.fillRect(cx - segW/2 - 2, cy - 12, segH, segW);
+    
+    // Segment G (middle horizontal)
+    ctx.fillStyle = segments['G'] ? onColor : offColor;
+    ctx.fillRect(cx - segW/2, cy - 1, segW, segH);
 }
 
 function drawMux(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -663,6 +725,101 @@ function drawProbe(ctx: CanvasRenderingContext2D, w: number, h: number, isHigh: 
     ctx.arc(0, 0, Math.min(w, h) / 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+}
+
+function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActive: boolean, revActive: boolean) {
+    const isRunning = fwdActive || revActive;
+    const direction = fwdActive ? 1 : (revActive ? -1 : 0);
+    
+    // Motor body (circle)
+    ctx.fillStyle = isRunning ? '#1E40AF' : '#374151';
+    ctx.strokeStyle = isRunning ? '#3B82F6' : '#6B7280';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, Math.min(w, h) / 2 - 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Inner circle
+    ctx.fillStyle = isRunning ? '#3B82F6' : '#4B5563';
+    ctx.beginPath();
+    ctx.arc(0, 0, Math.min(w, h) / 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // "M" label
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('M', 0, 0);
+    
+    // Direction arrow (when running)
+    if (isRunning) {
+        ctx.strokeStyle = '#22C55E';
+        ctx.lineWidth = 2;
+        const r = Math.min(w, h) / 2 - 8;
+        
+        // Draw rotating arrow
+        ctx.beginPath();
+        if (direction > 0) {
+            // Clockwise arrow (FWD)
+            ctx.arc(0, 0, r, -Math.PI/4, Math.PI/4);
+            // Arrow head
+            const endX = r * Math.cos(Math.PI/4);
+            const endY = r * Math.sin(Math.PI/4);
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX - 6, endY - 2);
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX - 2, endY - 6);
+        } else {
+            // Counter-clockwise arrow (REV)
+            ctx.arc(0, 0, r, Math.PI - Math.PI/4, Math.PI + Math.PI/4);
+            // Arrow head
+            const endX = r * Math.cos(Math.PI + Math.PI/4);
+            const endY = r * Math.sin(Math.PI + Math.PI/4);
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX + 6, endY + 2);
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX + 2, endY + 6);
+        }
+        ctx.stroke();
+        
+        // Status text
+        ctx.fillStyle = '#22C55E';
+        ctx.font = '8px sans-serif';
+        ctx.fillText(direction > 0 ? 'FWD' : 'REV', 0, h/2 + 20);
+    }
+}
+
+function drawBuzzer(ctx: CanvasRenderingContext2D, w: number, h: number, isActive: boolean) {
+    // Buzzer body
+    ctx.fillStyle = isActive ? '#F59E0B' : '#374151';
+    ctx.strokeStyle = isActive ? '#FBBF24' : '#6B7280';
+    ctx.lineWidth = 2;
+    
+    // Draw speaker shape
+    const size = Math.min(w, h) / 2 - 4;
+    ctx.beginPath();
+    ctx.moveTo(-size/2, -size/3);
+    ctx.lineTo(-size/2, size/3);
+    ctx.lineTo(0, size/2);
+    ctx.lineTo(size/2, size/2);
+    ctx.lineTo(size/2, -size/2);
+    ctx.lineTo(0, -size/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Sound waves when active
+    if (isActive) {
+        ctx.strokeStyle = '#FBBF24';
+        ctx.lineWidth = 1.5;
+        for (let i = 1; i <= 3; i++) {
+            ctx.beginPath();
+            ctx.arc(size/2 + 4, 0, i * 4, -Math.PI/3, Math.PI/3);
+            ctx.stroke();
+        }
+    }
 }
 
 function drawDefault(ctx: CanvasRenderingContext2D, w: number, h: number, type: string, isDarkMode: boolean) {

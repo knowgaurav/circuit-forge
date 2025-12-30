@@ -298,6 +298,22 @@ export const DISPLAY_7SEG_EXAMPLE: ExampleCircuit = {
     ]),
 };
 
+export const MOTOR_EXAMPLE: ExampleCircuit = {
+    id: 'motor-example',
+    name: 'DC Motor Demo',
+    description: 'Control motor direction with switches',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'FWD', position: pos(100, 70) },
+        { type: 'SWITCH_TOGGLE', label: 'REV', position: pos(100, 130) },
+        { type: 'MOTOR_DC', label: 'M1', position: pos(250, 100) },
+    ], [
+        ['FWD', 'M1:FWD'],
+        ['REV', 'M1:REV'],
+    ]),
+};
+
+
+
 // ============================================================================
 // SEQUENTIAL LOGIC
 // ============================================================================
@@ -405,13 +421,17 @@ export const SHIFT_REGISTER_EXAMPLE: ExampleCircuit = {
     name: 'Shift Register Demo',
     description: 'Serial data shifts through on each clock',
     blueprint: circuit([
-        { type: 'SWITCH_TOGGLE', label: 'DATA', position: pos(60, 70) },
-        { type: 'SWITCH_PUSH', label: 'CLK', position: pos(60, 130) },
-        { type: 'SHIFT_REGISTER_8BIT', label: 'SR1', position: pos(190, 100) },
-        { type: 'LED_RED', label: 'Q0', position: pos(320, 40) },
-        { type: 'LED_RED', label: 'Q1', position: pos(320, 75) },
-        { type: 'LED_RED', label: 'Q2', position: pos(320, 110) },
-        { type: 'LED_RED', label: 'Q3', position: pos(320, 145) },
+        { type: 'SWITCH_TOGGLE', label: 'DATA', position: pos(50, 70) },
+        { type: 'SWITCH_PUSH', label: 'CLK', position: pos(50, 130) },
+        { type: 'SHIFT_REGISTER_8BIT', label: 'SR1', position: pos(160, 100) },
+        { type: 'LED_RED', label: 'Q0', position: pos(270, 55) },
+        { type: 'LED_RED', label: 'Q1', position: pos(305, 55) },
+        { type: 'LED_RED', label: 'Q2', position: pos(340, 55) },
+        { type: 'LED_RED', label: 'Q3', position: pos(375, 55) },
+        { type: 'LED_RED', label: 'Q4', position: pos(270, 95) },
+        { type: 'LED_RED', label: 'Q5', position: pos(305, 95) },
+        { type: 'LED_RED', label: 'Q6', position: pos(340, 95) },
+        { type: 'LED_RED', label: 'Q7', position: pos(375, 95) },
     ], [
         ['DATA', 'SR1:SI'],
         ['CLK', 'SR1:CLK'],
@@ -419,6 +439,10 @@ export const SHIFT_REGISTER_EXAMPLE: ExampleCircuit = {
         ['SR1:Q1', 'Q1'],
         ['SR1:Q2', 'Q2'],
         ['SR1:Q3', 'Q3'],
+        ['SR1:Q4', 'Q4'],
+        ['SR1:Q5', 'Q5'],
+        ['SR1:Q6', 'Q6'],
+        ['SR1:Q7', 'Q7'],
     ]),
 };
 
@@ -465,6 +489,32 @@ export const ADDER_EXAMPLE: ExampleCircuit = {
         ['ADD1:S0', 'S0'],
         ['ADD1:S1', 'S1'],
         ['ADD1:Cout', 'CO'],
+    ]),
+};
+
+export const COMPARATOR_EXAMPLE: ExampleCircuit = {
+    id: 'comparator-example',
+    name: '4-bit Comparator Demo',
+    description: 'Compare two 4-bit numbers: A>B, A=B, A<B',
+    blueprint: circuit([
+        { type: 'DIP_SWITCH_4', label: 'A', position: pos(60, 70) },
+        { type: 'DIP_SWITCH_4', label: 'B', position: pos(60, 160) },
+        { type: 'COMPARATOR_4BIT', label: 'CMP', position: pos(200, 115) },
+        { type: 'LED_GREEN', label: 'GT', position: pos(330, 80) },
+        { type: 'LED_YELLOW', label: 'EQ', position: pos(330, 115) },
+        { type: 'LED_RED', label: 'LT', position: pos(330, 150) },
+    ], [
+        ['A:Q0', 'CMP:A0'],
+        ['A:Q1', 'CMP:A1'],
+        ['A:Q2', 'CMP:A2'],
+        ['A:Q3', 'CMP:A3'],
+        ['B:Q0', 'CMP:B0'],
+        ['B:Q1', 'CMP:B1'],
+        ['B:Q2', 'CMP:B2'],
+        ['B:Q3', 'CMP:B3'],
+        ['CMP:A>B', 'GT'],
+        ['CMP:A=B', 'EQ'],
+        ['CMP:A<B', 'LT'],
     ]),
 };
 
@@ -520,6 +570,7 @@ export const EXAMPLE_CIRCUITS: Record<string, ExampleCircuit> = {
     'LED_YELLOW': LED_EXAMPLE,
     'LED_BLUE': LED_EXAMPLE,
     'DISPLAY_7SEG': DISPLAY_7SEG_EXAMPLE,
+    'MOTOR_DC': MOTOR_EXAMPLE,
 
     // Sequential Logic
     'D_FLIPFLOP': D_FLIPFLOP_EXAMPLE,
@@ -533,6 +584,7 @@ export const EXAMPLE_CIRCUITS: Record<string, ExampleCircuit> = {
     'MUX_4TO1': MUX_EXAMPLE,
     'DECODER_2TO4': DECODER_EXAMPLE,
     'ADDER_4BIT': ADDER_EXAMPLE,
+    'COMPARATOR_4BIT': COMPARATOR_EXAMPLE,
 
     // Complex ICs
     'SHIFT_REGISTER_8BIT': SHIFT_REGISTER_EXAMPLE,
