@@ -387,6 +387,104 @@ export const MUX_EXAMPLE: ExampleCircuit = {
     },
 };
 
+export const SHIFT_REGISTER_EXAMPLE: ExampleCircuit = {
+    id: 'shift-register-example',
+    name: 'Shift Register Demo',
+    description: 'Serial data shifts through on each clock',
+    blueprint: {
+        components: [
+            { type: 'SWITCH_TOGGLE', label: 'DATA', position: pos(50, 70) },
+            { type: 'SWITCH_PUSH', label: 'CLK', position: pos(50, 130) },
+            { type: 'SHIFT_REGISTER_8BIT', label: 'SR1', position: pos(180, 100) },
+            { type: 'LED_RED', label: 'Q0', position: pos(300, 40) },
+            { type: 'LED_RED', label: 'Q1', position: pos(300, 80) },
+            { type: 'LED_RED', label: 'Q2', position: pos(300, 120) },
+            { type: 'LED_RED', label: 'Q3', position: pos(300, 160) },
+        ],
+        wires: [
+            { from: 'DATA:OUT', to: 'SR1:SI' },
+            { from: 'CLK:OUT', to: 'SR1:CLK' },
+            { from: 'SR1:Q0', to: 'Q0:IN' },
+            { from: 'SR1:Q1', to: 'Q1:IN' },
+            { from: 'SR1:Q2', to: 'Q2:IN' },
+            { from: 'SR1:Q3', to: 'Q3:IN' },
+        ],
+    },
+};
+
+export const DECODER_EXAMPLE: ExampleCircuit = {
+    id: 'decoder-example',
+    name: '2-to-4 Decoder Demo',
+    description: 'Select one of four outputs based on 2-bit input',
+    blueprint: {
+        components: [
+            { type: 'SWITCH_TOGGLE', label: 'A0', position: pos(50, 60) },
+            { type: 'SWITCH_TOGGLE', label: 'A1', position: pos(50, 120) },
+            { type: 'DECODER_2TO4', label: 'DEC1', position: pos(180, 90) },
+            { type: 'LED_RED', label: 'Y0', position: pos(300, 30) },
+            { type: 'LED_RED', label: 'Y1', position: pos(300, 70) },
+            { type: 'LED_RED', label: 'Y2', position: pos(300, 110) },
+            { type: 'LED_RED', label: 'Y3', position: pos(300, 150) },
+        ],
+        wires: [
+            { from: 'A0:OUT', to: 'DEC1:A0' },
+            { from: 'A1:OUT', to: 'DEC1:A1' },
+            { from: 'DEC1:Y0', to: 'Y0:IN' },
+            { from: 'DEC1:Y1', to: 'Y1:IN' },
+            { from: 'DEC1:Y2', to: 'Y2:IN' },
+            { from: 'DEC1:Y3', to: 'Y3:IN' },
+        ],
+    },
+};
+
+export const ADDER_EXAMPLE: ExampleCircuit = {
+    id: 'adder-example',
+    name: '4-bit Adder Demo',
+    description: 'Add two 4-bit numbers',
+    blueprint: {
+        components: [
+            { type: 'SWITCH_TOGGLE', label: 'A0', position: pos(40, 40) },
+            { type: 'SWITCH_TOGGLE', label: 'A1', position: pos(40, 80) },
+            { type: 'SWITCH_TOGGLE', label: 'B0', position: pos(40, 130) },
+            { type: 'SWITCH_TOGGLE', label: 'B1', position: pos(40, 170) },
+            { type: 'ADDER_4BIT', label: 'ADD1', position: pos(180, 100) },
+            { type: 'LED_GREEN', label: 'S0', position: pos(300, 60) },
+            { type: 'LED_GREEN', label: 'S1', position: pos(300, 100) },
+            { type: 'LED_RED', label: 'CO', position: pos(300, 140) },
+        ],
+        wires: [
+            { from: 'A0:OUT', to: 'ADD1:A0' },
+            { from: 'A1:OUT', to: 'ADD1:A1' },
+            { from: 'B0:OUT', to: 'ADD1:B0' },
+            { from: 'B1:OUT', to: 'ADD1:B1' },
+            { from: 'ADD1:S0', to: 'S0:IN' },
+            { from: 'ADD1:S1', to: 'S1:IN' },
+            { from: 'ADD1:Cout', to: 'CO:IN' },
+        ],
+    },
+};
+
+export const DIP_SWITCH_EXAMPLE: ExampleCircuit = {
+    id: 'dip-switch-example',
+    name: 'DIP Switch Demo',
+    description: '4 switches with individual outputs',
+    blueprint: {
+        components: [
+            { type: 'DIP_SWITCH_4', label: 'DIP1', position: pos(100, 90) },
+            { type: 'LED_RED', label: 'L0', position: pos(240, 40) },
+            { type: 'LED_RED', label: 'L1', position: pos(240, 80) },
+            { type: 'LED_RED', label: 'L2', position: pos(240, 120) },
+            { type: 'LED_RED', label: 'L3', position: pos(240, 160) },
+        ],
+        wires: [
+            { from: 'DIP1:Q0', to: 'L0:IN' },
+            { from: 'DIP1:Q1', to: 'L1:IN' },
+            { from: 'DIP1:Q2', to: 'L2:IN' },
+            { from: 'DIP1:Q3', to: 'L3:IN' },
+        ],
+    },
+};
+
 // ============================================================================
 // REGISTRY - Map component types to their example circuits
 // ============================================================================
@@ -432,6 +530,12 @@ export const EXAMPLE_CIRCUITS: Record<string, ExampleCircuit> = {
     // Combinational Logic
     'MUX_2TO1': MUX_EXAMPLE,
     'MUX_4TO1': MUX_EXAMPLE,
+    'DECODER_2TO4': DECODER_EXAMPLE,
+    'ADDER_4BIT': ADDER_EXAMPLE,
+
+    // Complex ICs
+    'SHIFT_REGISTER_8BIT': SHIFT_REGISTER_EXAMPLE,
+    'DIP_SWITCH_4': DIP_SWITCH_EXAMPLE,
 };
 
 export function getExampleCircuit(componentType: string): ExampleCircuit | null {
