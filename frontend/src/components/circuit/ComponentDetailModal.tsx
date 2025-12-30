@@ -20,7 +20,7 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
             isOpen={isOpen}
             onClose={onClose}
             title={component.name}
-            size="lg"
+            size="xl"
         >
             <div className="space-y-4">
                 {/* Category Badge */}
