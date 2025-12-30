@@ -45,6 +45,26 @@ export function MiniCanvas({ blueprint, width = 400, height = 200 }: MiniCanvasP
         }
     }, [components, wires, isSimulating]);
 
+    // Clock timer - toggle clock components periodically
+    useEffect(() => {
+        if (!isSimulating) return;
+        
+        const hasClocks = components.some(c => c.type === 'CLOCK');
+        if (!hasClocks) return;
+
+        const interval = setInterval(() => {
+            setComponents(prev =>
+                prev.map(c =>
+                    c.type === 'CLOCK'
+                        ? { ...c, properties: { ...c.properties, state: !c.properties.state } }
+                        : c
+                )
+            );
+        }, 500); // 500ms = 1Hz clock
+
+        return () => clearInterval(interval);
+    }, [isSimulating, components.length]);
+
     // Toggle switch state
     const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
