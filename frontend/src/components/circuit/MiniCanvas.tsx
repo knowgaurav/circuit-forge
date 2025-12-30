@@ -4,7 +4,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import type { CircuitComponent, Wire, CircuitBlueprint } from '@/types';
 import { getComponentDefinition } from '@/constants/components';
 import { loadCircuitFromBlueprint } from '@/services/blueprintLoader';
-import { simulateCircuit, type SimulationResult } from '@/services/simulation';
+import { simulationEngine, type SimulationResult } from '@/services/simulation';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { drawComponent, drawWire, drawGrid } from './drawingUtils';
 
@@ -40,7 +40,7 @@ export function MiniCanvas({ blueprint, width = 400, height = 200 }: MiniCanvasP
                 annotations: [],
                 updatedAt: new Date().toISOString(),
             };
-            const result = simulateCircuit(circuitState);
+            const result = simulationEngine.simulate(circuitState);
             setSimulationResult(result);
         }
     }, [components, wires, isSimulating]);
