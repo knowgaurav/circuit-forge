@@ -237,15 +237,54 @@ export function drawGrid(
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
-    isDarkMode = true
+    isDarkMode = true,
+    panX = 0,
+    panY = 0
 ) {
-    ctx.fillStyle = isDarkMode ? '#2a2a3a' : '#e5e7eb';
-    for (let x = 20; x < width; x += 20) {
-        for (let y = 20; y < height; y += 20) {
-            ctx.beginPath();
-            ctx.arc(x, y, 1, 0, Math.PI * 2);
-            ctx.fill();
-        }
+    const gridSize = 5;
+    
+    // Calculate visible area - extend well beyond visible bounds for infinite feel
+    const startX = Math.floor(-panX / gridSize) * gridSize - gridSize * 20;
+    const startY = Math.floor(-panY / gridSize) * gridSize - gridSize * 20;
+    const endX = startX + width + gridSize * 40;
+    const endY = startY + height + gridSize * 40;
+
+    // Draw minor grid lines
+    ctx.strokeStyle = isDarkMode ? '#374151' : '#d1d5db';
+    ctx.lineWidth = 0.5;
+
+    for (let x = startX; x < endX; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, startY);
+        ctx.lineTo(x, endY);
+        ctx.stroke();
+    }
+
+    for (let y = startY; y < endY; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(startX, y);
+        ctx.lineTo(endX, y);
+        ctx.stroke();
+    }
+
+    // Major grid lines every 50px
+    ctx.strokeStyle = isDarkMode ? '#4b5563' : '#b0b5bb';
+    ctx.lineWidth = 1;
+    const majorGridSize = 50;
+    const majorStartX = Math.floor(startX / majorGridSize) * majorGridSize;
+    const majorStartY = Math.floor(startY / majorGridSize) * majorGridSize;
+
+    for (let x = majorStartX; x < endX; x += majorGridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, startY);
+        ctx.lineTo(x, endY);
+        ctx.stroke();
+    }
+    for (let y = majorStartY; y < endY; y += majorGridSize) {
+        ctx.beginPath();
+        ctx.moveTo(startX, y);
+        ctx.lineTo(endX, y);
+        ctx.stroke();
     }
 }
 
@@ -824,14 +863,14 @@ function drawBuzzer(ctx: CanvasRenderingContext2D, w: number, h: number, isActiv
 }
 
 function drawDefault(ctx: CanvasRenderingContext2D, w: number, h: number, type: string, isDarkMode: boolean) {
-    ctx.fillStyle = isDarkMode ? '#3a3a5a' : '#e8e8f0';
-    ctx.strokeStyle = isDarkMode ? '#6a6a8a' : '#374151';
+    ctx.fillStyle = isDarkMode ? '#374151' : '#e8e8f0';
+    ctx.strokeStyle = isDarkMode ? '#4b5563' : '#374151';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8, 4);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = isDarkMode ? '#e0e0e0' : '#374151';
+    ctx.fillStyle = isDarkMode ? '#d1d5db' : '#374151';
     ctx.font = 'bold 8px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

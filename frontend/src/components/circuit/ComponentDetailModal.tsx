@@ -1,10 +1,12 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import { Modal } from '@/components/ui';
 import { ComponentDefinition } from '@/constants/components';
 import { getComponentDetail } from '@/constants/componentDetails';
 import { getExampleCircuit } from '@/constants/exampleCircuits';
 import { MiniCanvas } from './MiniCanvas';
+import { drawComponentSymbol } from './drawingUtils';
 
 interface ComponentDetailModalProps {
     component: ComponentDefinition | null;
@@ -12,16 +14,50 @@ interface ComponentDetailModalProps {
     onClose: () => void;
 }
 
+function ComponentIcon({ type, size = 48 }: { type: string; size?: number }) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return;
+
+        // Clear and draw background
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = '#374151';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, size, size, 8);
+        ctx.fill();
+
+        // Draw component symbol centered
+        // Pass 'HIGH' signal for LEDs to show their color
+        const signalState = type.startsWith('LED_') ? 'HIGH' : undefined;
+        ctx.save();
+        ctx.translate(size / 2, size / 2);
+        drawComponentSymbol(ctx, type, size * 0.7, size * 0.7, true, signalState);
+        ctx.restore();
+    }, [type, size]);
+
+    return <canvas ref={canvasRef} width={size} height={size} className="flex-shrink-0 rounded-lg" />;
+}
+
 export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDetailModalProps) {
     if (!component) return null;
 
     const detail = getComponentDetail(component.type);
 
+    const modalTitle = (
+        <div className="flex items-center gap-3">
+            <ComponentIcon type={component.type} size={40} />
+            <span>{component.name}</span>
+        </div>
+    );
+
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={component.name}
+            title={modalTitle}
             size="2xl"
         >
             <div className="space-y-4">

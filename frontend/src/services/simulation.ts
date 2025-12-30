@@ -69,6 +69,11 @@ const JUNCTION_COMPONENTS = new Set<ComponentType>([
     'JUNCTION',
 ] as ComponentType[]);
 
+// Passive components (pass signal through)
+const PASSIVE_COMPONENTS = new Set<ComponentType>([
+    'RESISTOR', 'CAPACITOR', 'DIODE',
+] as ComponentType[]);
+
 /**
  * Logic gate evaluation functions
  */
@@ -431,6 +436,8 @@ export class SimulationEngine {
             this.evaluateSequential(comp, pinStates);
         } else if (JUNCTION_COMPONENTS.has(comp.type)) {
             this.evaluateJunction(comp, pinStates);
+        } else if (PASSIVE_COMPONENTS.has(comp.type)) {
+            this.evaluatePassive(comp, pinStates);
         } else if (OUTPUT_DEVICES.has(comp.type)) {
             this.evaluateOutputDevice(comp, pinStates);
         }
@@ -710,6 +717,20 @@ export class SimulationEngine {
                         const idx = parseInt(match[1], 10);
                         const switchState = props[`sw${idx}`] === true;
                         compPins[pin.id] = switchState ? 'HIGH' : 'LOW';
+                    } else {
+                        compPins[pin.id] = 'LOW';
+                    }
+                }
+            }
+        } else if (comp.type === 'NUMERIC_INPUT') {
+            // Numeric input: value (0-15) -> Q0, Q1, Q2, Q3 as binary
+            const value = ((props.value as number) ?? 0) & 0xF; // Clamp to 0-15
+            for (const pin of comp.pins) {
+                if (pin.type === 'output') {
+                    const match = pin.name.match(/Q(\d)/i) || pin.id.match(/q(\d)/i);
+                    if (match && match[1]) {
+                        const bitIdx = parseInt(match[1], 10);
+                        compPins[pin.id] = ((value >> bitIdx) & 1) === 1 ? 'HIGH' : 'LOW';
                     } else {
                         compPins[pin.id] = 'LOW';
                     }
@@ -1099,6 +1120,24 @@ export class SimulationEngine {
 
         // Junction passes input signal to all outputs
         const inputSignal = inputs[0] ?? 'UNDEFINED';
+
+        for (const pin of comp.pins) {
+            if (pin.type === 'output') {
+                compPins[pin.id] = inputSignal;
+            }
+        }
+    }
+
+    private evaluatePassive(
+        comp: CircuitComponent,
+        pinStates: Record<string, Record<string, SignalState>>
+    ): void {
+        const inputs = this.getInputSignals(comp, pinStates);
+        const compPins = pinStates[comp.id] ?? {};
+        pinStates[comp.id] = compPins;
+
+        // Passive components pass signal from input to output
+        const inputSignal = inputs[0] ?? 'LOW';
 
         for (const pin of comp.pins) {
             if (pin.type === 'output') {

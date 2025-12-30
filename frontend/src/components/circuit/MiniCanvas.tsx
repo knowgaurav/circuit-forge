@@ -236,6 +236,17 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                     }
                     break;
                 }
+                // Handle Numeric Input - click to increment value (0-15)
+                if (comp.type === 'NUMERIC_INPUT') {
+                    setComponents(prev =>
+                        prev.map(c =>
+                            c.id === comp.id
+                                ? { ...c, properties: { ...c.properties, value: (((c.properties.value as number) ?? 0) + 1) % 16 } }
+                                : c
+                        )
+                    );
+                    break;
+                }
                 // Toggle switches
                 if (comp.type === 'SWITCH_TOGGLE' || comp.type === 'SWITCH_PUSH') {
                     const wasOff = !comp.properties.state;
@@ -317,8 +328,8 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
 
         ctx.clearRect(0, 0, width, height);
 
-        // Background
-        ctx.fillStyle = '#1a1a28';
+        // Background - same as main canvas dark mode (gray-800)
+        ctx.fillStyle = '#1f2937';
         ctx.fillRect(0, 0, width, height);
 
         // Apply zoom and pan transformation
@@ -326,8 +337,8 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
         ctx.translate(pan.x, pan.y);
         ctx.scale(zoom, zoom);
 
-        // Draw grid
-        drawGrid(ctx, width / zoom, height / zoom, true);
+        // Draw grid - pass pan for infinite grid effect
+        drawGrid(ctx, width / zoom, height / zoom, true, pan.x / zoom, pan.y / zoom);
 
         // Draw wires
         wires.forEach(wire => {

@@ -270,13 +270,49 @@ export const CONST_LOW_EXAMPLE: ExampleCircuit = {
 // OUTPUT DEVICES
 // ============================================================================
 
-export const LED_EXAMPLE: ExampleCircuit = {
-    id: 'led-example',
-    name: 'LED Indicator Demo',
-    description: 'LED controlled by a switch',
+export const LED_RED_EXAMPLE: ExampleCircuit = {
+    id: 'led-red-example',
+    name: 'Red LED Demo',
+    description: 'Red LED controlled by a switch',
     blueprint: circuit([
         { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(140, 100) },
         { type: 'LED_RED', label: 'LED1', position: pos(260, 100) },
+    ], [
+        ['SW1', 'LED1'],
+    ]),
+};
+
+export const LED_GREEN_EXAMPLE: ExampleCircuit = {
+    id: 'led-green-example',
+    name: 'Green LED Demo',
+    description: 'Green LED controlled by a switch',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(140, 100) },
+        { type: 'LED_GREEN', label: 'LED1', position: pos(260, 100) },
+    ], [
+        ['SW1', 'LED1'],
+    ]),
+};
+
+export const LED_YELLOW_EXAMPLE: ExampleCircuit = {
+    id: 'led-yellow-example',
+    name: 'Yellow LED Demo',
+    description: 'Yellow LED controlled by a switch',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(140, 100) },
+        { type: 'LED_YELLOW', label: 'LED1', position: pos(260, 100) },
+    ], [
+        ['SW1', 'LED1'],
+    ]),
+};
+
+export const LED_BLUE_EXAMPLE: ExampleCircuit = {
+    id: 'led-blue-example',
+    name: 'Blue LED Demo',
+    description: 'Blue LED controlled by a switch',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(140, 100) },
+        { type: 'LED_BLUE', label: 'LED1', position: pos(260, 100) },
     ], [
         ['SW1', 'LED1'],
     ]),
@@ -545,6 +581,151 @@ export const DIP_SWITCH_EXAMPLE: ExampleCircuit = {
     ]),
 };
 
+export const NUMERIC_INPUT_EXAMPLE: ExampleCircuit = {
+    id: 'numeric-input-example',
+    name: 'Numeric Input Demo',
+    description: 'Enter decimal, outputs binary on LEDs',
+    blueprint: circuit([
+        { type: 'NUMERIC_INPUT', label: 'NUM1', position: pos(140, 100) },
+        { type: 'LED_RED', label: 'B0', position: pos(280, 45) },
+        { type: 'LED_RED', label: 'B1', position: pos(280, 80) },
+        { type: 'LED_RED', label: 'B2', position: pos(280, 115) },
+        { type: 'LED_RED', label: 'B3', position: pos(280, 150) },
+    ], [
+        ['NUM1:Q0', 'B0'],
+        ['NUM1:Q1', 'B1'],
+        ['NUM1:Q2', 'B2'],
+        ['NUM1:Q3', 'B3'],
+    ]),
+};
+
+// ============================================================================
+// POWER COMPONENTS
+// ============================================================================
+
+export const VCC_5V_EXAMPLE: ExampleCircuit = {
+    id: 'vcc-5v-example',
+    name: 'VCC 5V Power Demo',
+    description: '5V power source driving an LED',
+    blueprint: circuit([
+        { type: 'VCC_5V', label: 'VCC', position: pos(140, 100) },
+        { type: 'LED_RED', label: 'LED1', position: pos(260, 100) },
+    ], [
+        ['VCC', 'LED1'],
+    ]),
+};
+
+export const VCC_3V3_EXAMPLE: ExampleCircuit = {
+    id: 'vcc-3v3-example',
+    name: 'VCC 3.3V Power Demo',
+    description: '3.3V power source driving an LED',
+    blueprint: circuit([
+        { type: 'VCC_3V3', label: 'VCC', position: pos(140, 100) },
+        { type: 'LED_GREEN', label: 'LED1', position: pos(260, 100) },
+    ], [
+        ['VCC', 'LED1'],
+    ]),
+};
+
+export const GROUND_EXAMPLE: ExampleCircuit = {
+    id: 'ground-example',
+    name: 'Ground Connection Demo',
+    description: 'Ground as circuit return path',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(100, 100) },
+        { type: 'JUNCTION', label: 'J1', position: pos(200, 100) },
+        { type: 'LED_YELLOW', label: 'LED1', position: pos(300, 70) },
+        { type: 'GROUND', label: 'GND', position: pos(300, 140) },
+    ], [
+        ['SW1', 'J1'],
+        ['J1', 'LED1'],
+        ['J1', 'GND:GND'],
+    ]),
+};
+
+// ============================================================================
+// PASSIVE COMPONENTS
+// ============================================================================
+
+export const RESISTOR_EXAMPLE: ExampleCircuit = {
+    id: 'resistor-example',
+    name: 'Resistor Demo',
+    description: 'Resistor in series with LED',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(100, 100) },
+        { type: 'RESISTOR', label: 'R1', position: pos(200, 100) },
+        { type: 'LED_RED', label: 'LED1', position: pos(300, 100) },
+    ], [
+        ['SW1', 'R1:IN'],
+        ['R1:OUT', 'LED1'],
+    ]),
+};
+
+export const CAPACITOR_EXAMPLE: ExampleCircuit = {
+    id: 'capacitor-example',
+    name: 'Capacitor Demo',
+    description: 'Capacitor in a circuit',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(100, 100) },
+        { type: 'CAPACITOR', label: 'C1', position: pos(200, 100) },
+        { type: 'LED_BLUE', label: 'LED1', position: pos(300, 100) },
+    ], [
+        ['SW1', 'C1:IN'],
+        ['C1:OUT', 'LED1'],
+    ]),
+};
+
+export const DIODE_EXAMPLE: ExampleCircuit = {
+    id: 'diode-example',
+    name: 'Diode Demo',
+    description: 'Diode in a circuit',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(100, 100) },
+        { type: 'DIODE', label: 'D1', position: pos(200, 100) },
+        { type: 'LED_GREEN', label: 'LED1', position: pos(300, 100) },
+    ], [
+        ['SW1', 'D1:A'],
+        ['D1:K', 'LED1'],
+    ]),
+};
+
+// ============================================================================
+// CONNECTORS
+// ============================================================================
+
+export const JUNCTION_EXAMPLE: ExampleCircuit = {
+    id: 'junction-example',
+    name: 'Wire Junction Demo',
+    description: 'Junction splits signal to multiple LEDs',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(100, 100) },
+        { type: 'JUNCTION', label: 'J1', position: pos(200, 100) },
+        { type: 'LED_RED', label: 'L1', position: pos(300, 60) },
+        { type: 'LED_GREEN', label: 'L2', position: pos(300, 100) },
+        { type: 'LED_BLUE', label: 'L3', position: pos(300, 140) },
+    ], [
+        ['SW1', 'J1'],
+        ['J1', 'L1'],
+        ['J1', 'L2'],
+        ['J1', 'L3'],
+    ]),
+};
+
+export const PROBE_EXAMPLE: ExampleCircuit = {
+    id: 'probe-example',
+    name: 'Probe Demo',
+    description: 'Probe shows signal state for debugging',
+    blueprint: circuit([
+        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(100, 100) },
+        { type: 'AND_2', label: 'AND1', position: pos(200, 100) },
+        { type: 'PROBE', label: 'P1', position: pos(300, 100) },
+    ], [
+        ['SW1', 'AND1:A'],
+        ['SW1', 'AND1:B'],
+        ['AND1', 'P1'],
+    ]),
+};
+
 // ============================================================================
 // REGISTRY - Map component types to their example circuits
 // ============================================================================
@@ -574,10 +755,10 @@ export const EXAMPLE_CIRCUITS: Record<string, ExampleCircuit> = {
     'CONST_LOW': CONST_LOW_EXAMPLE,
 
     // Output Devices
-    'LED_RED': LED_EXAMPLE,
-    'LED_GREEN': LED_EXAMPLE,
-    'LED_YELLOW': LED_EXAMPLE,
-    'LED_BLUE': LED_EXAMPLE,
+    'LED_RED': LED_RED_EXAMPLE,
+    'LED_GREEN': LED_GREEN_EXAMPLE,
+    'LED_YELLOW': LED_YELLOW_EXAMPLE,
+    'LED_BLUE': LED_BLUE_EXAMPLE,
     'DISPLAY_7SEG': DISPLAY_7SEG_EXAMPLE,
     'MOTOR_DC': MOTOR_EXAMPLE,
 
@@ -599,6 +780,21 @@ export const EXAMPLE_CIRCUITS: Record<string, ExampleCircuit> = {
     // Complex ICs
     'SHIFT_REGISTER_8BIT': SHIFT_REGISTER_EXAMPLE,
     'DIP_SWITCH_4': DIP_SWITCH_EXAMPLE,
+    'NUMERIC_INPUT': NUMERIC_INPUT_EXAMPLE,
+
+    // Power
+    'VCC_5V': VCC_5V_EXAMPLE,
+    'VCC_3V3': VCC_3V3_EXAMPLE,
+    'GROUND': GROUND_EXAMPLE,
+
+    // Passive Components
+    'RESISTOR': RESISTOR_EXAMPLE,
+    'CAPACITOR': CAPACITOR_EXAMPLE,
+    'DIODE': DIODE_EXAMPLE,
+
+    // Connectors
+    'JUNCTION': JUNCTION_EXAMPLE,
+    'PROBE': PROBE_EXAMPLE,
 };
 
 export function getExampleCircuit(componentType: string): ExampleCircuit | null {
