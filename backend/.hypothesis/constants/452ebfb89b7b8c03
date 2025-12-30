@@ -1,4 +1,0 @@
-# file: /Users/knowgaurav/Desktop/Projects/Algozenith/Projects/circuit-forge/backend/app/models/__init__.py
-# hypothesis_version: 6.148.3
-
-['Annotation', 'BlueprintComponent', 'BlueprintWire', 'BuildStep', 'CircuitBlueprint', 'CircuitComponent', 'CircuitState', 'ComponentSpec', 'ComponentType', 'CourseEnrollment', 'CoursePlan', 'Difficulty', 'EditRequest', 'EditRequestStatus', 'GeneratePlanRequest', 'GenerationState', 'KeyTerm', 'LevelContent', 'LevelOutline', 'LevelProgress', 'LevelStatus', 'Participant', 'Pin', 'PinType', 'Position', 'PracticalSection', 'RequiredComponent', 'RequiredConnection', 'Role', 'Rotation', 'Session', 'StrokeData', 'StrokeWidth', 'TextData', 'TheorySection', 'TopicSuggestion', 'ValidationCriteria', 'ValidationResult', 'Wire']
