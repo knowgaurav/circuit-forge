@@ -345,7 +345,7 @@ export const COUNTER_EXAMPLE: ExampleCircuit = {
     description: 'Counter with LED outputs showing binary',
     blueprint: {
         components: [
-            { type: 'SWITCH_PUSH', label: 'CLK', position: pos(50, 90) },
+            { type: 'CLOCK', label: 'CLK', position: pos(50, 90) },
             { type: 'COUNTER_4BIT', label: 'CNT1', position: pos(160, 90) },
             { type: 'LED_RED', label: 'Q0', position: pos(280, 50) },
             { type: 'LED_RED', label: 'Q1', position: pos(280, 90) },

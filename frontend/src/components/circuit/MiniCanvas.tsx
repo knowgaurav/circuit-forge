@@ -53,14 +53,31 @@ export function MiniCanvas({ blueprint, width = 400, height = 200 }: MiniCanvasP
         if (!hasClocks) return;
 
         const interval = setInterval(() => {
-            // Increment phase on clock components - simulation engine uses phase to determine output
-            setComponents(prev =>
-                prev.map(c =>
-                    c.type === 'CLOCK'
-                        ? { ...c, properties: { ...c.properties, phase: ((c.properties.phase as number) ?? 0) + 1 } }
-                        : c
-                )
-            );
+            // Increment phase on clock components and update sequential logic
+            setComponents(prev => {
+                // First, determine if any clock is transitioning to HIGH (rising edge)
+                const isRisingEdge = prev.some(c => 
+                    c.type === 'CLOCK' && ((c.properties.phase as number) ?? 0) % 2 === 1
+                );
+                
+                return prev.map(c => {
+                    if (c.type === 'CLOCK') {
+                        return { ...c, properties: { ...c.properties, phase: ((c.properties.phase as number) ?? 0) + 1 } };
+                    }
+                    // Increment counter on clock rising edge
+                    if (c.type === 'COUNTER_4BIT' && isRisingEdge) {
+                        const count = ((c.properties._count as number) ?? 0);
+                        return { ...c, properties: { ...c.properties, _count: (count + 1) % 16 } };
+                    }
+                    // Shift register on clock rising edge
+                    if (c.type === 'SHIFT_REGISTER_8BIT' && isRisingEdge) {
+                        const shiftValue = ((c.properties._shiftValue as number) ?? 0);
+                        // Shift left and add input (simplified - just shift)
+                        return { ...c, properties: { ...c.properties, _shiftValue: (shiftValue << 1) % 256 } };
+                    }
+                    return c;
+                });
+            });
         }, 500); // 500ms per tick = 1Hz clock
 
         return () => clearInterval(interval);
