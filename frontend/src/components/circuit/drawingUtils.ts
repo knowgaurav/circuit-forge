@@ -583,11 +583,11 @@ function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number, segme
     
     // Segment F (top left vertical)
     ctx.fillStyle = segments['F'] ? onColor : offColor;
-    ctx.fillRect(cx - segW/2 - 2, cy - 12, segH, segW);
+    ctx.fillRect(left, top + gap, segThick, segLen);
     
     // Segment G (middle horizontal)
     ctx.fillStyle = segments['G'] ? onColor : offColor;
-    ctx.fillRect(cx - segW/2, cy - 1, segW, segH);
+    ctx.fillRect(left + gap, mid - segThick/2, segLen, segThick);
 }
 
 function drawMux(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -761,41 +761,35 @@ function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActiv
     ctx.textBaseline = 'middle';
     ctx.fillText('M', 0, 0);
     
-    // Direction arrow (when running)
+    // Direction arrow (when running) - draw outside the motor circle
     if (isRunning) {
         ctx.strokeStyle = '#22C55E';
         ctx.fillStyle = '#22C55E';
-        ctx.lineWidth = 2;
-        const r = Math.min(w, h) / 2 - 6;
+        ctx.lineWidth = 2.5;
+        const r = Math.min(w, h) / 2 + 2; // Outside the motor
         
         if (direction > 0) {
-            // Clockwise arrow (FWD) - arc from top going right
+            // Clockwise arrow (FWD) - arc on right side
             ctx.beginPath();
-            ctx.arc(0, 0, r, -Math.PI * 0.7, Math.PI * 0.2);
+            ctx.arc(0, 0, r, -Math.PI * 0.6, Math.PI * 0.3);
             ctx.stroke();
-            // Arrow head at end (pointing down-right for CW)
-            const endAngle = Math.PI * 0.2;
-            const endX = r * Math.cos(endAngle);
-            const endY = r * Math.sin(endAngle);
+            // Arrow head pointing clockwise direction
             ctx.beginPath();
-            ctx.moveTo(endX, endY);
-            ctx.lineTo(endX - 5, endY - 5);
-            ctx.lineTo(endX + 2, endY - 6);
+            ctx.moveTo(r * Math.cos(Math.PI * 0.3), r * Math.sin(Math.PI * 0.3));
+            ctx.lineTo(r * Math.cos(Math.PI * 0.3) - 3, r * Math.sin(Math.PI * 0.3) - 7);
+            ctx.lineTo(r * Math.cos(Math.PI * 0.3) + 5, r * Math.sin(Math.PI * 0.3) - 3);
             ctx.closePath();
             ctx.fill();
         } else {
-            // Counter-clockwise arrow (REV) - arc from top going left
+            // Counter-clockwise arrow (REV) - arc on left side
             ctx.beginPath();
-            ctx.arc(0, 0, r, -Math.PI * 0.3, Math.PI * 0.7, true); // true = counter-clockwise
+            ctx.arc(0, 0, r, Math.PI * 0.6, Math.PI * 1.3);
             ctx.stroke();
-            // Arrow head at end (pointing down-left for CCW)
-            const endAngle = Math.PI * 0.7;
-            const endX = r * Math.cos(endAngle);
-            const endY = r * Math.sin(endAngle);
+            // Arrow head pointing counter-clockwise direction
             ctx.beginPath();
-            ctx.moveTo(endX, endY);
-            ctx.lineTo(endX + 5, endY - 5);
-            ctx.lineTo(endX - 2, endY - 6);
+            ctx.moveTo(r * Math.cos(Math.PI * 0.6), r * Math.sin(Math.PI * 0.6));
+            ctx.lineTo(r * Math.cos(Math.PI * 0.6) + 3, r * Math.sin(Math.PI * 0.6) - 7);
+            ctx.lineTo(r * Math.cos(Math.PI * 0.6) - 5, r * Math.sin(Math.PI * 0.6) - 3);
             ctx.closePath();
             ctx.fill();
         }
