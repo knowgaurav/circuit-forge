@@ -398,22 +398,38 @@ export function Canvas({
 
 function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, panOffset: Position, zoom: number, isDarkMode = false) {
     const gridSize = 20;
-    ctx.strokeStyle = isDarkMode ? '#4a4a6a' : '#E2E8F0';
-    ctx.lineWidth = 0.5;
-
+    const dotSize = 1.5;
+    
     // Calculate visible area in canvas coordinates
     const startX = Math.floor(-panOffset.x / zoom / gridSize) * gridSize - gridSize;
     const startY = Math.floor(-panOffset.y / zoom / gridSize) * gridSize - gridSize;
     const endX = startX + width / zoom + gridSize * 4;
     const endY = startY + height / zoom + gridSize * 4;
 
+    // Draw dot grid for cleaner look
+    ctx.fillStyle = isDarkMode ? '#3a3a5a' : '#CBD5E1';
     for (let x = startX; x < endX; x += gridSize) {
+        for (let y = startY; y < endY; y += gridSize) {
+            ctx.beginPath();
+            ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    // Major grid lines every 5 cells
+    ctx.strokeStyle = isDarkMode ? '#2a2a4a' : '#E2E8F0';
+    ctx.lineWidth = 0.5;
+    const majorGridSize = gridSize * 5;
+    const majorStartX = Math.floor(startX / majorGridSize) * majorGridSize;
+    const majorStartY = Math.floor(startY / majorGridSize) * majorGridSize;
+    
+    for (let x = majorStartX; x < endX; x += majorGridSize) {
         ctx.beginPath();
         ctx.moveTo(x, startY);
         ctx.lineTo(x, endY);
         ctx.stroke();
     }
-    for (let y = startY; y < endY; y += gridSize) {
+    for (let y = majorStartY; y < endY; y += majorGridSize) {
         ctx.beginPath();
         ctx.moveTo(startX, y);
         ctx.lineTo(endX, y);
@@ -585,153 +601,267 @@ function drawComponentSymbol(ctx: CanvasRenderingContext2D, type: string, width:
 }
 
 function drawAndGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isNand: boolean) {
-    const w = width * 0.7;
-    const h = height * 0.8;
+    const w = width * 0.75;
+    const h = height * 0.85;
+    
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
 
+    // Gate body - IEEE AND shape
     ctx.beginPath();
     ctx.moveTo(-w / 2, -h / 2);
-    ctx.lineTo(0, -h / 2);
-    ctx.arc(0, 0, h / 2, -Math.PI / 2, Math.PI / 2);
+    ctx.lineTo(w / 6, -h / 2);
+    ctx.bezierCurveTo(w / 2 + 5, -h / 2, w / 2 + 5, h / 2, w / 6, h / 2);
     ctx.lineTo(-w / 2, h / 2);
     ctx.closePath();
+    
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+    gradient.addColorStop(0, '#FAFAFA');
+    gradient.addColorStop(1, '#E5E7EB');
+    ctx.fillStyle = gradient;
     ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Inversion bubble for NAND
     if (isNand) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#374151';
         ctx.beginPath();
-        ctx.arc(w / 2 + 4, 0, 4, 0, Math.PI * 2);
+        ctx.arc(w / 2 + 6, 0, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
     }
 
     // Label
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 10px sans-serif';
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 14px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(isNand ? '&' : '&', -5, 0);
+    ctx.fillText('&', -4, 0);
 }
 
 function drawOrGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isNor: boolean) {
-    const w = width * 0.7;
-    const h = height * 0.8;
+    const w = width * 0.75;
+    const h = height * 0.85;
+    
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
 
+    // Gate body - IEEE OR shape with curved back
     ctx.beginPath();
     ctx.moveTo(-w / 2, -h / 2);
     ctx.quadraticCurveTo(-w / 4, 0, -w / 2, h / 2);
-    ctx.quadraticCurveTo(w / 4, h / 2, w / 2, 0);
-    ctx.quadraticCurveTo(w / 4, -h / 2, -w / 2, -h / 2);
+    ctx.bezierCurveTo(0, h / 2, w / 3, h / 3, w / 2 + 2, 0);
+    ctx.bezierCurveTo(w / 3, -h / 3, 0, -h / 2, -w / 2, -h / 2);
     ctx.closePath();
+    
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+    gradient.addColorStop(0, '#FAFAFA');
+    gradient.addColorStop(1, '#E5E7EB');
+    ctx.fillStyle = gradient;
     ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Inversion bubble for NOR
     if (isNor) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#374151';
         ctx.beginPath();
-        ctx.arc(w / 2 + 4, 0, 4, 0, Math.PI * 2);
+        ctx.arc(w / 2 + 8, 0, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
     }
 
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 12px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('≥1', -2, 0);
+    ctx.fillText('≥1', 0, 0);
 }
 
 function drawXorGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isXnor: boolean) {
-    const w = width * 0.7;
-    const h = height * 0.8;
+    const w = width * 0.75;
+    const h = height * 0.85;
+    
+    // Shadow for main body
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
 
-    // Extra curve for XOR
-    ctx.beginPath();
-    ctx.moveTo(-w / 2 - 6, -h / 2);
-    ctx.quadraticCurveTo(-w / 4 - 6, 0, -w / 2 - 6, h / 2);
-    ctx.stroke();
-
+    // Main OR-shaped body
     ctx.beginPath();
     ctx.moveTo(-w / 2, -h / 2);
     ctx.quadraticCurveTo(-w / 4, 0, -w / 2, h / 2);
-    ctx.quadraticCurveTo(w / 4, h / 2, w / 2, 0);
-    ctx.quadraticCurveTo(w / 4, -h / 2, -w / 2, -h / 2);
+    ctx.bezierCurveTo(0, h / 2, w / 3, h / 3, w / 2 + 2, 0);
+    ctx.bezierCurveTo(w / 3, -h / 3, 0, -h / 2, -w / 2, -h / 2);
     ctx.closePath();
+    
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+    gradient.addColorStop(0, '#FAFAFA');
+    gradient.addColorStop(1, '#E5E7EB');
+    ctx.fillStyle = gradient;
     ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Extra curved line for XOR (before the body)
+    ctx.beginPath();
+    ctx.moveTo(-w / 2 - 8, -h / 2);
+    ctx.quadraticCurveTo(-w / 4 - 8, 0, -w / 2 - 8, h / 2);
+    ctx.stroke();
+
+    // Inversion bubble for XNOR
     if (isXnor) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#374151';
         ctx.beginPath();
-        ctx.arc(w / 2 + 4, 0, 4, 0, Math.PI * 2);
+        ctx.arc(w / 2 + 8, 0, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
     }
 
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 12px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('=1', -2, 0);
+    ctx.fillText('=1', 0, 0);
 }
 
 function drawNotGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, hasInversion: boolean) {
-    const w = width * 0.6;
-    const h = height * 0.8;
+    const w = width * 0.65;
+    const h = height * 0.85;
+    
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
 
+    // Triangle body
     ctx.beginPath();
     ctx.moveTo(-w / 2, -h / 2);
-    ctx.lineTo(w / 2 - 4, 0);
+    ctx.lineTo(w / 2 - 6, 0);
     ctx.lineTo(-w / 2, h / 2);
     ctx.closePath();
+    
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+    gradient.addColorStop(0, '#FAFAFA');
+    gradient.addColorStop(1, '#E5E7EB');
+    ctx.fillStyle = gradient;
     ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Inversion bubble
     if (hasInversion) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#374151';
         ctx.beginPath();
-        ctx.arc(w / 2, 0, 4, 0, Math.PI * 2);
+        ctx.arc(w / 2, 0, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
     }
 
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 10px sans-serif';
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 12px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('1', -8, 0);
+    ctx.fillText('1', -6, 0);
 }
 
 function drawToggleSwitchSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isOn = false) {
-    // Switch body - green tint when ON
-    ctx.fillStyle = isOn ? '#DCFCE7' : '#E5E7EB';
-    ctx.fillRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8);
-    ctx.strokeStyle = isOn ? '#22C55E' : '#374151';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8);
-
-    // Switch lever
-    ctx.fillStyle = isOn ? '#22C55E' : '#6B7280';
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 2;
+    
+    // Switch body with rounded corners
+    const bodyW = width - 8;
+    const bodyH = height - 12;
+    const radius = 6;
+    
     ctx.beginPath();
-    ctx.arc(-5, 0, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#374151';
-    ctx.stroke();
-
-    ctx.strokeStyle = isOn ? '#22C55E' : '#374151';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(-5, 0);
-    // Lever points up when ON, down when OFF
+    ctx.roundRect(-bodyW / 2, -bodyH / 2, bodyW, bodyH, radius);
+    
+    // Gradient background
+    const bgGradient = ctx.createLinearGradient(0, -bodyH / 2, 0, bodyH / 2);
     if (isOn) {
-        ctx.lineTo(10, 8); // Points down-right when ON
+        bgGradient.addColorStop(0, '#86EFAC');
+        bgGradient.addColorStop(1, '#22C55E');
     } else {
-        ctx.lineTo(10, -8); // Points up-right when OFF
+        bgGradient.addColorStop(0, '#E5E7EB');
+        bgGradient.addColorStop(1, '#9CA3AF');
     }
+    ctx.fillStyle = bgGradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = isOn ? '#15803D' : '#6B7280';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
-    // ON/OFF indicator text
-    ctx.fillStyle = isOn ? '#166534' : '#6B7280';
-    ctx.font = 'bold 8px sans-serif';
+    // Toggle knob
+    const knobX = isOn ? 8 : -8;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    
+    ctx.beginPath();
+    ctx.arc(knobX, 0, 8, 0, Math.PI * 2);
+    const knobGradient = ctx.createRadialGradient(knobX - 2, -2, 0, knobX, 0, 8);
+    knobGradient.addColorStop(0, '#FFFFFF');
+    knobGradient.addColorStop(1, '#E5E7EB');
+    ctx.fillStyle = knobGradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#9CA3AF';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // ON/OFF indicator
+    ctx.fillStyle = isOn ? '#FFFFFF' : '#4B5563';
+    ctx.font = 'bold 8px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(isOn ? 'ON' : 'OFF', 0, height / 2 - 2);
+    ctx.fillText(isOn ? 'ON' : 'OFF', isOn ? -6 : 6, 0);
 }
 
 function drawPushButtonSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isPressed = false) {
@@ -817,43 +947,64 @@ function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, height
 }
 
 function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, color: string, isLit = false) {
-    // LED body (triangle) - brighter when lit
-    ctx.fillStyle = isLit ? color : color + '40'; // Full color when lit, semi-transparent when off
+    // Glow effect when lit
+    if (isLit) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 20;
+    }
+    
+    // LED body - realistic dome shape
     ctx.beginPath();
-    ctx.moveTo(-10, -10);
-    ctx.lineTo(-10, 10);
-    ctx.lineTo(8, 0);
-    ctx.closePath();
+    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+    
+    // Gradient for 3D effect
+    const gradient = ctx.createRadialGradient(-3, -3, 0, 0, 0, 12);
+    if (isLit) {
+        gradient.addColorStop(0, '#FFFFFF');
+        gradient.addColorStop(0.3, color);
+        gradient.addColorStop(1, color);
+    } else {
+        gradient.addColorStop(0, color + '60');
+        gradient.addColorStop(0.5, color + '30');
+        gradient.addColorStop(1, color + '20');
+    }
+    ctx.fillStyle = gradient;
     ctx.fill();
-    ctx.strokeStyle = color;
+    
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = isLit ? color : '#6B7280';
     ctx.lineWidth = 2;
     ctx.stroke();
-
-    // LED bar
+    
+    // Inner highlight for glass effect
     ctx.beginPath();
-    ctx.moveTo(8, -10);
-    ctx.lineTo(8, 10);
+    ctx.arc(-4, -4, 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fill();
+    
+    // LED legs
+    ctx.strokeStyle = '#6B7280';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-4, 12);
+    ctx.lineTo(-4, 18);
+    ctx.moveTo(4, 12);
+    ctx.lineTo(4, 18);
     ctx.stroke();
-
-    // Light rays - only show when lit
+    
+    // Light rays when lit
     if (isLit) {
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = color + '80';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(4, -12);
-        ctx.lineTo(8, -18);
-        ctx.moveTo(8, -12);
-        ctx.lineTo(16, -18);
+        // Top rays
+        ctx.moveTo(0, -14);
+        ctx.lineTo(0, -20);
+        ctx.moveTo(8, -10);
+        ctx.lineTo(14, -16);
+        ctx.moveTo(-8, -10);
+        ctx.lineTo(-14, -16);
         ctx.stroke();
-
-        // Add glow effect when lit
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 15;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(0, 0, 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
     }
 }
 
@@ -1073,30 +1224,58 @@ function drawWire(ctx: CanvasRenderingContext2D, wire: Wire, components: Circuit
     const endX = toComponent.position.x + toPin.position.x;
     const endY = toComponent.position.y + toPin.position.y;
 
-    // Use simulation colors if available
-    if (signalState) {
-        const style = getWireStyle(signalState);
-        ctx.strokeStyle = style.color;
-        ctx.lineWidth = 3;
-        if (style.dashed) {
-            ctx.setLineDash([5, 5]);
-        } else {
-            ctx.setLineDash([]);
-        }
-    } else {
-        ctx.strokeStyle = '#4B5563';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([]);
-    }
-
-    // Calculate orthogonal routing path (grid-aligned)
+    // Calculate orthogonal routing path
     const gridSize = 20;
     const path = calculateOrthogonalPath(startX, startY, endX, endY, gridSize);
 
-    ctx.beginPath();
+    // Determine wire color and style based on signal state
+    let wireColor = '#6B7280';
+    let wireWidth = 2.5;
+    let glowColor = '';
+    
+    if (signalState) {
+        const style = getWireStyle(signalState);
+        wireColor = style.color;
+        wireWidth = 3;
+        if (signalState === 'HIGH') {
+            glowColor = '#22C55E';
+        } else if (signalState === 'ERROR' || signalState === 'UNDEFINED') {
+            glowColor = '#EF4444';
+        }
+        if (style.dashed) {
+            ctx.setLineDash([6, 4]);
+        } else {
+            ctx.setLineDash([]);
+        }
+    }
+
+    // Draw glow effect for active wires
+    if (glowColor) {
+        ctx.strokeStyle = glowColor;
+        ctx.lineWidth = wireWidth + 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalAlpha = 0.3;
+        
+        ctx.beginPath();
+        if (path.length > 0 && path[0]) {
+            ctx.moveTo(path[0].x, path[0].y);
+            for (let i = 1; i < path.length; i++) {
+                const point = path[i];
+                if (point) ctx.lineTo(point.x, point.y);
+            }
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+
+    // Draw main wire
+    ctx.strokeStyle = wireColor;
+    ctx.lineWidth = wireWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
+    ctx.beginPath();
     if (path.length > 0 && path[0]) {
         ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) {
@@ -1107,13 +1286,23 @@ function drawWire(ctx: CanvasRenderingContext2D, wire: Wire, components: Circuit
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw connection dots at endpoints
-    ctx.fillStyle = ctx.strokeStyle as string;
+    // Draw connection dots at endpoints with gradient
+    const dotGradient = ctx.createRadialGradient(startX, startY, 0, startX, startY, 4);
+    dotGradient.addColorStop(0, wireColor);
+    dotGradient.addColorStop(1, wireColor + '80');
+    
+    ctx.fillStyle = dotGradient;
     ctx.beginPath();
-    ctx.arc(startX, startY, 3, 0, Math.PI * 2);
+    ctx.arc(startX, startY, 4, 0, Math.PI * 2);
     ctx.fill();
+    
+    const dotGradient2 = ctx.createRadialGradient(endX, endY, 0, endX, endY, 4);
+    dotGradient2.addColorStop(0, wireColor);
+    dotGradient2.addColorStop(1, wireColor + '80');
+    
+    ctx.fillStyle = dotGradient2;
     ctx.beginPath();
-    ctx.arc(endX, endY, 3, 0, Math.PI * 2);
+    ctx.arc(endX, endY, 4, 0, Math.PI * 2);
     ctx.fill();
 }
 
