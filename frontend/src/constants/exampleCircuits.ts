@@ -202,22 +202,6 @@ export const XOR_GATE_EXAMPLE: ExampleCircuit = {
     ]),
 };
 
-export const XNOR_GATE_EXAMPLE: ExampleCircuit = {
-    id: 'xnor-gate-example',
-    name: 'XNOR Gate Demo',
-    description: 'LED is ON when both switches have the same state',
-    blueprint: circuit([
-        { type: 'SWITCH_TOGGLE', label: 'SW1', position: pos(50, 60) },
-        { type: 'SWITCH_TOGGLE', label: 'SW2', position: pos(50, 120) },
-        { type: 'XNOR_2', label: 'XNOR1', position: pos(180, 90) },
-        { type: 'LED_GREEN', label: 'LED1', position: pos(300, 90) },
-    ], [
-        ['SW1', 'XNOR1:A'],
-        ['SW2', 'XNOR1:B'],
-        ['XNOR1', 'LED1'],
-    ]),
-};
-
 // ============================================================================
 // INPUT DEVICES
 // ============================================================================
@@ -521,7 +505,7 @@ export const EXAMPLE_CIRCUITS: Record<string, ExampleCircuit> = {
     'NOR_2': NOR_GATE_EXAMPLE,
     'NOR_3': NOR_GATE_EXAMPLE,
     'XOR_2': XOR_GATE_EXAMPLE,
-    'XNOR_2': XNOR_GATE_EXAMPLE,
+
 
     // Input Devices
     'SWITCH_TOGGLE': SWITCH_TOGGLE_EXAMPLE,
