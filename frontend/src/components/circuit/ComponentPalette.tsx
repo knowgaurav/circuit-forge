@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { COMPONENT_CATEGORIES, ComponentDefinition } from '@/constants/components';
 import { Tooltip } from '@/components/ui';
+import { getComponentDetail } from '@/constants/componentDetails';
+import { ComponentDetailModal } from './ComponentDetailModal';
 
 interface ComponentPaletteProps {
     onDragStart: (component: ComponentDefinition) => void;
@@ -14,6 +16,15 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
         new Set(['Logic Gates', 'Input Devices'])
     );
+    const [selectedComponent, setSelectedComponent] = useState<ComponentDefinition | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleInfoClick = (e: React.MouseEvent, component: ComponentDefinition) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setSelectedComponent(component);
+        setIsModalOpen(true);
+    };
 
     const toggleCategory = (category: string) => {
         setExpandedCategories((prev) => {
@@ -71,42 +82,64 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
                         {/* Components Grid */}
                         {expandedCategories.has(category) && (
                             <div className="p-2 grid grid-cols-2 gap-2">
-                                {components.map((comp) => (
-                                    <Tooltip key={comp.type} content={comp.description} position="right">
-                                        <div
-                                            draggable={!disabled}
-                                            onDragStart={(e) => handleDragStart(e, comp)}
-                                            className={`
-                                                flex flex-col items-center justify-center p-2 rounded-md border-2
-                                                cursor-grab active:cursor-grabbing transition-all duration-150
-                                                h-[72px] group
-                                                ${disabled
-                                                    ? 'bg-gray-50 dark:bg-gray-700 text-gray-400 cursor-not-allowed border-gray-200 dark:border-gray-600'
-                                                    : 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-400 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600'
-                                                }
-                                            `}
-                                        >
-                                            <div className={`
-                                                w-9 h-9 flex items-center justify-center rounded mb-1 border
-                                                transition-all duration-150
-                                                ${disabled
-                                                    ? 'bg-gray-100 dark:bg-gray-600 border-gray-200 dark:border-gray-500 text-gray-400'
-                                                    : 'bg-gray-50 dark:bg-gray-600 border-gray-200 dark:border-gray-500 text-gray-700 dark:text-gray-100 group-hover:bg-blue-100 dark:group-hover:bg-blue-700 group-hover:border-blue-300'
-                                                }
-                                            `}>
-                                                <ComponentIcon type={comp.type} />
+                                {components.map((comp) => {
+                                    const detail = getComponentDetail(comp.type);
+                                    const tooltipContent = detail?.shortDescription || comp.description;
+                                    
+                                    return (
+                                        <Tooltip key={comp.type} content={tooltipContent} position="right">
+                                            <div
+                                                draggable={!disabled}
+                                                onDragStart={(e) => handleDragStart(e, comp)}
+                                                className={`
+                                                    relative flex flex-col items-center justify-center p-2 rounded-md border-2
+                                                    cursor-grab active:cursor-grabbing transition-all duration-150
+                                                    h-[72px] group
+                                                    ${disabled
+                                                        ? 'bg-gray-50 dark:bg-gray-700 text-gray-400 cursor-not-allowed border-gray-200 dark:border-gray-600'
+                                                        : 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-400 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600'
+                                                    }
+                                                `}
+                                            >
+                                                {/* Info button */}
+                                                <button
+                                                    onClick={(e) => handleInfoClick(e, comp)}
+                                                    className="absolute top-1 right-1 p-0.5 rounded opacity-0 group-hover:opacity-100 
+                                                               hover:bg-blue-200 dark:hover:bg-blue-600 transition-all z-10"
+                                                    title="View details"
+                                                >
+                                                    <Info className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                                                </button>
+                                                
+                                                <div className={`
+                                                    w-9 h-9 flex items-center justify-center rounded mb-1 border
+                                                    transition-all duration-150
+                                                    ${disabled
+                                                        ? 'bg-gray-100 dark:bg-gray-600 border-gray-200 dark:border-gray-500 text-gray-400'
+                                                        : 'bg-gray-50 dark:bg-gray-600 border-gray-200 dark:border-gray-500 text-gray-700 dark:text-gray-100 group-hover:bg-blue-100 dark:group-hover:bg-blue-700 group-hover:border-blue-300'
+                                                    }
+                                                `}>
+                                                    <ComponentIcon type={comp.type} />
+                                                </div>
+                                                <span className="text-[10px] font-medium text-center leading-tight line-clamp-2">
+                                                    {comp.name}
+                                                </span>
                                             </div>
-                                            <span className="text-[10px] font-medium text-center leading-tight line-clamp-2">
-                                                {comp.name}
-                                            </span>
-                                        </div>
-                                    </Tooltip>
-                                ))}
+                                        </Tooltip>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
                 ))}
             </div>
+
+            {/* Component Detail Modal */}
+            <ComponentDetailModal
+                component={selectedComponent}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 }
