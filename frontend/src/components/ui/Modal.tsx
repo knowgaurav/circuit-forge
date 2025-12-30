@@ -45,7 +45,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         >
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50 transition-opacity"
+                className="absolute inset-0 bg-black/30 transition-opacity"
                 onClick={onClose}
                 aria-hidden="true"
             />
