@@ -587,17 +587,69 @@ function drawComponentSymbol(ctx: CanvasRenderingContext2D, type: string, width:
         const isHigh = signalState === 'HIGH';
         drawProbeSymbol(ctx, width, height, isHigh);
     }
-    // Default box
-    else {
-        ctx.fillRect(-width / 2, -height / 2, width, height);
-        ctx.strokeRect(-width / 2, -height / 2, width, height);
-        ctx.fillStyle = isDarkMode ? '#2a2a40' : '#374151';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const label = type.replace(/_/g, ' ');
-        ctx.fillText(label.length > 12 ? label.substring(0, 12) : label, 0, 0);
+    // Passive Components
+    else if (type === 'RESISTOR') {
+        drawResistorSymbol(ctx, width, height);
+    } else if (type === 'CAPACITOR') {
+        drawCapacitorSymbol(ctx, width, height);
+    } else if (type === 'DIODE') {
+        drawDiodeSymbol(ctx, width, height);
     }
+    // Sequential - Counters & Registers
+    else if (type === 'COUNTER_4BIT') {
+        drawICChipSymbol(ctx, width, height, 'CTR', '4-BIT');
+    } else if (type === 'SHIFT_REGISTER_8BIT') {
+        drawICChipSymbol(ctx, width, height, 'SHIFT', '8-BIT');
+    } else if (type === 'ADDER_4BIT') {
+        drawICChipSymbol(ctx, width, height, 'ADD', '4-BIT');
+    } else if (type === 'COMPARATOR_4BIT') {
+        drawICChipSymbol(ctx, width, height, 'CMP', '4-BIT');
+    } else if (type === 'DECODER_2TO4') {
+        drawICChipSymbol(ctx, width, height, 'DEC', '2→4');
+    }
+    // Input devices
+    else if (type === 'DIP_SWITCH_4') {
+        drawDipSwitchSymbol(ctx, width, height);
+    } else if (type === 'NUMERIC_INPUT') {
+        drawNumericInputSymbol(ctx, width, height);
+    }
+    // Default styled box
+    else {
+        drawDefaultComponent(ctx, width, height, type, isDarkMode);
+    }
+}
+
+function drawDefaultComponent(ctx: CanvasRenderingContext2D, width: number, height: number, type: string, isDarkMode: boolean) {
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    // Rounded rectangle body
+    ctx.beginPath();
+    ctx.roundRect(-width / 2 + 2, -height / 2 + 2, width - 4, height - 4, 4);
+    
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
+    gradient.addColorStop(0, isDarkMode ? '#4a4a6a' : '#F9FAFB');
+    gradient.addColorStop(1, isDarkMode ? '#3a3a5a' : '#E5E7EB');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = isDarkMode ? '#6a6a8a' : '#9CA3AF';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = isDarkMode ? '#e0e0e0' : '#374151';
+    ctx.font = 'bold 9px "SF Pro Display", -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = type.replace(/_/g, ' ');
+    ctx.fillText(label.length > 10 ? label.substring(0, 10) : label, 0, 0);
 }
 
 function drawAndGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isNand: boolean) {
@@ -1051,18 +1103,40 @@ function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, height: num
 }
 
 function draw7SegmentSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    ctx.fillStyle = '#1F2937';
-    ctx.fillRect(-width / 2, -height / 2, width, height);
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    // Body
+    ctx.beginPath();
+    ctx.roundRect(-width / 2 + 2, -height / 2 + 2, width - 4, height - 4, 4);
+    ctx.fillStyle = '#111827';
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
     ctx.strokeStyle = '#374151';
-    ctx.strokeRect(-width / 2, -height / 2, width, height);
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-    // Draw "8" pattern
+    // Display background
+    ctx.fillStyle = '#0F172A';
+    ctx.fillRect(-width / 2 + 6, -height / 2 + 6, width - 12, height - 12);
+
+    // Glow effect for segments
+    ctx.shadowColor = '#EF4444';
+    ctx.shadowBlur = 8;
+    
+    // Draw "8" pattern with glow
     ctx.strokeStyle = '#EF4444';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
 
-    const segW = 12;
-    const segH = 18;
+    const segW = 14;
+    const segH = 16;
     // Top
     ctx.beginPath(); ctx.moveTo(-segW / 2, -segH); ctx.lineTo(segW / 2, -segH); ctx.stroke();
     // Middle
@@ -1077,21 +1151,56 @@ function draw7SegmentSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.beginPath(); ctx.moveTo(segW / 2, -segH); ctx.lineTo(segW / 2, 0); ctx.stroke();
     // Right bottom
     ctx.beginPath(); ctx.moveTo(segW / 2, 0); ctx.lineTo(segW / 2, segH); ctx.stroke();
+    
+    ctx.shadowBlur = 0;
 }
 
 function drawFlipFlopSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, type: string) {
-    ctx.fillRect(-width / 2, -height / 2, width, height);
-    ctx.strokeRect(-width / 2, -height / 2, width, height);
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    // Body with rounded corners
+    ctx.beginPath();
+    ctx.roundRect(-width / 2 + 3, -height / 2 + 3, width - 6, height - 6, 4);
+    
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
+    gradient.addColorStop(0, '#FEF3C7');
+    gradient.addColorStop(1, '#FDE68A');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#D97706';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Divider line
+    ctx.strokeStyle = '#F59E0B';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, -height / 2 + 6);
+    ctx.lineTo(0, height / 2 - 6);
+    ctx.stroke();
 
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 10px sans-serif';
+    ctx.fillStyle = '#92400E';
+    ctx.font = 'bold 10px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     if (type === 'D_FLIPFLOP') {
         ctx.fillText('D', -width / 4, -height / 4);
         ctx.fillText('Q', width / 4, -height / 4);
-        ctx.fillText('>', -width / 4, height / 4);
+        // Clock triangle
+        ctx.beginPath();
+        ctx.moveTo(-width / 2 + 6, height / 4 - 4);
+        ctx.lineTo(-width / 2 + 12, height / 4);
+        ctx.lineTo(-width / 2 + 6, height / 4 + 4);
+        ctx.stroke();
         ctx.fillText("Q'", width / 4, height / 4);
     } else if (type === 'SR_LATCH') {
         ctx.fillText('S', -width / 4, -height / 4);
@@ -1101,7 +1210,12 @@ function drawFlipFlopSymbol(ctx: CanvasRenderingContext2D, width: number, height
     } else if (type === 'JK_FLIPFLOP') {
         ctx.fillText('J', -width / 4, -height / 4);
         ctx.fillText('Q', width / 4, -height / 4);
-        ctx.fillText('>', -width / 4, 0);
+        // Clock triangle
+        ctx.beginPath();
+        ctx.moveTo(-width / 2 + 6, -4);
+        ctx.lineTo(-width / 2 + 12, 0);
+        ctx.lineTo(-width / 2 + 6, 4);
+        ctx.stroke();
         ctx.fillText('K', -width / 4, height / 4);
         ctx.fillText("Q'", width / 4, height / 4);
     }
@@ -1176,23 +1290,36 @@ function drawGroundSymbol(ctx: CanvasRenderingContext2D, width: number, height: 
 }
 
 function drawMuxSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
     // Trapezoid shape for multiplexer
-    ctx.fillStyle = '#FFFFFF';
-    ctx.strokeStyle = '#374151';
-    ctx.lineWidth = 2;
-
     ctx.beginPath();
-    ctx.moveTo(-width / 2, -height / 2);
-    ctx.lineTo(width / 2, -height / 3);
-    ctx.lineTo(width / 2, height / 3);
-    ctx.lineTo(-width / 2, height / 2);
+    ctx.moveTo(-width / 2 + 4, -height / 2 + 4);
+    ctx.lineTo(width / 2 - 4, -height / 3);
+    ctx.lineTo(width / 2 - 4, height / 3);
+    ctx.lineTo(-width / 2 + 4, height / 2 - 4);
     ctx.closePath();
+    
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
+    gradient.addColorStop(0, '#F3E8FF');
+    gradient.addColorStop(1, '#E9D5FF');
+    ctx.fillStyle = gradient;
     ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#9333EA';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     // Label
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 10px sans-serif';
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = 'bold 10px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('MUX', 0, 0);
@@ -1423,6 +1550,246 @@ function calculateOrthogonalPath(startX: number, startY: number, endX: number, e
     path.push({ x: endX, y: endY });
 
     return path;
+}
+
+// Passive component symbols
+function drawResistorSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Zigzag resistor symbol
+    const zigWidth = 6;
+    const zigHeight = height * 0.6;
+    
+    ctx.beginPath();
+    ctx.moveTo(-width / 2 + 8, 0);
+    ctx.lineTo(-zigWidth * 3, 0);
+    ctx.lineTo(-zigWidth * 2.5, -zigHeight / 2);
+    ctx.lineTo(-zigWidth * 1.5, zigHeight / 2);
+    ctx.lineTo(-zigWidth * 0.5, -zigHeight / 2);
+    ctx.lineTo(zigWidth * 0.5, zigHeight / 2);
+    ctx.lineTo(zigWidth * 1.5, -zigHeight / 2);
+    ctx.lineTo(zigWidth * 2.5, zigHeight / 2);
+    ctx.lineTo(zigWidth * 3, 0);
+    ctx.lineTo(width / 2 - 8, 0);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '8px "SF Pro Display", -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('R', 0, height / 2 - 4);
+}
+
+function drawCapacitorSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    
+    const plateHeight = height * 0.5;
+    const gap = 6;
+    
+    // Left lead
+    ctx.beginPath();
+    ctx.moveTo(-width / 2 + 8, 0);
+    ctx.lineTo(-gap / 2, 0);
+    ctx.stroke();
+    
+    // Left plate
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-gap / 2, -plateHeight / 2);
+    ctx.lineTo(-gap / 2, plateHeight / 2);
+    ctx.stroke();
+    
+    // Right plate
+    ctx.beginPath();
+    ctx.moveTo(gap / 2, -plateHeight / 2);
+    ctx.lineTo(gap / 2, plateHeight / 2);
+    ctx.stroke();
+    
+    // Right lead
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(gap / 2, 0);
+    ctx.lineTo(width / 2 - 8, 0);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '8px "SF Pro Display", -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('C', 0, height / 2 - 4);
+}
+
+function drawDiodeSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    
+    const triSize = 12;
+    
+    // Left lead
+    ctx.beginPath();
+    ctx.moveTo(-width / 2 + 8, 0);
+    ctx.lineTo(-triSize / 2, 0);
+    ctx.stroke();
+    
+    // Triangle (anode)
+    ctx.fillStyle = '#E5E7EB';
+    ctx.beginPath();
+    ctx.moveTo(-triSize / 2, -triSize / 2);
+    ctx.lineTo(triSize / 2, 0);
+    ctx.lineTo(-triSize / 2, triSize / 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Cathode bar
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(triSize / 2, -triSize / 2);
+    ctx.lineTo(triSize / 2, triSize / 2);
+    ctx.stroke();
+    
+    // Right lead
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(triSize / 2, 0);
+    ctx.lineTo(width / 2 - 8, 0);
+    ctx.stroke();
+}
+
+// IC Chip symbol for counters, registers, etc.
+function drawICChipSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, label: string, subLabel: string) {
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    // Chip body
+    ctx.beginPath();
+    ctx.roundRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8, 3);
+    
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
+    gradient.addColorStop(0, '#374151');
+    gradient.addColorStop(0.5, '#1F2937');
+    gradient.addColorStop(1, '#111827');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    // Notch at top
+    ctx.fillStyle = '#6B7280';
+    ctx.beginPath();
+    ctx.arc(0, -height / 2 + 4, 4, 0, Math.PI);
+    ctx.fill();
+    
+    // Main label
+    ctx.fillStyle = '#F3F4F6';
+    ctx.font = 'bold 11px "SF Pro Display", -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, 0, -4);
+    
+    // Sub label
+    ctx.font = '8px "SF Pro Display", -apple-system, sans-serif';
+    ctx.fillStyle = '#9CA3AF';
+    ctx.fillText(subLabel, 0, 8);
+}
+
+function drawDipSwitchSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 2;
+    
+    // Body
+    ctx.beginPath();
+    ctx.roundRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8, 3);
+    
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
+    gradient.addColorStop(0, '#FEF3C7');
+    gradient.addColorStop(1, '#FDE68A');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#D97706';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    
+    // Draw 4 mini switches
+    const switchWidth = 8;
+    const switchHeight = 12;
+    const startX = -width / 2 + 14;
+    const gap = 12;
+    
+    for (let i = 0; i < 4; i++) {
+        const x = startX + i * gap;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(x - switchWidth / 2, -switchHeight / 2, switchWidth, switchHeight);
+        ctx.strokeStyle = '#9CA3AF';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - switchWidth / 2, -switchHeight / 2, switchWidth, switchHeight);
+        
+        // Switch position indicator
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(x - switchWidth / 2 + 1, -switchHeight / 2 + 1, switchWidth - 2, switchHeight / 2 - 1);
+    }
+    
+    // Label
+    ctx.fillStyle = '#92400E';
+    ctx.font = 'bold 7px "SF Pro Display", -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('DIP', 0, height / 2 - 8);
+}
+
+function drawNumericInputSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 2;
+    
+    // Body
+    ctx.beginPath();
+    ctx.roundRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8, 4);
+    
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
+    gradient.addColorStop(0, '#DBEAFE');
+    gradient.addColorStop(1, '#BFDBFE');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#3B82F6';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Display area
+    ctx.fillStyle = '#1E3A8A';
+    ctx.fillRect(-width / 2 + 10, -height / 2 + 10, width - 20, height - 24);
+    
+    // Number display
+    ctx.fillStyle = '#60A5FA';
+    ctx.font = 'bold 16px "SF Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('00', 0, -2);
+    
+    // Up/down arrows
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('▲', width / 2 - 14, -6);
+    ctx.fillText('▼', width / 2 - 14, 8);
 }
 
 function drawStroke(ctx: CanvasRenderingContext2D, stroke: StrokeData) {
