@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
-import clsx from 'clsx';
+import { useState, useRef, useEffect, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface TooltipProps {
     content: string;
@@ -11,44 +11,66 @@ export interface TooltipProps {
 
 export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
     const [isVisible, setIsVisible] = useState(false);
+    const [coords, setCoords] = useState({ x: 0, y: 0 });
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const tooltipRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isVisible && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            const tooltipWidth = 200; // max-width estimate
+            const tooltipHeight = 30; // estimate
+            
+            let x = rect.left + rect.width / 2;
+            let y = rect.top;
+
+            switch (position) {
+                case 'top':
+                    y = rect.top - tooltipHeight - 8;
+                    break;
+                case 'bottom':
+                    y = rect.bottom + 8;
+                    break;
+                case 'left':
+                    x = rect.left - tooltipWidth - 8;
+                    y = rect.top + rect.height / 2;
+                    break;
+                case 'right':
+                    x = rect.right + 8;
+                    y = rect.top + rect.height / 2;
+                    break;
+            }
+
+            setCoords({ x, y });
+        }
+    }, [isVisible, position]);
 
     return (
-        <div
-            className="relative inline-block"
-            onMouseEnter={() => setIsVisible(true)}
-            onMouseLeave={() => setIsVisible(false)}
-            onFocus={() => setIsVisible(true)}
-            onBlur={() => setIsVisible(false)}
-        >
-            {children}
-            {isVisible && (
+        <>
+            <div
+                ref={triggerRef}
+                className="inline-block"
+                onMouseEnter={() => setIsVisible(true)}
+                onMouseLeave={() => setIsVisible(false)}
+            >
+                {children}
+            </div>
+            {isVisible && typeof window !== 'undefined' && createPortal(
                 <div
-                    className={clsx(
-                        'absolute px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg',
-                        'max-w-[200px] text-center pointer-events-none',
-                        'transition-opacity duration-150',
-                        {
-                            'bottom-full left-1/2 -translate-x-1/2 mb-2': position === 'top',
-                            'top-full left-1/2 -translate-x-1/2 mt-2': position === 'bottom',
-                            'right-full top-1/2 -translate-y-1/2 mr-2': position === 'left',
-                            'left-full top-1/2 -translate-y-1/2 ml-2': position === 'right',
-                        }
-                    )}
-                    style={{ zIndex: 9999 }}
+                    ref={tooltipRef}
+                    className="fixed px-2 py-1.5 text-xs text-white bg-gray-900 rounded shadow-lg whitespace-nowrap pointer-events-none"
+                    style={{
+                        zIndex: 99999,
+                        left: position === 'left' || position === 'right' ? coords.x : coords.x,
+                        top: coords.y,
+                        transform: position === 'top' || position === 'bottom' ? 'translateX(-50%)' : 'translateY(-50%)',
+                    }}
                     role="tooltip"
                 >
                     {content}
-                    {/* Arrow */}
-                    <div
-                        className={clsx('absolute w-2 h-2 bg-gray-900 rotate-45', {
-                            'top-full left-1/2 -translate-x-1/2 -mt-1': position === 'top',
-                            'bottom-full left-1/2 -translate-x-1/2 -mb-1': position === 'bottom',
-                            'left-full top-1/2 -translate-y-1/2 -ml-1': position === 'left',
-                            'right-full top-1/2 -translate-y-1/2 -mr-1': position === 'right',
-                        })}
-                    />
-                </div>
+                </div>,
+                document.body
             )}
-        </div>
+        </>
     );
 }
