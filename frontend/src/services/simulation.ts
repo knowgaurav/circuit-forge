@@ -35,7 +35,7 @@ const LOGIC_GATES = new Set<ComponentType>([
 const COMBINATIONAL_LOGIC = new Set<ComponentType>([
     'MUX_2TO1', 'MUX_4TO1',
     'DEMUX_1TO2', 'DECODER_2TO4',
-    'ADDER_4BIT', 'COMPARATOR_4BIT',
+    'ADDER_4BIT', 'COMPARATOR_4BIT', 'BCD_TO_7SEG',
 ] as ComponentType[]);
 
 // Sequential logic (flip-flops, latches, counters)
@@ -943,6 +943,41 @@ export class SimulationEngine {
                 } else if (pin.name === 'A<B' || pin.id.match(/a<b/i)) {
                     compPins[pin.id] = a < b ? 'HIGH' : 'LOW';
                 }
+            }
+        } else if (comp.type === 'BCD_TO_7SEG') {
+            // BCD to 7-Segment Decoder: D0-D3 -> A,B,C,D,E,F,G
+            // Truth table for digits 0-9
+            const segmentTable: Record<number, string> = {
+                0: 'ABCDEF',  // 0: all except G
+                1: 'BC',      // 1: right side
+                2: 'ABDEG',   // 2
+                3: 'ABCDG',   // 3
+                4: 'BCFG',    // 4
+                5: 'ACDFG',   // 5
+                6: 'ACDEFG',  // 6
+                7: 'ABC',     // 7
+                8: 'ABCDEFG', // 8: all
+                9: 'ABCDFG',  // 9
+            };
+            const inputPins = comp.pins.filter(p => p.type === 'input');
+            let value = 0;
+            for (let i = 0; i < inputPins.length; i++) {
+                const pin = inputPins[i];
+                if (!pin) continue;
+                const signal = inputs[i] ?? 'LOW';
+                const val = signal === 'HIGH' ? 1 : 0;
+                const match = pin.name.match(/D(\d)/i);
+                if (match && match[1]) {
+                    value |= (val << parseInt(match[1], 10));
+                }
+            }
+            // Clamp to 0-9
+            if (value > 9) value = value % 10;
+            const activeSegs = segmentTable[value] || '';
+            const outputPins = comp.pins.filter(p => p.type === 'output');
+            for (const pin of outputPins) {
+                const segName = pin.name.toUpperCase();
+                compPins[pin.id] = activeSegs.includes(segName) ? 'HIGH' : 'LOW';
             }
         }
     }

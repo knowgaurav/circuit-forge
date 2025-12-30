@@ -135,6 +135,8 @@ export function drawComponentSymbol(
         drawMux(ctx, width, height);
     } else if (type === 'DECODER_2TO4') {
         drawDecoder(ctx, width, height);
+    } else if (type === 'BCD_TO_7SEG') {
+        drawBcdTo7Seg(ctx, width, height);
     }
     // Power
     else if (type === 'VCC_5V' || type === 'VCC_3V3') {
@@ -624,6 +626,22 @@ function drawDecoder(ctx: CanvasRenderingContext2D, w: number, h: number) {
     ctx.fillText('DEC', 0, 0);
 }
 
+function drawBcdTo7Seg(ctx: CanvasRenderingContext2D, w: number, h: number) {
+    ctx.fillStyle = '#fef3c7';
+    ctx.strokeStyle = '#D97706';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#92400e';
+    ctx.font = 'bold 7px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('BCD', 0, -8);
+    ctx.fillText('→7SEG', 0, 5);
+}
+
 function drawVcc(ctx: CanvasRenderingContext2D, w: number, h: number) {
     ctx.strokeStyle = '#EF4444';
     ctx.lineWidth = 2;
@@ -765,31 +783,36 @@ function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActiv
         const r = Math.min(w, h) / 2 + 4;
         
         // Draw curved arrow around motor
-        ctx.beginPath();
         if (direction > 0) {
-            // CLOCKWISE (FWD): arrow curves right, arrowhead at bottom
-            ctx.arc(0, 0, r, -Math.PI * 0.75, Math.PI * 0.25);
-            ctx.stroke();
-            // Arrowhead at end pointing DOWN-RIGHT (clockwise direction)
-            const ax = r * Math.cos(Math.PI * 0.25);
-            const ay = r * Math.sin(Math.PI * 0.25);
+            // CLOCKWISE (FWD): arc from top-left to bottom-right
+            const startAngle = -Math.PI * 0.7;
+            const endAngle = Math.PI * 0.2;
             ctx.beginPath();
-            ctx.moveTo(ax, ay);
-            ctx.lineTo(ax - 8, ay - 2);
-            ctx.lineTo(ax - 4, ay - 8);
+            ctx.arc(0, 0, r, startAngle, endAngle);
+            ctx.stroke();
+            // Arrowhead - tangent points DOWN-LEFT (continuing clockwise)
+            const ax = r * Math.cos(endAngle);
+            const ay = r * Math.sin(endAngle);
+            ctx.beginPath();
+            ctx.moveTo(ax - 6, ay + 6);  // tip points down-left
+            ctx.lineTo(ax + 2, ay - 4);  // back-right
+            ctx.lineTo(ax - 6, ay - 6);  // back-left  
             ctx.closePath();
             ctx.fill();
         } else {
-            // COUNTER-CLOCKWISE (REV): arrow curves left, arrowhead at bottom
-            ctx.arc(0, 0, r, -Math.PI * 0.25, Math.PI * 0.75);
-            ctx.stroke();
-            // Arrowhead at end pointing DOWN-LEFT (counter-clockwise direction)
-            const ax = r * Math.cos(Math.PI * 0.75);
-            const ay = r * Math.sin(Math.PI * 0.75);
+            // COUNTER-CLOCKWISE (REV): arc from top-right to bottom-left
+            const startAngle = -Math.PI * 0.3;
+            const endAngle = Math.PI * 0.8;
             ctx.beginPath();
-            ctx.moveTo(ax, ay);
-            ctx.lineTo(ax + 8, ay - 2);
-            ctx.lineTo(ax + 4, ay - 8);
+            ctx.arc(0, 0, r, startAngle, endAngle);
+            ctx.stroke();
+            // Arrowhead - tangent points DOWN-RIGHT (continuing counter-clockwise)
+            const ax = r * Math.cos(endAngle);
+            const ay = r * Math.sin(endAngle);
+            ctx.beginPath();
+            ctx.moveTo(ax + 6, ay + 6);  // tip points down-right
+            ctx.lineTo(ax - 2, ay - 4);  // back-left
+            ctx.lineTo(ax + 6, ay - 6);  // back-right
             ctx.closePath();
             ctx.fill();
         }
