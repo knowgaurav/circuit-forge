@@ -53,7 +53,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {/* Modal content */}
             <div
                 className={clsx(
-                    'relative bg-white dark:bg-[#1a1a28] rounded-lg shadow-xl',
+                    'relative bg-white dark:bg-gray-800 rounded-lg shadow-xl',
                     'max-h-[90vh] overflow-auto',
                     {
                         'w-full max-w-sm': size === 'sm',
@@ -64,7 +64,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             >
                 {/* Header */}
                 {title && (
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-[#3a3a5a]">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                         <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-white">
                             {title}
                         </h2>
