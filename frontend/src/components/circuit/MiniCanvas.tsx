@@ -55,9 +55,10 @@ export function MiniCanvas({ blueprint, width = 400, height = 200 }: MiniCanvasP
         const interval = setInterval(() => {
             // Increment phase on clock components and update sequential logic
             setComponents(prev => {
-                // First, determine if any clock is transitioning to HIGH (rising edge)
+                // Rising edge = transitioning from LOW (even) to HIGH (odd)
+                // So check if current phase is even (about to become odd after increment)
                 const isRisingEdge = prev.some(c => 
-                    c.type === 'CLOCK' && ((c.properties.phase as number) ?? 0) % 2 === 1
+                    c.type === 'CLOCK' && ((c.properties.phase as number) ?? 0) % 2 === 0
                 );
                 
                 return prev.map(c => {
