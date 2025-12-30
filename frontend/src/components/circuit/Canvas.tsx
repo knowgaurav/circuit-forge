@@ -892,55 +892,97 @@ function drawPushButtonSymbol(ctx: CanvasRenderingContext2D, width: number, heig
 }
 
 function drawClockSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    ctx.fillRect(-width / 2, -height / 2, width, height);
-    ctx.strokeRect(-width / 2, -height / 2, width, height);
-
-    // Clock wave
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    // Body with rounded corners
+    ctx.beginPath();
+    ctx.roundRect(-width / 2 + 2, -height / 2 + 2, width - 4, height - 4, 4);
+    
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
+    gradient.addColorStop(0, '#EFF6FF');
+    gradient.addColorStop(1, '#DBEAFE');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
     ctx.strokeStyle = '#3B82F6';
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-15, 5);
-    ctx.lineTo(-15, -5);
-    ctx.lineTo(-5, -5);
-    ctx.lineTo(-5, 5);
-    ctx.lineTo(5, 5);
-    ctx.lineTo(5, -5);
-    ctx.lineTo(15, -5);
     ctx.stroke();
 
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 8px sans-serif';
+    // Clock wave with better styling
+    ctx.strokeStyle = '#2563EB';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-12, 4);
+    ctx.lineTo(-12, -4);
+    ctx.lineTo(-4, -4);
+    ctx.lineTo(-4, 4);
+    ctx.lineTo(4, 4);
+    ctx.lineTo(4, -4);
+    ctx.lineTo(12, -4);
+    ctx.stroke();
+
+    ctx.fillStyle = '#1E40AF';
+    ctx.font = 'bold 8px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('CLK', 0, 14);
 }
 
 function drawConstHighSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    ctx.fillStyle = '#DCFCE7';
+    // Shadow
+    ctx.shadowColor = 'rgba(34, 197, 94, 0.3)';
+    ctx.shadowBlur = 6;
+    
     ctx.beginPath();
     ctx.arc(0, 0, height / 2 - 2, 0, Math.PI * 2);
+    
+    const gradient = ctx.createRadialGradient(0, -4, 0, 0, 0, height / 2);
+    gradient.addColorStop(0, '#86EFAC');
+    gradient.addColorStop(1, '#22C55E');
+    ctx.fillStyle = gradient;
     ctx.fill();
-    ctx.strokeStyle = '#22C55E';
+    
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#15803D';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = '#166534';
-    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 12px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('+V', 0, 0);
 }
 
 function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    ctx.fillStyle = '#FEE2E2';
+    // Shadow
+    ctx.shadowColor = 'rgba(107, 114, 128, 0.3)';
+    ctx.shadowBlur = 4;
+    
     ctx.beginPath();
     ctx.arc(0, 0, height / 2 - 2, 0, Math.PI * 2);
+    
+    const gradient = ctx.createRadialGradient(0, -4, 0, 0, 0, height / 2);
+    gradient.addColorStop(0, '#E5E7EB');
+    gradient.addColorStop(1, '#9CA3AF');
+    ctx.fillStyle = gradient;
     ctx.fill();
-    ctx.strokeStyle = '#EF4444';
+    
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#6B7280';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = '#991B1B';
-    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = '#374151';
+    ctx.font = 'bold 12px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('0', 0, 0);
@@ -1066,48 +1108,70 @@ function drawFlipFlopSymbol(ctx: CanvasRenderingContext2D, width: number, height
 }
 
 function drawVccSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    ctx.strokeStyle = '#EF4444';
-    ctx.lineWidth = 2;
-
+    // Glow effect
+    ctx.shadowColor = 'rgba(239, 68, 68, 0.4)';
+    ctx.shadowBlur = 6;
+    
     // Arrow pointing up
+    ctx.strokeStyle = '#DC2626';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(0, height / 2 - 4);
-    ctx.lineTo(0, -height / 2 + 8);
+    ctx.moveTo(0, height / 2 - 6);
+    ctx.lineTo(0, -height / 2 + 12);
     ctx.stroke();
 
-    // Triangle at top
-    ctx.fillStyle = '#EF4444';
+    // Triangle at top with gradient
+    const gradient = ctx.createLinearGradient(0, -height / 2, 0, -height / 2 + 12);
+    gradient.addColorStop(0, '#F87171');
+    gradient.addColorStop(1, '#DC2626');
+    ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.moveTo(0, -height / 2 + 2);
-    ctx.lineTo(-6, -height / 2 + 10);
-    ctx.lineTo(6, -height / 2 + 10);
+    ctx.lineTo(-8, -height / 2 + 14);
+    ctx.lineTo(8, -height / 2 + 14);
     ctx.closePath();
     ctx.fill();
+    
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#B91C1C';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 9px sans-serif';
+    ctx.fillStyle = '#991B1B';
+    ctx.font = 'bold 9px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('VCC', 0, height / 2 - 8);
+    ctx.fillText('VCC', 0, height / 2 - 6);
 }
 
 function drawGroundSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
     ctx.strokeStyle = '#374151';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
 
     // Vertical line
     ctx.beginPath();
     ctx.moveTo(0, -height / 2 + 4);
-    ctx.lineTo(0, 2);
+    ctx.lineTo(0, 0);
     ctx.stroke();
 
-    // Ground bars
+    // Ground bars with gradient effect
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(-10, 2);
-    ctx.lineTo(10, 2);
-    ctx.moveTo(-6, 6);
-    ctx.lineTo(6, 6);
-    ctx.moveTo(-3, 10);
-    ctx.lineTo(3, 10);
+    ctx.moveTo(-12, 0);
+    ctx.lineTo(12, 0);
+    ctx.stroke();
+    
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-8, 5);
+    ctx.lineTo(8, 5);
+    ctx.stroke();
+    
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-4, 10);
+    ctx.lineTo(4, 10);
     ctx.stroke();
 }
 
