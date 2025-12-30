@@ -265,8 +265,16 @@ export class WebSocketClient {
         this.send({ type: 'simulation:stop', payload: {} });
     }
 
-    sendSimulationState(wireStates: Record<string, string>, pinStates: Record<string, Record<string, string>>, errors: Array<{ errorType: string; message: string; componentId?: string; pinId?: string }>): void {
-        this.send({ type: 'simulation:state', payload: { wireStates, pinStates, errors } } as ClientMessage);
+    toggleSwitch(componentId: string): void {
+        this.send({ type: 'simulation:toggle', payload: { componentId } });
+    }
+
+    tickClock(componentId: string): void {
+        this.send({ type: 'simulation:clock:tick', payload: { componentId } });
+    }
+
+    stepSimulation(): void {
+        this.send({ type: 'simulation:step', payload: {} });
     }
 
     get isConnected(): boolean {
