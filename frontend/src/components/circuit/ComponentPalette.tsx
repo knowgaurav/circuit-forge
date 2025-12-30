@@ -87,7 +87,7 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
                                     const tooltipContent = detail?.shortDescription || comp.description;
                                     
                                     return (
-                                        <Tooltip key={comp.type} content={tooltipContent} position="right">
+                                        <Tooltip key={comp.type} content={tooltipContent} position="bottom">
                                             <div
                                                 draggable={!disabled}
                                                 onDragStart={(e) => handleDragStart(e, comp)}
