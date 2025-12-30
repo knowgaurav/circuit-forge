@@ -410,8 +410,7 @@ export function Canvas({
 }
 
 function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, panOffset: Position, zoom: number, isDarkMode = false) {
-    const gridSize = 20;
-    const dotSize = 1.5;
+    const gridSize = 5;
     
     // Calculate visible area in canvas coordinates
     const startX = Math.floor(-panOffset.x / zoom / gridSize) * gridSize - gridSize;
@@ -419,20 +418,26 @@ function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, 
     const endX = startX + width / zoom + gridSize * 4;
     const endY = startY + height / zoom + gridSize * 4;
 
-    // Draw dot grid for cleaner look
-    ctx.fillStyle = isDarkMode ? '#3a3a5a' : '#CBD5E1';
+    // Draw minor grid lines
+    ctx.strokeStyle = isDarkMode ? '#374151' : '#E2E8F0';
+    ctx.lineWidth = 0.5;
     for (let x = startX; x < endX; x += gridSize) {
-        for (let y = startY; y < endY; y += gridSize) {
-            ctx.beginPath();
-            ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-            ctx.fill();
-        }
+        ctx.beginPath();
+        ctx.moveTo(x, startY);
+        ctx.lineTo(x, endY);
+        ctx.stroke();
+    }
+    for (let y = startY; y < endY; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(startX, y);
+        ctx.lineTo(endX, y);
+        ctx.stroke();
     }
     
-    // Major grid lines every 5 cells
-    ctx.strokeStyle = isDarkMode ? '#2a2a4a' : '#E2E8F0';
-    ctx.lineWidth = 0.5;
-    const majorGridSize = gridSize * 5;
+    // Major grid lines every 10 cells (50px)
+    ctx.strokeStyle = isDarkMode ? '#4b5563' : '#CBD5E1';
+    ctx.lineWidth = 1;
+    const majorGridSize = gridSize * 10;
     const majorStartX = Math.floor(startX / majorGridSize) * majorGridSize;
     const majorStartY = Math.floor(startY / majorGridSize) * majorGridSize;
     
