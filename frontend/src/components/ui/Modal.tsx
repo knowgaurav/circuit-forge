@@ -53,7 +53,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {/* Modal content */}
             <div
                 className={clsx(
-                    'relative bg-white dark:bg-[#1e1e2e] rounded-lg shadow-xl',
+                    'relative bg-white dark:bg-[#1a1a28] rounded-lg shadow-xl',
                     'max-h-[90vh] overflow-auto',
                     {
                         'w-full max-w-sm': size === 'sm',
