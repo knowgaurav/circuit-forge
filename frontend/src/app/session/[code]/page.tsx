@@ -650,14 +650,6 @@ export default function SessionPage() {
                         onStop={() => wsClient?.stopSimulation()}
                         onSimulationResult={(result) => {
                             setSimulationResult(result);
-                            // Users with edit permission broadcast simulation state to all participants
-                            if (canEdit && result && wsClient) {
-                                wsClient.sendSimulationState(
-                                    result.wireStates as Record<string, string>,
-                                    result.pinStates as Record<string, Record<string, string>>,
-                                    result.errors
-                                );
-                            }
                         }}
                         onSimulationStateChange={setIsSimulationRunning}
                     />

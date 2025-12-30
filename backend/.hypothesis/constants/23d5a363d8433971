@@ -1,0 +1,4 @@
+# file: /Users/knowgaurav/Desktop/Projects/Algozenith/Projects/circuit-forge/backend/app/models/session.py
+# hypothesis_version: 6.148.3
+
+['^[A-Z0-9]{6}$', 'approved', 'canEdit', 'createdAt', 'creatorParticipantId', 'denied', 'displayName', 'display_name', 'isActive', 'lastActivityAt', 'lastSeenAt', 'participantId', 'pending', 'populate_by_name', 'requestedAt', 'sessionCode', 'student', 'teacher']

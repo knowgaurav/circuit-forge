@@ -1,10 +1,13 @@
 """MongoDB database connection manager."""
 
+import logging
 from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class DatabaseManager:
@@ -15,8 +18,20 @@ class DatabaseManager:
 
     async def connect(self) -> None:
         """Establish database connection."""
-        self.client = AsyncIOMotorClient(settings.mongodb_uri)
+        logger.info(f"Connecting to MongoDB at {settings.mongodb_uri}...")
+        self.client = AsyncIOMotorClient(
+            settings.mongodb_uri,
+            serverSelectionTimeoutMS=5000,  # 5 second timeout
+        )
         self.database = self.client[settings.mongodb_database]
+
+        # Test connection
+        try:
+            await self.client.admin.command("ping")
+            logger.info("MongoDB connected successfully")
+        except Exception as e:
+            logger.error(f"MongoDB connection failed: {e}")
+            raise
 
         # Create indexes
         await self._create_indexes()

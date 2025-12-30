@@ -28,6 +28,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+@app.get("/")
+async def root():
+    """Root endpoint with API info."""
+    return {
+        "name": settings.app_name,
+        "version": "0.1.0",
+        "description": "Collaborative Circuit Design Platform API",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
