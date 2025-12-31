@@ -1,7 +1,6 @@
 """Session repository for database operations."""
 
 from datetime import datetime
-from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -16,7 +15,7 @@ class SessionRepository(BaseRepository[Session]):
         """Initialize session repository."""
         super().__init__(database, "sessions", Session)
 
-    async def find_by_code(self, code: str) -> Optional[Session]:
+    async def find_by_code(self, code: str) -> Session | None:
         """Find a session by its code."""
         return await self.find_one({"code": code})
 

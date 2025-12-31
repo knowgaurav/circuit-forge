@@ -1,6 +1,5 @@
 """Application configuration using Pydantic Settings."""
 
-from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,7 +23,7 @@ class Settings(BaseSettings):
     mongodb_database: str = "circuitforge"
 
     # CORS
-    cors_origins: List[str] = ["http://localhost:3000"]
+    cors_origins: list[str] = ["http://localhost:3000"]
 
     # Session
     session_expiry_hours: int = 24
@@ -34,7 +33,7 @@ class Settings(BaseSettings):
     rate_limit_actions_per_minute: int = 100
 
     # LLM Configuration (supports OpenAI-compatible APIs like ohmygpt.com)
-    openai_api_key: Optional[str] = None
+    openai_api_key: str | None = None
     openai_base_url: str = "https://api.ohmygpt.com/v1/chat/completions"
     openai_model: str = "gpt-4o"
     openai_max_tokens: int = 4000

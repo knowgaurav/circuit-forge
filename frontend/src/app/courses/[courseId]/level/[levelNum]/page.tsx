@@ -5,16 +5,19 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/services/api';
 import { loadCircuitFromBlueprint, validateBlueprint } from '@/services/blueprintLoader';
-import { Canvas, SimulationOverlay } from '@/components/circuit';
+import { EmbeddedPlayground } from '@/components/circuit';
 import { useCircuitStore } from '@/stores/circuitStore';
-import type { SimulationResult } from '@/services/simulation';
-import type { CoursePlan, LevelContent, LevelOutline, CircuitComponent, Wire, Position } from '@/types';
+import { useLLMConfigStore } from '@/stores/llmConfigStore';
+import { APIKeyModal } from '@/components/ui/APIKeyModal';
+import { Zap, ArrowLeft } from 'lucide-react';
+import type { CoursePlan, LevelContent, LevelOutline } from '@/types';
 
 export default function LevelPage() {
     const router = useRouter();
     const params = useParams();
     const courseId = params.courseId as string;
     const levelNum = parseInt(params.levelNum as string, 10);
+    const llmStore = useLLMConfigStore();
 
     const [coursePlan, setCoursePlan] = useState<CoursePlan | null>(null);
     const [levelContent, setLevelContent] = useState<LevelContent | null>(null);
@@ -25,20 +28,11 @@ export default function LevelPage() {
     const [activeTab, setActiveTab] = useState<'theory' | 'practical'>('theory');
     const [blueprintLoaded, setBlueprintLoaded] = useState(false);
     const [blueprintErrors, setBlueprintErrors] = useState<string[]>([]);
-
-    // Simulation state
-    const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
-    const [isSimulationRunning, setIsSimulationRunning] = useState(false);
+    const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
     // Circuit store actions
-    const circuitStore = useCircuitStore();
     const setComponents = useCircuitStore((s) => s.setComponents);
     const setWires = useCircuitStore((s) => s.setWires);
-    const addComponent = useCircuitStore((s) => s.addComponent);
-    const addWire = useCircuitStore((s) => s.addWire);
-    const moveComponent = useCircuitStore((s) => s.moveComponent);
-    const deleteComponent = useCircuitStore((s) => s.deleteComponent);
-    const deleteWire = useCircuitStore((s) => s.deleteWire);
     const reset = useCircuitStore((s) => s.reset);
 
     useEffect(() => {
@@ -50,6 +44,20 @@ export default function LevelPage() {
     }, [courseId, levelNum, reset]);
 
     const loadLevel = async () => {
+        // Check if LLM is configured
+        if (!llmStore.isConfigured()) {
+            setShowApiKeyModal(true);
+            setIsLoading(false);
+            return;
+        }
+
+        const config = llmStore.getConfig();
+        if (!config) {
+            setShowApiKeyModal(true);
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         try {
             // Load course plan
@@ -60,8 +68,8 @@ export default function LevelPage() {
             const outline = plan.levels.find(l => l.levelNumber === levelNum);
             setLevelOutline(outline || null);
 
-            // Load level content
-            const { content, isGenerating: generating } = await api.getLevelContent(courseId, levelNum);
+            // Load level content with LLM config
+            const { content, isGenerating: generating } = await api.getLevelContent(courseId, levelNum, config);
             setLevelContent(content);
             setIsGenerating(generating);
 
@@ -77,9 +85,12 @@ export default function LevelPage() {
     };
 
     const pollForContent = async () => {
+        const config = llmStore.getConfig();
+        if (!config) return;
+
         const interval = setInterval(async () => {
             try {
-                const { content, isGenerating: generating } = await api.getLevelContent(courseId, levelNum);
+                const { content, isGenerating: generating } = await api.getLevelContent(courseId, levelNum, config);
                 if (!generating && content?.generationState === 'generated') {
                     setLevelContent(content);
                     setIsGenerating(false);
@@ -92,6 +103,11 @@ export default function LevelPage() {
 
         // Stop polling after 2 minutes
         setTimeout(() => clearInterval(interval), 120000);
+    };
+
+    const handleApiKeySaved = () => {
+        setShowApiKeyModal(false);
+        loadLevel();
     };
 
     const practical = levelContent?.practical;
@@ -134,35 +150,6 @@ export default function LevelPage() {
         setBlueprintErrors([]);
     }, [reset]);
 
-    // Canvas event handlers
-    const handleComponentAdd = useCallback((component: unknown) => {
-        addComponent(component as CircuitComponent);
-    }, [addComponent]);
-
-    const handleComponentMove = useCallback((componentId: string, position: Position) => {
-        moveComponent(componentId, position);
-    }, [moveComponent]);
-
-    const handleComponentDelete = useCallback((componentId: string) => {
-        deleteComponent(componentId);
-    }, [deleteComponent]);
-
-    const handleWireCreate = useCallback((fromComponentId: string, fromPinId: string, toComponentId: string, toPinId: string) => {
-        const wire: Wire = {
-            id: `wire-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            fromComponentId,
-            fromPinId,
-            toComponentId,
-            toPinId,
-            waypoints: [],
-        };
-        addWire(wire);
-    }, [addWire]);
-
-    const handleWireDelete = useCallback((wireId: string) => {
-        deleteWire(wireId);
-    }, [deleteWire]);
-
     const handleCompleteLevel = async () => {
         const participantId = localStorage.getItem('participantId');
         if (!participantId) return;
@@ -191,27 +178,37 @@ export default function LevelPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading level...</p>
+                    <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-gray-400">Loading level...</p>
                 </div>
             </div>
         );
     }
 
+    if (showApiKeyModal) {
+        return (
+            <APIKeyModal
+                isOpen={showApiKeyModal}
+                onClose={() => router.push(`/courses/${courseId}`)}
+                onSave={handleApiKeySaved}
+            />
+        );
+    }
+
     if (isGenerating) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
                 <div className="text-center max-w-md">
-                    <div className="animate-spin w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-6"></div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <div className="animate-spin w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-6"></div>
+                    <h2 className="text-xl font-semibold text-white mb-2">
                         Generating Your Personalized Content
                     </h2>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-gray-400 mb-4">
                         Our AI is creating custom learning materials for this level. This usually takes 15-30 seconds.
                     </p>
-                    <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-700">
+                    <div className="glass-card rounded-xl p-4 text-sm text-purple-300">
                         💡 Tip: While you wait, you can review previous levels or explore the course outline.
                     </div>
                 </div>
@@ -221,10 +218,10 @@ export default function LevelPage() {
 
     if (error || !coursePlan || !levelOutline) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-red-600 mb-4">{error || 'Level not found'}</p>
-                    <Link href={`/courses/${courseId}`} className="text-blue-600 hover:underline">
+                    <p className="text-red-400 mb-4">{error || 'Level not found'}</p>
+                    <Link href={`/courses/${courseId}`} className="text-purple-400 hover:text-purple-300">
                         Back to course
                     </Link>
                 </div>
@@ -235,36 +232,33 @@ export default function LevelPage() {
     const theory = levelContent?.theory;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-10">
-                <div className="max-w-6xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
+        <div className="min-h-screen bg-[#0a0a0f]">
+            {/* Navigation */}
+            <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <Link href="/" className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                                <Zap className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="font-bold text-xl text-white">CircuitForge</span>
+                        </Link>
                         <div className="flex items-center gap-4">
                             <Link
                                 href={`/courses/${courseId}`}
-                                className="text-gray-500 hover:text-gray-700"
+                                className="text-gray-400 hover:text-white text-sm font-medium flex items-center gap-1"
                             >
-                                ← Back
+                                <ArrowLeft className="w-4 h-4" />
+                                Back
                             </Link>
-                            <div>
+                            <div className="text-right">
                                 <p className="text-sm text-gray-500">
                                     Level {levelNum} of {coursePlan.levels.length}
                                 </p>
-                                <h1 className="text-lg font-semibold text-gray-900">
+                                <h1 className="text-sm font-semibold text-white">
                                     {levelOutline.title}
                                 </h1>
                             </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {levelNum > 1 && (
-                                <Link
-                                    href={`/courses/${courseId}/level/${levelNum - 1}`}
-                                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                >
-                                    Previous
-                                </Link>
-                            )}
                             <button
                                 onClick={handleCompleteLevel}
                                 className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
@@ -274,252 +268,225 @@ export default function LevelPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </nav>
 
             {/* Content */}
-            <div className="max-w-6xl mx-auto px-4 py-6">
-                {/* Tabs */}
-                <div className="flex gap-2 mb-6">
-                    <button
-                        onClick={() => setActiveTab('theory')}
-                        className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'theory'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        📖 Theory
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('practical')}
-                        className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'practical'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        🔧 Practical
-                    </button>
-                </div>
-
-                {/* Theory Tab */}
-                {activeTab === 'theory' && theory && (
-                    <div className="space-y-6">
-                        {/* Learning Objectives */}
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold mb-4">🎯 Learning Objectives</h2>
-                            <ul className="space-y-2">
-                                {theory.objectives.map((obj, i) => (
-                                    <li key={i} className="flex items-start gap-2">
-                                        <span className="text-green-500 mt-1">✓</span>
-                                        <span>{obj}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Concept Explanation */}
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold mb-4">📚 Concept Explanation</h2>
-                            <div className="prose max-w-none">
-                                <p className="text-gray-700 whitespace-pre-wrap">
-                                    {theory.conceptExplanation}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Real World Examples */}
-                        {theory.realWorldExamples.length > 0 && (
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h2 className="text-lg font-semibold mb-4">🌍 Real World Examples</h2>
-                                <ul className="space-y-3">
-                                    {theory.realWorldExamples.map((example, i) => (
-                                        <li key={i} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                                            <span className="text-blue-500">💡</span>
-                                            <span className="text-gray-700">{example}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-
-                        {/* Key Terms */}
-                        {theory.keyTerms.length > 0 && (
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h2 className="text-lg font-semibold mb-4">📝 Key Terms</h2>
-                                <div className="grid gap-3">
-                                    {theory.keyTerms.map((term, i) => (
-                                        <div key={i} className="p-3 bg-gray-50 rounded-lg">
-                                            <span className="font-medium text-gray-900">{term.term}:</span>{' '}
-                                            <span className="text-gray-600">{term.definition}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+            <div className="pt-24 pb-12 px-4">
+                <div className="max-w-6xl mx-auto">
+                    {/* Tabs */}
+                    <div className="flex gap-2 mb-6">
+                        <button
+                            onClick={() => setActiveTab('theory')}
+                            className={`px-6 py-3 rounded-xl font-medium transition-colors ${activeTab === 'theory'
+                                ? 'gradient-btn text-white'
+                                : 'glass-card text-gray-300 hover:text-white'
+                                }`}
+                        >
+                            📖 Theory
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('practical')}
+                            className={`px-6 py-3 rounded-xl font-medium transition-colors ${activeTab === 'practical'
+                                ? 'gradient-btn text-white'
+                                : 'glass-card text-gray-300 hover:text-white'
+                                }`}
+                        >
+                            🔧 Practical
+                        </button>
                     </div>
-                )}
 
-                {/* Practical Tab */}
-                {activeTab === 'practical' && practical && (
-                    <div className="space-y-6">
-                        {/* Components Needed */}
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold mb-4">🧩 Components Needed</h2>
-                            <div className="flex flex-wrap gap-2">
-                                {practical.componentsNeeded.map((comp, i) => (
-                                    <span
-                                        key={i}
-                                        className="px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium"
-                                    >
-                                        {comp.type} × {comp.count}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Build Steps */}
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold mb-4">📋 Build Steps</h2>
-                            <div className="space-y-4">
-                                {practical.steps.map((step) => (
-                                    <div key={step.stepNumber} className="flex gap-4">
-                                        <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-medium flex-shrink-0">
-                                            {step.stepNumber}
-                                        </span>
-                                        <div className="flex-1">
-                                            <p className="text-gray-700">{step.instruction}</p>
-                                            {step.hint && (
-                                                <p className="text-sm text-gray-500 mt-1">
-                                                    💡 Hint: {step.hint}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Expected Behavior */}
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold mb-4">✅ Expected Behavior</h2>
-                            <p className="text-gray-700">{practical.expectedBehavior}</p>
-                        </div>
-
-                        {/* Common Mistakes */}
-                        {practical.commonMistakes.length > 0 && (
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h2 className="text-lg font-semibold mb-4">⚠️ Common Mistakes to Avoid</h2>
+                    {/* Theory Tab */}
+                    {activeTab === 'theory' && theory && (
+                        <div className="space-y-6">
+                            {/* Learning Objectives */}
+                            <div className="glass-card rounded-2xl p-6">
+                                <h2 className="text-lg font-semibold text-white mb-4">🎯 Learning Objectives</h2>
                                 <ul className="space-y-2">
-                                    {practical.commonMistakes.map((mistake, i) => (
-                                        <li key={i} className="flex items-start gap-2 text-gray-700">
-                                            <span className="text-red-500">✗</span>
-                                            <span>{mistake}</span>
+                                    {theory.objectives.map((obj, i) => (
+                                        <li key={i} className="flex items-start gap-2">
+                                            <span className="text-green-400 mt-1">✓</span>
+                                            <span className="text-gray-300">{obj}</span>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                        )}
 
-                        {/* Circuit Canvas */}
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold">🔌 Build Your Circuit</h2>
-                                <div className="flex gap-2 items-center">
-                                    {/* Simulation Controls */}
-                                    <SimulationOverlay
-                                        canSimulate={true}
-                                        isRunning={isSimulationRunning}
-                                        remoteResult={null}
-                                        onStart={() => setIsSimulationRunning(true)}
-                                        onStop={() => {
-                                            setIsSimulationRunning(false);
-                                            setSimulationResult(null);
-                                        }}
-                                        onSimulationResult={setSimulationResult}
-                                        onSimulationStateChange={setIsSimulationRunning}
-                                    />
-
-                                    <div className="w-px h-6 bg-gray-300" />
-
-                                    {practical.circuitBlueprint && !blueprintLoaded && (
-                                        <button
-                                            onClick={handleLoadBlueprint}
-                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
-                                        >
-                                            Load Example Circuit
-                                        </button>
-                                    )}
-                                    {blueprintLoaded && (
-                                        <button
-                                            onClick={handleClearCircuit}
-                                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300"
-                                        >
-                                            Clear Circuit
-                                        </button>
-                                    )}
-                                    <Link
-                                        href="/playground"
-                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                                    >
-                                        Open Full Playground
-                                    </Link>
+                            {/* Concept Explanation */}
+                            <div className="glass-card rounded-2xl p-6">
+                                <h2 className="text-lg font-semibold text-white mb-4">📚 Concept Explanation</h2>
+                                <div className="prose max-w-none">
+                                    <p className="text-gray-300 whitespace-pre-wrap">
+                                        {theory.conceptExplanation}
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Blueprint errors */}
-                            {blueprintErrors.length > 0 && (
-                                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                    <p className="text-sm font-medium text-yellow-800 mb-1">⚠️ Some wires could not be connected:</p>
-                                    <ul className="text-sm text-yellow-700 list-disc list-inside">
-                                        {blueprintErrors.map((err, i) => (
-                                            <li key={i}>{err}</li>
+                            {/* Real World Examples */}
+                            {theory.realWorldExamples.length > 0 && (
+                                <div className="glass-card rounded-2xl p-6">
+                                    <h2 className="text-lg font-semibold text-white mb-4">🌍 Real World Examples</h2>
+                                    <ul className="space-y-3">
+                                        {theory.realWorldExamples.map((example, i) => (
+                                            <li key={i} className="flex items-start gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                                                <span className="text-purple-400">💡</span>
+                                                <span className="text-gray-300">{example}</span>
+                                            </li>
                                         ))}
                                     </ul>
                                 </div>
                             )}
 
-                            {/* Blueprint loaded indicator */}
-                            {blueprintLoaded && blueprintErrors.length === 0 && (
-                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                    <p className="text-sm text-green-700">
-                                        ✓ Example circuit loaded! Click the Play button to run the simulation.
-                                    </p>
+                            {/* Key Terms */}
+                            {theory.keyTerms.length > 0 && (
+                                <div className="glass-card rounded-2xl p-6">
+                                    <h2 className="text-lg font-semibold text-white mb-4">📝 Key Terms</h2>
+                                    <div className="grid gap-3">
+                                        {theory.keyTerms.map((term, i) => (
+                                            <div key={i} className="p-3 bg-white/5 border border-white/10 rounded-xl">
+                                                <span className="font-medium text-white">{term.term}:</span>{' '}
+                                                <span className="text-gray-400">{term.definition}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Practical Tab */}
+                    {activeTab === 'practical' && practical && (
+                        <div className="space-y-6">
+                            {/* Components Needed */}
+                            <div className="glass-card rounded-2xl p-6">
+                                <h2 className="text-lg font-semibold text-white mb-4">🧩 Components Needed</h2>
+                                <div className="flex flex-wrap gap-2">
+                                    {practical.componentsNeeded.map((comp, i) => (
+                                        <span
+                                            key={i}
+                                            className="px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-gray-300"
+                                        >
+                                            {comp.type} × {comp.count}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Build Steps */}
+                            <div className="glass-card rounded-2xl p-6">
+                                <h2 className="text-lg font-semibold text-white mb-4">📋 Build Steps</h2>
+                                <div className="space-y-4">
+                                    {practical.steps.map((step) => (
+                                        <div key={step.stepNumber} className="flex gap-4">
+                                            <span className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center font-medium flex-shrink-0">
+                                                {step.stepNumber}
+                                            </span>
+                                            <div className="flex-1">
+                                                <p className="text-gray-300">{step.instruction}</p>
+                                                {step.hint && (
+                                                    <p className="text-sm text-gray-500 mt-1">
+                                                        💡 Hint: {step.hint}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Expected Behavior */}
+                            <div className="glass-card rounded-2xl p-6">
+                                <h2 className="text-lg font-semibold text-white mb-4">✅ Expected Behavior</h2>
+                                <p className="text-gray-300">{practical.expectedBehavior}</p>
+                            </div>
+
+                            {/* Common Mistakes */}
+                            {practical.commonMistakes.length > 0 && (
+                                <div className="glass-card rounded-2xl p-6">
+                                    <h2 className="text-lg font-semibold text-white mb-4">⚠️ Common Mistakes to Avoid</h2>
+                                    <ul className="space-y-2">
+                                        {practical.commonMistakes.map((mistake, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-gray-300">
+                                                <span className="text-red-400">✗</span>
+                                                <span>{mistake}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             )}
 
-                            {/* Canvas */}
-                            <div className="bg-gray-900 rounded-lg overflow-hidden" style={{ height: '500px' }}>
-                                <Canvas
-                                    simulationResult={simulationResult}
-                                    isSimulationRunning={isSimulationRunning}
-                                    onComponentAdd={handleComponentAdd}
-                                    onComponentMove={handleComponentMove}
-                                    onComponentDelete={handleComponentDelete}
-                                    onWireCreate={handleWireCreate}
-                                    onWireDelete={handleWireDelete}
-                                    onSwitchToggle={(componentId) => {
-                                        circuitStore.toggleSwitchState(componentId);
-                                    }}
-                                />
+                            {/* Circuit Canvas */}
+                            <div className="glass-card rounded-2xl p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-lg font-semibold text-white">🔌 Build Your Circuit</h2>
+                                    <div className="flex gap-2 items-center">
+                                        {practical.circuitBlueprint && !blueprintLoaded && (
+                                            <button
+                                                onClick={handleLoadBlueprint}
+                                                className="px-4 py-2 gradient-btn rounded-lg text-sm font-medium text-white"
+                                            >
+                                                Load Example Circuit
+                                            </button>
+                                        )}
+                                        {blueprintLoaded && (
+                                            <button
+                                                onClick={handleClearCircuit}
+                                                className="px-4 py-2 bg-white/10 text-gray-300 rounded-lg text-sm font-medium hover:bg-white/20"
+                                            >
+                                                Clear Circuit
+                                            </button>
+                                        )}
+                                        <Link
+                                            href="/playground"
+                                            className="px-4 py-2 border border-white/20 text-gray-300 rounded-lg text-sm font-medium hover:bg-white/5"
+                                        >
+                                            Open Full Playground
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                {/* Blueprint errors */}
+                                {blueprintErrors.length > 0 && (
+                                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                                        <p className="text-sm font-medium text-yellow-400 mb-1">⚠️ Some wires could not be connected:</p>
+                                        <ul className="text-sm text-yellow-300 list-disc list-inside">
+                                            {blueprintErrors.map((err, i) => (
+                                                <li key={i}>{err}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Blueprint loaded indicator */}
+                                {blueprintLoaded && blueprintErrors.length === 0 && (
+                                    <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                                        <p className="text-sm text-green-400">
+                                            ✓ Example circuit loaded! Click the Play button to run the simulation.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Embedded Playground with Component Palette */}
+                                <EmbeddedPlayground height={500} />
+
+                                {/* No blueprint available message */}
+                                {!practical.circuitBlueprint && (
+                                    <p className="mt-3 text-sm text-gray-500">
+                                        💡 No pre-built circuit available for this level. Build your own following the steps above!
+                                    </p>
+                                )}
                             </div>
-
-                            {/* No blueprint available message */}
-                            {!practical.circuitBlueprint && (
-                                <p className="mt-3 text-sm text-gray-500">
-                                    💡 No pre-built circuit available for this level. Build your own following the steps above!
-                                </p>
-                            )}
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* No content yet */}
-                {!theory && !practical && (
-                    <div className="bg-white rounded-lg shadow p-8 text-center">
-                        <p className="text-gray-500">
-                            Content for this level is not available yet.
-                        </p>
-                    </div>
-                )}
+                    {/* No content yet */}
+                    {!theory && !practical && (
+                        <div className="glass-card rounded-2xl p-8 text-center">
+                            <p className="text-gray-400">
+                                Content for this level is not available yet.
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

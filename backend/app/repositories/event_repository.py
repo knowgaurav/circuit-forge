@@ -1,7 +1,7 @@
 """Event repository for event sourcing operations."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -25,19 +25,19 @@ class EventRepository:
 
     async def get_events_since_version(
         self, session_code: str, version: int
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get all events for a session since a specific version."""
         cursor = self._events.find(
             {"sessionCode": session_code, "version": {"$gt": version}}
         ).sort("version", 1)
-        
+
         events = []
         async for doc in cursor:
             doc.pop("_id", None)
             events.append(doc)
         return events
 
-    async def get_all_events(self, session_code: str) -> List[Dict[str, Any]]:
+    async def get_all_events(self, session_code: str) -> list[dict[str, Any]]:
         """Get all events for a session in order."""
         return await self.get_events_since_version(session_code, 0)
 
@@ -46,19 +46,19 @@ class EventRepository:
         cursor = self._events.find(
             {"sessionCode": session_code}
         ).sort("version", -1).limit(1)
-        
+
         async for doc in cursor:
             return doc.get("version", 0)
         return 0
 
     async def get_events_by_user(
         self, session_code: str, user_id: str, limit: int = 50
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get recent events by a specific user (for undo/redo)."""
         cursor = self._events.find(
             {"sessionCode": session_code, "userId": user_id}
         ).sort("version", -1).limit(limit)
-        
+
         events = []
         async for doc in cursor:
             doc.pop("_id", None)
@@ -85,12 +85,12 @@ class EventRepository:
 
     async def get_latest_snapshot(
         self, session_code: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get the most recent snapshot for a session."""
         cursor = self._snapshots.find(
             {"sessionCode": session_code}
         ).sort("version", -1).limit(1)
-        
+
         async for doc in cursor:
             doc.pop("_id", None)
             return doc
@@ -98,12 +98,12 @@ class EventRepository:
 
     async def get_snapshot_at_version(
         self, session_code: str, version: int
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get the snapshot at or before a specific version."""
         cursor = self._snapshots.find(
             {"sessionCode": session_code, "version": {"$lte": version}}
         ).sort("version", -1).limit(1)
-        
+
         async for doc in cursor:
             doc.pop("_id", None)
             return doc

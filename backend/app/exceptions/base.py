@@ -1,6 +1,5 @@
 """Custom exception hierarchy for CircuitForge."""
 
-from typing import Dict, Optional
 
 
 class AppException(Exception):
@@ -10,7 +9,7 @@ class AppException(Exception):
     message: str = "An unexpected error occurred"
     status_code: int = 500
 
-    def __init__(self, message: Optional[str] = None) -> None:
+    def __init__(self, message: str | None = None) -> None:
         self.message = message or self.message
         super().__init__(self.message)
 
@@ -22,7 +21,7 @@ class ValidationException(AppException):
     status_code = 400
 
     def __init__(
-        self, message: Optional[str] = None, code: Optional[str] = None
+        self, message: str | None = None, code: str | None = None
     ) -> None:
         if code:
             self.code = code
@@ -71,7 +70,7 @@ class SimulationException(AppException):
     code = "SIMULATION_ERROR"
     status_code = 422
 
-    def __init__(self, error_type: str, details: Dict[str, str]) -> None:
+    def __init__(self, error_type: str, details: dict[str, str]) -> None:
         messages = {
             "FLOATING_INPUT": f"Floating Input: Input pin has no connection at {details.get('location', 'unknown')}",
             "OUTPUT_CONFLICT": f"Output Conflict: Multiple outputs connected to same wire at {details.get('location', 'unknown')}",

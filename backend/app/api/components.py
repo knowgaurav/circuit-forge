@@ -1,6 +1,6 @@
 """API endpoints for component registry."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
@@ -10,11 +10,11 @@ router = APIRouter(prefix="/api/components", tags=["components"])
 
 
 @router.get("")
-async def get_all_components() -> Dict[str, Any]:
+async def get_all_components() -> dict[str, Any]:
     """Get all available components grouped by category."""
     registry = get_component_registry()
     components = registry.get_all_components()
-    
+
     return {
         "categories": {
             category: [
@@ -33,16 +33,16 @@ async def get_all_components() -> Dict[str, Any]:
 
 
 @router.get("/{component_type}")
-async def get_component_schema(component_type: str) -> Dict[str, Any]:
+async def get_component_schema(component_type: str) -> dict[str, Any]:
     """Get detailed schema for a specific component type."""
     registry = get_component_registry()
     component = registry.get_component(component_type)
-    
+
     if not component:
         # Find similar components for suggestions
         similar = registry.search_components(component_type)
         suggestions = [s.type for s in similar[:5]]
-        
+
         raise HTTPException(
             status_code=404,
             detail={
@@ -50,7 +50,7 @@ async def get_component_schema(component_type: str) -> Dict[str, Any]:
                 "suggestions": suggestions,
             },
         )
-    
+
     return {
         "type": component.type,
         "name": component.name,
@@ -78,7 +78,7 @@ async def get_component_schema(component_type: str) -> Dict[str, Any]:
 
 
 @router.get("/categories/list")
-async def get_categories() -> Dict[str, List[str]]:
+async def get_categories() -> dict[str, list[str]]:
     """Get all component categories."""
     registry = get_component_registry()
     return {"categories": registry.get_categories()}

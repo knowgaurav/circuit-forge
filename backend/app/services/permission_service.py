@@ -1,7 +1,6 @@
 """Permission management service."""
 
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -20,7 +19,7 @@ class PermissionService:
         self._participant_repo = ParticipantRepository(database)
         self._database = database
         # In-memory store for pending edit requests (per session)
-        self._edit_requests: Dict[str, Dict[str, EditRequest]] = {}
+        self._edit_requests: dict[str, dict[str, EditRequest]] = {}
 
     def can_edit(self, participant: Participant) -> bool:
         """Check if a participant has edit permission."""
@@ -39,7 +38,7 @@ class PermissionService:
         )
         if participant is None:
             raise NotFoundException("Participant", participant_id)
-        
+
         if not participant.can_edit:
             raise AuthorizationException(
                 "edit circuit",
@@ -60,25 +59,25 @@ class PermissionService:
         )
         if participant is None:
             raise NotFoundException("Participant", participant_id)
-        
+
         if participant.can_edit:
             raise AuthorizationException(
                 "request edit access",
                 "You already have edit permission.",
             )
-        
+
         if participant.role == Role.TEACHER:
             raise AuthorizationException(
                 "request edit access",
                 "Teachers already have edit permission.",
             )
-        
+
         # Check if there's already a pending request
         session_requests = self._edit_requests.get(session_code, {})
         existing = session_requests.get(participant_id)
         if existing and existing.status == EditRequestStatus.PENDING:
             return existing
-        
+
         # Create new request
         request = EditRequest(
             participantId=participant_id,
@@ -86,14 +85,14 @@ class PermissionService:
             requestedAt=datetime.utcnow(),
             status=EditRequestStatus.PENDING,
         )
-        
+
         if session_code not in self._edit_requests:
             self._edit_requests[session_code] = {}
         self._edit_requests[session_code][participant_id] = request
-        
+
         return request
 
-    async def get_pending_requests(self, session_code: str) -> List[EditRequest]:
+    async def get_pending_requests(self, session_code: str) -> list[EditRequest]:
         """Get all pending edit requests for a session."""
         session_requests = self._edit_requests.get(session_code, {})
         return [
@@ -122,26 +121,26 @@ class PermissionService:
         teacher = await self._participant_repo.find_by_id(session_code, teacher_id)
         if teacher is None:
             raise NotFoundException("Participant", teacher_id)
-        
+
         if teacher.role != Role.TEACHER:
             raise AuthorizationException(
                 "approve edit request",
                 "Only teachers can approve edit requests.",
             )
-        
+
         # Find and update the request
         session_requests = self._edit_requests.get(session_code, {})
         request = session_requests.get(student_id)
-        
+
         if request is None or request.status != EditRequestStatus.PENDING:
             raise NotFoundException("Edit request", student_id)
-        
+
         # Update request status
         request.status = EditRequestStatus.APPROVED
-        
+
         # Grant edit permission
         await self._participant_repo.update_can_edit(session_code, student_id, True)
-        
+
         return True
 
     async def deny_edit_request(
@@ -165,23 +164,23 @@ class PermissionService:
         teacher = await self._participant_repo.find_by_id(session_code, teacher_id)
         if teacher is None:
             raise NotFoundException("Participant", teacher_id)
-        
+
         if teacher.role != Role.TEACHER:
             raise AuthorizationException(
                 "deny edit request",
                 "Only teachers can deny edit requests.",
             )
-        
+
         # Find and update the request
         session_requests = self._edit_requests.get(session_code, {})
         request = session_requests.get(student_id)
-        
+
         if request is None or request.status != EditRequestStatus.PENDING:
             raise NotFoundException("Edit request", student_id)
-        
+
         # Update request status
         request.status = EditRequestStatus.DENIED
-        
+
         return True
 
     async def revoke_edit_permission(
@@ -205,32 +204,32 @@ class PermissionService:
         teacher = await self._participant_repo.find_by_id(session_code, teacher_id)
         if teacher is None:
             raise NotFoundException("Participant", teacher_id)
-        
+
         if teacher.role != Role.TEACHER:
             raise AuthorizationException(
                 "revoke edit permission",
                 "Only teachers can revoke edit permissions.",
             )
-        
+
         # Verify student exists and has edit permission
         student = await self._participant_repo.find_by_id(session_code, student_id)
         if student is None:
             raise NotFoundException("Participant", student_id)
-        
+
         if student.role == Role.TEACHER:
             raise AuthorizationException(
                 "revoke edit permission",
                 "Cannot revoke edit permission from a teacher.",
             )
-        
+
         # Revoke permission
         await self._participant_repo.update_can_edit(session_code, student_id, False)
-        
+
         # Clear any existing request
         session_requests = self._edit_requests.get(session_code, {})
         if student_id in session_requests:
             del session_requests[student_id]
-        
+
         return True
 
     def cleanup_session_requests(self, session_code: str) -> None:

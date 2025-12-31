@@ -1,6 +1,6 @@
 """Base repository with common database operations."""
 
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
+from typing import Any, Generic, TypeVar
 
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 from pydantic import BaseModel
@@ -15,14 +15,14 @@ class BaseRepository(Generic[T]):
         self,
         database: AsyncIOMotorDatabase,
         collection_name: str,
-        model_class: Type[T],
+        model_class: type[T],
     ) -> None:
         """Initialize repository with database and collection."""
         self._database = database
         self._collection: AsyncIOMotorCollection = database[collection_name]
         self._model_class = model_class
 
-    async def find_one(self, filter_dict: Dict[str, Any]) -> Optional[T]:
+    async def find_one(self, filter_dict: dict[str, Any]) -> T | None:
         """Find a single document matching the filter."""
         doc = await self._collection.find_one(filter_dict)
         if doc is None:
@@ -32,10 +32,10 @@ class BaseRepository(Generic[T]):
 
     async def find_many(
         self,
-        filter_dict: Dict[str, Any],
+        filter_dict: dict[str, Any],
         limit: int = 100,
         skip: int = 0,
-    ) -> List[T]:
+    ) -> list[T]:
         """Find multiple documents matching the filter."""
         cursor = self._collection.find(filter_dict).skip(skip).limit(limit)
         results = []
@@ -51,27 +51,27 @@ class BaseRepository(Generic[T]):
 
     async def update_one(
         self,
-        filter_dict: Dict[str, Any],
-        update_dict: Dict[str, Any],
+        filter_dict: dict[str, Any],
+        update_dict: dict[str, Any],
     ) -> bool:
         """Update a single document. Returns True if document was modified."""
         result = await self._collection.update_one(filter_dict, {"$set": update_dict})
         return result.modified_count > 0
 
-    async def delete_one(self, filter_dict: Dict[str, Any]) -> bool:
+    async def delete_one(self, filter_dict: dict[str, Any]) -> bool:
         """Delete a single document. Returns True if document was deleted."""
         result = await self._collection.delete_one(filter_dict)
         return result.deleted_count > 0
 
-    async def delete_many(self, filter_dict: Dict[str, Any]) -> int:
+    async def delete_many(self, filter_dict: dict[str, Any]) -> int:
         """Delete multiple documents. Returns count of deleted documents."""
         result = await self._collection.delete_many(filter_dict)
         return result.deleted_count
 
-    async def count(self, filter_dict: Dict[str, Any]) -> int:
+    async def count(self, filter_dict: dict[str, Any]) -> int:
         """Count documents matching the filter."""
         return await self._collection.count_documents(filter_dict)
 
-    async def exists(self, filter_dict: Dict[str, Any]) -> bool:
+    async def exists(self, filter_dict: dict[str, Any]) -> bool:
         """Check if a document matching the filter exists."""
         return await self.count(filter_dict) > 0

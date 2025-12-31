@@ -2,10 +2,9 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal, Union
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
-
 
 SCHEMA_VERSION = "1.0.0"
 
@@ -147,8 +146,8 @@ class CircuitComponent(BaseModel):
     type: ComponentType
     position: Position
     rotation: Rotation = Rotation.DEG_0
-    properties: Dict[str, Any] = Field(default_factory=dict)
-    pins: List[Pin] = Field(default_factory=list)
+    properties: dict[str, Any] = Field(default_factory=dict)
+    pins: list[Pin] = Field(default_factory=list)
 
 
 class Wire(BaseModel):
@@ -159,7 +158,7 @@ class Wire(BaseModel):
     from_pin_id: str = Field(alias="fromPinId")
     to_component_id: str = Field(alias="toComponentId")
     to_pin_id: str = Field(alias="toPinId")
-    waypoints: List[Position] = Field(default_factory=list)
+    waypoints: list[Position] = Field(default_factory=list)
 
     model_config = {"populate_by_name": True}
 
@@ -167,7 +166,7 @@ class Wire(BaseModel):
 class StrokeData(BaseModel):
     """Freehand stroke annotation data."""
 
-    points: List[Position]
+    points: list[Position]
     color: str
     width: StrokeWidth
 
@@ -188,7 +187,7 @@ class Annotation(BaseModel):
     id: str
     type: Literal["stroke", "text"]
     user_id: str = Field(alias="userId")
-    data: Union[StrokeData, TextData]
+    data: StrokeData | TextData
 
     model_config = {"populate_by_name": True}
 
@@ -199,9 +198,9 @@ class CircuitState(BaseModel):
     session_id: str = Field(alias="sessionId")
     version: int = 0
     schema_version: str = Field(default=SCHEMA_VERSION, alias="schemaVersion")
-    components: List[CircuitComponent] = Field(default_factory=list)
-    wires: List[Wire] = Field(default_factory=list)
-    annotations: List[Annotation] = Field(default_factory=list)
+    components: list[CircuitComponent] = Field(default_factory=list)
+    wires: list[Wire] = Field(default_factory=list)
+    annotations: list[Annotation] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=datetime.utcnow, alias="updatedAt")
 
     model_config = {"populate_by_name": True}
