@@ -1,7 +1,6 @@
 """Participant repository for database operations."""
 
 from datetime import datetime
-from typing import List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -18,17 +17,17 @@ class ParticipantRepository(BaseRepository[Participant]):
 
     async def find_by_id(
         self, session_code: str, participant_id: str
-    ) -> Optional[Participant]:
+    ) -> Participant | None:
         """Find a participant by session code and participant ID."""
         return await self.find_one(
             {"sessionCode": session_code, "id": participant_id}
         )
 
-    async def find_by_session(self, session_code: str) -> List[Participant]:
+    async def find_by_session(self, session_code: str) -> list[Participant]:
         """Find all participants in a session."""
         return await self.find_many({"sessionCode": session_code}, limit=100)
 
-    async def find_active_by_session(self, session_code: str) -> List[Participant]:
+    async def find_active_by_session(self, session_code: str) -> list[Participant]:
         """Find all active participants in a session."""
         return await self.find_many(
             {"sessionCode": session_code, "isActive": True}, limit=100
@@ -86,7 +85,7 @@ class ParticipantRepository(BaseRepository[Participant]):
         """Count participants in a session."""
         return await self.count({"sessionCode": session_code})
 
-    async def get_used_colors(self, session_code: str) -> List[str]:
+    async def get_used_colors(self, session_code: str) -> list[str]:
         """Get list of colors already used in a session."""
         participants = await self.find_by_session(session_code)
         return [p.color for p in participants]

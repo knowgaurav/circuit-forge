@@ -1,6 +1,6 @@
 """Session API endpoints."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from pydantic import BaseModel, Field
@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from app.core.database import db_manager
 from app.exceptions.base import AppException, NotFoundException, ValidationException
 from app.models.circuit import CircuitState
-from app.models.session import Participant, Session
+from app.models.session import Participant
 from app.services.circuit_service import CircuitService
 from app.services.session_service import SessionService
 from app.websocket.handler import ws_handler
@@ -28,7 +28,7 @@ class CreateSessionResponse(BaseModel):
 class JoinSessionRequest(BaseModel):
     """Request to join a session."""
     display_name: str = Field(alias="displayName", min_length=3, max_length=20)
-    participant_id: Optional[str] = Field(default=None, alias="participantId")
+    participant_id: str | None = Field(default=None, alias="participantId")
 
     model_config = {"populate_by_name": True}
 
@@ -49,7 +49,7 @@ class SessionInfoResponse(BaseModel):
 
 class ImportCircuitRequest(BaseModel):
     """Request to import a circuit."""
-    circuit: Dict[str, Any]
+    circuit: dict[str, Any]
 
 
 class ImportCircuitResponse(BaseModel):
@@ -60,7 +60,7 @@ class ImportCircuitResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Error response."""
-    error: Dict[str, str]
+    error: dict[str, str]
 
 
 # Dependency to get services
@@ -113,7 +113,7 @@ async def get_session(
                 exists=False,
                 participantCount=0,
             )
-        
+
         participants = await session_service.get_session_participants(code.upper())
         return SessionInfoResponse(
             code=code.upper(),
@@ -147,12 +147,12 @@ async def get_circuit(
     code: str,
     circuit_service: CircuitService = Depends(get_circuit_service),
     session_service: SessionService = Depends(get_session_service),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get current circuit state."""
     try:
         # Verify session exists
         await session_service.get_session(code.upper())
-        
+
         state = await circuit_service.get_circuit_state(code.upper())
         return state.model_dump(by_alias=True)
     except Exception as e:
@@ -164,12 +164,12 @@ async def export_json(
     code: str,
     circuit_service: CircuitService = Depends(get_circuit_service),
     session_service: SessionService = Depends(get_session_service),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Export circuit as JSON."""
     try:
         # Verify session exists
         await session_service.get_session(code.upper())
-        
+
         state = await circuit_service.get_circuit_state(code.upper())
         return state.model_dump(by_alias=True)
     except Exception as e:
@@ -187,7 +187,7 @@ async def import_circuit(
     try:
         # Verify session exists
         await session_service.get_session(code.upper())
-        
+
         # Validate and parse circuit state
         try:
             imported_state = CircuitState.model_validate(request.circuit)
@@ -196,7 +196,7 @@ async def import_circuit(
                 message="Invalid circuit file",
                 code="INVALID_CIRCUIT_FILE",
             )
-        
+
         # For now, we'll just validate the import
         # Full import would require clearing existing state and adding all components
         return ImportCircuitResponse(success=True, version=imported_state.version)

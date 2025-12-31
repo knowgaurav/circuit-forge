@@ -12,6 +12,7 @@ import type {
     TopicSuggestion,
     ValidationResult
 } from '@/types';
+import type { LLMConfig } from '@/stores/llmConfigStore';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -129,11 +130,37 @@ class ApiClient {
 
     async generateCoursePlan(
         topic: string,
+        llmConfig: LLMConfig,
         participantId?: string
     ): Promise<{ coursePlan: CoursePlan }> {
         return this.request('/courses/generate-plan', {
             method: 'POST',
-            body: JSON.stringify({ topic, participantId }),
+            body: JSON.stringify({
+                topic,
+                participantId,
+                llmConfig: {
+                    provider: llmConfig.provider,
+                    apiKey: llmConfig.apiKey,
+                    model: llmConfig.model,
+                    temperature: llmConfig.temperature,
+                    maxTokens: llmConfig.maxTokens,
+                },
+            }),
+        });
+    }
+
+    async testConnection(
+        provider: string,
+        apiKey: string,
+        model: string
+    ): Promise<{ success: boolean; message: string }> {
+        return this.request('/courses/test-connection', {
+            method: 'POST',
+            body: JSON.stringify({
+                provider,
+                apiKey,
+                model,
+            }),
         });
     }
 
@@ -153,9 +180,21 @@ class ApiClient {
 
     async getLevelContent(
         courseId: string,
-        levelNum: number
+        levelNum: number,
+        llmConfig: LLMConfig
     ): Promise<{ content: LevelContent | null; isGenerating: boolean }> {
-        return this.request(`/courses/${courseId}/levels/${levelNum}`);
+        return this.request(`/courses/${courseId}/levels/${levelNum}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                llmConfig: {
+                    provider: llmConfig.provider,
+                    apiKey: llmConfig.apiKey,
+                    model: llmConfig.model,
+                    temperature: llmConfig.temperature,
+                    maxTokens: llmConfig.maxTokens,
+                },
+            }),
+        });
     }
 
     async validateCircuit(

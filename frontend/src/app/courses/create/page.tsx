@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/services/api';
-import { Zap, ArrowLeft, Sparkles } from 'lucide-react';
+import { Zap, ArrowLeft, Sparkles, Settings, AlertTriangle } from 'lucide-react';
 import type { TopicSuggestion, CoursePlan } from '@/types';
+import { APIKeyModal } from '@/components/ui/APIKeyModal';
+import { useLLMConfigStore } from '@/stores/llmConfigStore';
+import { getProvider } from '@/constants/llmProviders';
 
 // Category colors for visual distinction (dark theme)
 const categoryColors: Record<string, string> = {
@@ -23,14 +26,25 @@ const difficultyColors: Record<string, string> = {
 
 export default function CreateCoursePage() {
     const router = useRouter();
+    const llmStore = useLLMConfigStore();
     const [suggestions, setSuggestions] = useState<TopicSuggestion[]>([]);
     const [customTopic, setCustomTopic] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [generatedPlan, setGeneratedPlan] = useState<CoursePlan | null>(null);
+    const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+    const [pendingTopic, setPendingTopic] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    const provider = getProvider(llmStore.provider);
 
     useEffect(() => {
+        setIsMounted(true);
         loadSuggestions();
+        // Show modal on page load if not configured
+        if (!llmStore.isConfigured()) {
+            setShowApiKeyModal(true);
+        }
     }, []);
 
     const loadSuggestions = async () => {
@@ -43,16 +57,40 @@ export default function CreateCoursePage() {
     };
 
     const handleGeneratePlan = async (topic: string) => {
+        // Check if configured, if not show modal and save topic for later
+        if (!llmStore.isConfigured()) {
+            setPendingTopic(topic);
+            setShowApiKeyModal(true);
+            return;
+        }
+
+        const config = llmStore.getConfig();
+        if (!config) {
+            setError('Please configure your LLM provider first');
+            setShowApiKeyModal(true);
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         try {
-            const { coursePlan } = await api.generateCoursePlan(topic);
+            const { coursePlan } = await api.generateCoursePlan(topic, config);
             setGeneratedPlan(coursePlan);
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to generate course plan';
             setError(errorMessage);
+            // Keep topic input on error for retry
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleApiKeySaved = () => {
+        setShowApiKeyModal(false);
+        // If there was a pending topic, generate it now
+        if (pendingTopic) {
+            handleGeneratePlan(pendingTopic);
+            setPendingTopic(null);
         }
     };
 
@@ -179,13 +217,45 @@ export default function CreateCoursePage() {
                             </div>
                             <span className="font-bold text-xl text-white">CircuitForge</span>
                         </Link>
-                        <Link href="/" className="text-gray-400 hover:text-white text-sm font-medium flex items-center gap-1">
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Home
-                        </Link>
+                        <div className="flex items-center gap-4">
+                            {/* API Key Status */}
+                            {isMounted && llmStore.isConfigured() && provider ? (
+                                <button
+                                    onClick={() => setShowApiKeyModal(true)}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-500/50 rounded-lg text-sm"
+                                >
+                                    {provider.logoUrl ? (
+                                        <img src={provider.logoUrl} alt={provider.name} className="w-4 h-4 object-contain" />
+                                    ) : (
+                                        <span className="text-green-400">{provider.icon}</span>
+                                    )}
+                                    <span className="text-green-300">{provider.name}</span>
+                                    <Settings className="w-3.5 h-3.5 text-green-400" />
+                                </button>
+                            ) : isMounted ? (
+                                <button
+                                    onClick={() => setShowApiKeyModal(true)}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-sm text-yellow-300"
+                                >
+                                    <Settings className="w-3.5 h-3.5" />
+                                    Configure API Key
+                                </button>
+                            ) : null}
+                            <Link href="/" className="text-gray-400 hover:text-white text-sm font-medium flex items-center gap-1">
+                                <ArrowLeft className="w-4 h-4" />
+                                Back to Home
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </nav>
+
+            {/* API Key Modal */}
+            <APIKeyModal
+                isOpen={showApiKeyModal}
+                onClose={() => setShowApiKeyModal(false)}
+                onSave={handleApiKeySaved}
+            />
 
             <div className="pt-24 pb-12 px-4">
                 <div className="max-w-6xl mx-auto">
@@ -205,6 +275,20 @@ export default function CreateCoursePage() {
                     {/* Custom Topic Input */}
                     <div className="glass-card p-6 rounded-2xl mb-8">
                         <h2 className="text-lg font-semibold text-white mb-4">Enter Your Own Topic</h2>
+                        {isMounted && !llmStore.isConfigured() && (
+                            <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-3">
+                                <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                                <p className="text-sm text-yellow-300">
+                                    Please configure your API key first to generate courses.
+                                    <button
+                                        onClick={() => setShowApiKeyModal(true)}
+                                        className="ml-2 underline hover:text-yellow-200"
+                                    >
+                                        Configure now
+                                    </button>
+                                </p>
+                            </div>
+                        )}
                         <div className="flex gap-4">
                             <input
                                 type="text"
@@ -216,7 +300,7 @@ export default function CreateCoursePage() {
                             />
                             <button
                                 onClick={() => handleGeneratePlan(customTopic)}
-                                disabled={!customTopic.trim() || isLoading}
+                                disabled={!customTopic.trim() || isLoading || (isMounted && !llmStore.isConfigured())}
                                 className="px-6 py-3 gradient-btn rounded-xl text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isLoading ? 'Generating...' : 'Generate Course'}
@@ -245,26 +329,38 @@ export default function CreateCoursePage() {
                                     <h3 className="text-lg font-medium text-gray-300 mb-3">{category}</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {items.map((suggestion) => (
-                                            <button
+                                            <div
                                                 key={suggestion.topic}
-                                                onClick={() => handleGeneratePlan(suggestion.topic)}
-                                                className={`p-4 rounded-xl border-2 text-left transition-all ${categoryColors[category] || 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                                className="relative group"
                                             >
-                                                <h4 className="font-semibold text-white mb-1">
-                                                    {suggestion.title}
-                                                </h4>
-                                                <p className="text-sm text-gray-400 mb-2">
-                                                    {suggestion.description}
-                                                </p>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyColors[suggestion.difficulty]}`}>
-                                                        {suggestion.difficulty}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        ~{suggestion.estimatedLevels} levels
-                                                    </span>
-                                                </div>
-                                            </button>
+                                                <button
+                                                    onClick={() => (isMounted && llmStore.isConfigured()) ? handleGeneratePlan(suggestion.topic) : setShowApiKeyModal(true)}
+                                                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${isMounted && !llmStore.isConfigured() ? 'opacity-50' : ''} ${categoryColors[category] || 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                                >
+                                                    <h4 className="font-semibold text-white mb-1">
+                                                        {suggestion.title}
+                                                    </h4>
+                                                    <p className="text-sm text-gray-400 mb-2">
+                                                        {suggestion.description}
+                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyColors[suggestion.difficulty]}`}>
+                                                            {suggestion.difficulty}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500">
+                                                            ~{suggestion.estimatedLevels} levels
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                                {isMounted && !llmStore.isConfigured() && (
+                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-xl">
+                                                        <div className="text-center px-4">
+                                                            <AlertTriangle className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                                                            <p className="text-sm text-yellow-300 font-medium">Configure API key to generate courses</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         ))}
                                     </div>
                                 </div>

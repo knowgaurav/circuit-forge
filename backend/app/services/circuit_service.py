@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -11,7 +11,6 @@ from app.models.circuit import (
     Annotation,
     CircuitComponent,
     CircuitState,
-    Pin,
     PinType,
     Position,
     Wire,
@@ -36,7 +35,6 @@ from app.models.events import (
 )
 from app.repositories.event_repository import EventRepository
 
-
 # Snapshot interval (create snapshot every N events)
 SNAPSHOT_INTERVAL = 50
 
@@ -48,10 +46,10 @@ class CircuitService:
         """Initialize circuit service."""
         self._event_repo = EventRepository(database)
         # Undo/redo stacks per user per session
-        self._undo_stacks: Dict[str, Dict[str, List[CircuitEvent]]] = defaultdict(
+        self._undo_stacks: dict[str, dict[str, list[CircuitEvent]]] = defaultdict(
             lambda: defaultdict(list)
         )
-        self._redo_stacks: Dict[str, Dict[str, List[CircuitEvent]]] = defaultdict(
+        self._redo_stacks: dict[str, dict[str, list[CircuitEvent]]] = defaultdict(
             lambda: defaultdict(list)
         )
 
@@ -63,22 +61,22 @@ class CircuitService:
         """
         # Try to get latest snapshot
         snapshot = await self._event_repo.get_latest_snapshot(session_code)
-        
+
         if snapshot:
             state = CircuitState.model_validate(snapshot["state"])
             start_version = snapshot["version"]
         else:
             state = CircuitState.create_empty(session_code)
             start_version = 0
-        
+
         # Apply events since snapshot
         events = await self._event_repo.get_events_since_version(
             session_code, start_version
         )
-        
+
         for event_data in events:
             state = self._apply_event(state, event_data)
-        
+
         return state
 
     async def add_component(
@@ -86,10 +84,10 @@ class CircuitService:
         session_code: str,
         user_id: str,
         component: CircuitComponent,
-    ) -> Tuple[CircuitEvent, CircuitState]:
+    ) -> tuple[CircuitEvent, CircuitState]:
         """Add a component to the circuit."""
         version = await self._get_next_version(session_code)
-        
+
         event = ComponentAddedEvent(
             sessionCode=session_code,
             version=version,
@@ -97,14 +95,14 @@ class CircuitService:
             timestamp=datetime.utcnow(),
             payload=ComponentAddedPayload(component=component),
         )
-        
+
         await self._event_repo.append_event(event)
         self._push_undo(session_code, user_id, event)
         self._clear_redo(session_code, user_id)
-        
+
         # Check if we need to create a snapshot
         await self._maybe_create_snapshot(session_code, version)
-        
+
         state = await self.get_circuit_state(session_code)
         return event, state
 
@@ -114,15 +112,15 @@ class CircuitService:
         user_id: str,
         component_id: str,
         position: Position,
-    ) -> Tuple[CircuitEvent, CircuitState]:
+    ) -> tuple[CircuitEvent, CircuitState]:
         """Move a component to a new position."""
         # Verify component exists
         state = await self.get_circuit_state(session_code)
         if not any(c.id == component_id for c in state.components):
             raise NotFoundException("Component", component_id)
-        
+
         version = await self._get_next_version(session_code)
-        
+
         event = ComponentMovedEvent(
             sessionCode=session_code,
             version=version,
@@ -130,11 +128,11 @@ class CircuitService:
             timestamp=datetime.utcnow(),
             payload=ComponentMovedPayload(componentId=component_id, position=position),
         )
-        
+
         await self._event_repo.append_event(event)
         self._push_undo(session_code, user_id, event)
         self._clear_redo(session_code, user_id)
-        
+
         state = await self.get_circuit_state(session_code)
         return event, state
 
@@ -143,26 +141,26 @@ class CircuitService:
         session_code: str,
         user_id: str,
         component_id: str,
-    ) -> Tuple[List[CircuitEvent], CircuitState]:
+    ) -> tuple[list[CircuitEvent], CircuitState]:
         """
         Delete a component and all connected wires (cascade delete).
         
         Returns list of events (component delete + wire deletes).
         """
         state = await self.get_circuit_state(session_code)
-        
+
         # Verify component exists
         if not any(c.id == component_id for c in state.components):
             raise NotFoundException("Component", component_id)
-        
-        events: List[CircuitEvent] = []
-        
+
+        events: list[CircuitEvent] = []
+
         # Find and delete connected wires first
         connected_wires = [
             w for w in state.wires
             if w.from_component_id == component_id or w.to_component_id == component_id
         ]
-        
+
         for wire in connected_wires:
             version = await self._get_next_version(session_code)
             wire_event = WireDeletedEvent(
@@ -174,7 +172,7 @@ class CircuitService:
             )
             await self._event_repo.append_event(wire_event)
             events.append(wire_event)
-        
+
         # Delete the component
         version = await self._get_next_version(session_code)
         component_event = ComponentDeletedEvent(
@@ -186,12 +184,12 @@ class CircuitService:
         )
         await self._event_repo.append_event(component_event)
         events.append(component_event)
-        
+
         # Push all events to undo stack as a group
         for event in events:
             self._push_undo(session_code, user_id, event)
         self._clear_redo(session_code, user_id)
-        
+
         state = await self.get_circuit_state(session_code)
         return events, state
 
@@ -200,19 +198,19 @@ class CircuitService:
         session_code: str,
         user_id: str,
         wire: Wire,
-    ) -> Tuple[CircuitEvent, CircuitState]:
+    ) -> tuple[CircuitEvent, CircuitState]:
         """
         Add a wire connection between components.
         
         Validates that wire connects output pin to input pin.
         """
         state = await self.get_circuit_state(session_code)
-        
+
         # Validate wire connection
         self._validate_wire_connection(state, wire)
-        
+
         version = await self._get_next_version(session_code)
-        
+
         event = WireAddedEvent(
             sessionCode=session_code,
             version=version,
@@ -220,11 +218,11 @@ class CircuitService:
             timestamp=datetime.utcnow(),
             payload=WireAddedPayload(wire=wire),
         )
-        
+
         await self._event_repo.append_event(event)
         self._push_undo(session_code, user_id, event)
         self._clear_redo(session_code, user_id)
-        
+
         state = await self.get_circuit_state(session_code)
         return event, state
 
@@ -233,15 +231,15 @@ class CircuitService:
         session_code: str,
         user_id: str,
         wire_id: str,
-    ) -> Tuple[CircuitEvent, CircuitState]:
+    ) -> tuple[CircuitEvent, CircuitState]:
         """Delete a wire connection."""
         state = await self.get_circuit_state(session_code)
-        
+
         if not any(w.id == wire_id for w in state.wires):
             raise NotFoundException("Wire", wire_id)
-        
+
         version = await self._get_next_version(session_code)
-        
+
         event = WireDeletedEvent(
             sessionCode=session_code,
             version=version,
@@ -249,11 +247,11 @@ class CircuitService:
             timestamp=datetime.utcnow(),
             payload=WireDeletedPayload(wireId=wire_id),
         )
-        
+
         await self._event_repo.append_event(event)
         self._push_undo(session_code, user_id, event)
         self._clear_redo(session_code, user_id)
-        
+
         state = await self.get_circuit_state(session_code)
         return event, state
 
@@ -262,10 +260,10 @@ class CircuitService:
         session_code: str,
         user_id: str,
         annotation: Annotation,
-    ) -> Tuple[CircuitEvent, CircuitState]:
+    ) -> tuple[CircuitEvent, CircuitState]:
         """Add an annotation to the circuit."""
         version = await self._get_next_version(session_code)
-        
+
         event = AnnotationAddedEvent(
             sessionCode=session_code,
             version=version,
@@ -273,11 +271,11 @@ class CircuitService:
             timestamp=datetime.utcnow(),
             payload=AnnotationAddedPayload(annotation=annotation),
         )
-        
+
         await self._event_repo.append_event(event)
         self._push_undo(session_code, user_id, event)
         self._clear_redo(session_code, user_id)
-        
+
         state = await self.get_circuit_state(session_code)
         return event, state
 
@@ -286,15 +284,15 @@ class CircuitService:
         session_code: str,
         user_id: str,
         annotation_id: str,
-    ) -> Tuple[CircuitEvent, CircuitState]:
+    ) -> tuple[CircuitEvent, CircuitState]:
         """Delete an annotation."""
         state = await self.get_circuit_state(session_code)
-        
+
         if not any(a.id == annotation_id for a in state.annotations):
             raise NotFoundException("Annotation", annotation_id)
-        
+
         version = await self._get_next_version(session_code)
-        
+
         event = AnnotationDeletedEvent(
             sessionCode=session_code,
             version=version,
@@ -302,11 +300,11 @@ class CircuitService:
             timestamp=datetime.utcnow(),
             payload=AnnotationDeletedPayload(annotationId=annotation_id),
         )
-        
+
         await self._event_repo.append_event(event)
         self._push_undo(session_code, user_id, event)
         self._clear_redo(session_code, user_id)
-        
+
         state = await self.get_circuit_state(session_code)
         return event, state
 
@@ -314,7 +312,7 @@ class CircuitService:
         self,
         session_code: str,
         user_id: str,
-    ) -> Optional[Tuple[CircuitEvent, CircuitState]]:
+    ) -> tuple[CircuitEvent, CircuitState] | None:
         """
         Undo the last action by this user.
         
@@ -323,28 +321,28 @@ class CircuitService:
         undo_stack = self._undo_stacks[session_code][user_id]
         if not undo_stack:
             return None
-        
+
         last_event = undo_stack.pop()
         state = await self.get_circuit_state(session_code)
-        
+
         # Create inverse event
         inverse_event = await self._create_inverse_event(
             session_code, user_id, last_event, state
         )
-        
+
         if inverse_event:
             await self._event_repo.append_event(inverse_event)
             self._redo_stacks[session_code][user_id].append(last_event)
             state = await self.get_circuit_state(session_code)
             return inverse_event, state
-        
+
         return None
 
     async def redo(
         self,
         session_code: str,
         user_id: str,
-    ) -> Optional[Tuple[CircuitEvent, CircuitState]]:
+    ) -> tuple[CircuitEvent, CircuitState] | None:
         """
         Redo the last undone action by this user.
         
@@ -353,31 +351,31 @@ class CircuitService:
         redo_stack = self._redo_stacks[session_code][user_id]
         if not redo_stack:
             return None
-        
+
         event_to_redo = redo_stack.pop()
         version = await self._get_next_version(session_code)
-        
+
         # Create new event with updated version
         new_event = self._recreate_event_with_version(event_to_redo, version)
-        
+
         await self._event_repo.append_event(new_event)
         self._undo_stacks[session_code][user_id].append(new_event)
-        
+
         state = await self.get_circuit_state(session_code)
         return new_event, state
 
     def _apply_event(
-        self, state: CircuitState, event_data: Dict[str, Any]
+        self, state: CircuitState, event_data: dict[str, Any]
     ) -> CircuitState:
         """Apply a single event to the circuit state."""
         event_type = event_data.get("type")
         payload = event_data.get("payload", {})
-        
+
         if event_type == CircuitEventType.COMPONENT_ADDED:
             component = CircuitComponent.model_validate(payload["component"])
             state.components.append(component)
             state.version = event_data["version"]
-        
+
         elif event_type == CircuitEventType.COMPONENT_MOVED:
             comp_id = payload.get("componentId")
             position = Position.model_validate(payload["position"])
@@ -386,32 +384,32 @@ class CircuitService:
                     comp.position = position
                     break
             state.version = event_data["version"]
-        
+
         elif event_type == CircuitEventType.COMPONENT_DELETED:
             comp_id = payload.get("componentId")
             state.components = [c for c in state.components if c.id != comp_id]
             state.version = event_data["version"]
-        
+
         elif event_type == CircuitEventType.WIRE_ADDED:
             wire = Wire.model_validate(payload["wire"])
             state.wires.append(wire)
             state.version = event_data["version"]
-        
+
         elif event_type == CircuitEventType.WIRE_DELETED:
             wire_id = payload.get("wireId")
             state.wires = [w for w in state.wires if w.id != wire_id]
             state.version = event_data["version"]
-        
+
         elif event_type == CircuitEventType.ANNOTATION_ADDED:
             annotation = Annotation.model_validate(payload["annotation"])
             state.annotations.append(annotation)
             state.version = event_data["version"]
-        
+
         elif event_type == CircuitEventType.ANNOTATION_DELETED:
             ann_id = payload.get("annotationId")
             state.annotations = [a for a in state.annotations if a.id != ann_id]
             state.version = event_data["version"]
-        
+
         state.updated_at = datetime.utcnow()
         return state
 
@@ -429,7 +427,7 @@ class CircuitService:
                     message="This wire connection already exists",
                     code="DUPLICATE_WIRE",
                 )
-        
+
         # Check if target input pin already has a connection (multiple drivers)
         for existing_wire in state.wires:
             if (
@@ -440,7 +438,7 @@ class CircuitService:
                     message="This input pin already has a connection",
                     code="INPUT_ALREADY_CONNECTED",
                 )
-        
+
         # Find source component and pin
         from_component = next(
             (c for c in state.components if c.id == wire.from_component_id), None
@@ -450,7 +448,7 @@ class CircuitService:
                 message=f"Source component '{wire.from_component_id}' not found",
                 code="INVALID_WIRE",
             )
-        
+
         from_pin = next(
             (p for p in from_component.pins if p.id == wire.from_pin_id), None
         )
@@ -459,7 +457,7 @@ class CircuitService:
                 message=f"Source pin '{wire.from_pin_id}' not found",
                 code="INVALID_WIRE",
             )
-        
+
         # Find target component and pin
         to_component = next(
             (c for c in state.components if c.id == wire.to_component_id), None
@@ -469,7 +467,7 @@ class CircuitService:
                 message=f"Target component '{wire.to_component_id}' not found",
                 code="INVALID_WIRE",
             )
-        
+
         to_pin = next(
             (p for p in to_component.pins if p.id == wire.to_pin_id), None
         )
@@ -478,14 +476,14 @@ class CircuitService:
                 message=f"Target pin '{wire.to_pin_id}' not found",
                 code="INVALID_WIRE",
             )
-        
+
         # Validate connection direction: output -> input
         if from_pin.type != PinType.OUTPUT:
             raise ValidationException(
                 message="Wire must start from an output pin",
                 code="INVALID_WIRE_DIRECTION",
             )
-        
+
         if to_pin.type != PinType.INPUT:
             raise ValidationException(
                 message="Wire must end at an input pin",
@@ -524,10 +522,10 @@ class CircuitService:
         user_id: str,
         event: CircuitEvent,
         state: CircuitState,
-    ) -> Optional[CircuitEvent]:
+    ) -> CircuitEvent | None:
         """Create an inverse event for undo."""
         version = await self._get_next_version(session_code)
-        
+
         if isinstance(event, ComponentAddedEvent):
             return ComponentDeletedEvent(
                 sessionCode=session_code,
@@ -538,7 +536,7 @@ class CircuitService:
                     componentId=event.payload.component.id
                 ),
             )
-        
+
         elif isinstance(event, ComponentDeletedEvent):
             # Need to find the deleted component from history
             # For simplicity, we'll reconstruct from events
@@ -560,7 +558,7 @@ class CircuitService:
                         payload=ComponentAddedPayload(component=component),
                     )
             return None
-        
+
         elif isinstance(event, ComponentMovedEvent):
             # Find previous position from events
             events = await self._event_repo.get_all_events(session_code)
@@ -580,7 +578,7 @@ class CircuitService:
                         == event.payload.component_id
                     ):
                         prev_position = Position.model_validate(e["payload"]["position"])
-            
+
             if prev_position:
                 return ComponentMovedEvent(
                     sessionCode=session_code,
@@ -593,7 +591,7 @@ class CircuitService:
                     ),
                 )
             return None
-        
+
         elif isinstance(event, WireAddedEvent):
             return WireDeletedEvent(
                 sessionCode=session_code,
@@ -602,7 +600,7 @@ class CircuitService:
                 timestamp=datetime.utcnow(),
                 payload=WireDeletedPayload(wireId=event.payload.wire.id),
             )
-        
+
         elif isinstance(event, WireDeletedEvent):
             # Find the deleted wire from history
             events = await self._event_repo.get_all_events(session_code)
@@ -621,7 +619,7 @@ class CircuitService:
                         payload=WireAddedPayload(wire=wire),
                     )
             return None
-        
+
         elif isinstance(event, AnnotationAddedEvent):
             return AnnotationDeletedEvent(
                 sessionCode=session_code,
@@ -632,7 +630,7 @@ class CircuitService:
                     annotationId=event.payload.annotation.id
                 ),
             )
-        
+
         elif isinstance(event, AnnotationDeletedEvent):
             # Find the deleted annotation from history
             events = await self._event_repo.get_all_events(session_code)
@@ -651,7 +649,7 @@ class CircuitService:
                         payload=AnnotationAddedPayload(annotation=annotation),
                     )
             return None
-        
+
         return None
 
     def _recreate_event_with_version(
@@ -661,7 +659,7 @@ class CircuitService:
         event_dict = event.model_dump(by_alias=True)
         event_dict["version"] = version
         event_dict["timestamp"] = datetime.utcnow()
-        
+
         if isinstance(event, ComponentAddedEvent):
             return ComponentAddedEvent.model_validate(event_dict)
         elif isinstance(event, ComponentMovedEvent):
@@ -676,7 +674,7 @@ class CircuitService:
             return AnnotationAddedEvent.model_validate(event_dict)
         elif isinstance(event, AnnotationDeletedEvent):
             return AnnotationDeletedEvent.model_validate(event_dict)
-        
+
         return event
 
     def cleanup_session(self, session_code: str) -> None:

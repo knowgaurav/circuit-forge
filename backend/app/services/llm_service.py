@@ -1,23 +1,30 @@
-"""LLM Service for generating course content using OpenAI."""
+"""LLM Service for generating course content using multiple providers."""
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
+import re
+from typing import Any
 
-import httpx
-
-from app.core.config import settings
 from app.models.circuit import ComponentType
 from app.models.course import (
     CircuitBlueprint,
     CoursePlan,
     Difficulty,
-    LevelContent,
     LevelOutline,
     PracticalSection,
     TheorySection,
 )
-from app.services.llm_tools import TOOL_DEFINITIONS, ToolHandler, get_tool_handler
+from app.services.llm_provider_factory import LLMProviderFactory
+from app.services.llm_providers import (
+    AuthenticationError,
+    LLMProviderStrategy,
+    LLMRequest,
+    LLMResponse,
+    ProviderUnavailableError,
+    QuotaExceededError,
+    RateLimitError,
+)
+from app.services.llm_tools import TOOL_DEFINITIONS, get_tool_handler
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +64,18 @@ Output must be valid JSON matching this schema:
 LEVEL_CONTENT_SYSTEM_PROMPT = """You are an expert electronics educator creating detailed lesson content.
 You will generate content for a specific level in a circuit design course.
 
-IMPORTANT WORKFLOW:
-1. First call get_available_components to see all available components
-2. For each component you want to use, call get_component_schema to get exact pin names
-3. Create the circuit blueprint using the exact pin names from the schemas
-4. Call validate_blueprint to verify your blueprint is correct before returning
+CRITICAL WORKFLOW - YOU MUST FOLLOW THESE STEPS:
+1. Call get_available_components to see all available components
+2. Call get_component_schema for EACH component type you plan to use
+3. Design a COMPLETE circuit where EVERY input pin is connected
+4. Call validate_blueprint - if it fails, FIX the errors and validate again
+5. Only return the JSON after validation succeeds
+
+CIRCUIT COMPLETENESS RULES:
+- Every logic gate input pin MUST be connected to an output
+- Every LED/output device input MUST be connected
+- Use SWITCH_TOGGLE or CONST_HIGH/LOW for unused inputs
+- NO floating inputs allowed - the circuit must be fully functional
 
 Course context:
 - Topic: {topic}
@@ -119,261 +133,8 @@ Output must be valid JSON matching this schema:
 }}"""
 
 
-class LLMService:
-    """Service for interacting with OpenAI-compatible APIs (including ohmygpt.com)."""
-
-    MAX_TOOL_CALLS = 10
-
-    def __init__(self) -> None:
-        self.api_key = settings.openai_api_key
-        self.model = settings.openai_model
-        self.max_tokens = settings.openai_max_tokens
-        self.temperature = settings.openai_temperature
-        self.base_url = settings.openai_base_url
-        self.tool_handler = get_tool_handler()
-
-    async def _call_openai(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        max_retries: int = 3,
-    ) -> Dict[str, Any]:
-        """Make a call to OpenAI API with retry logic (no tools)."""
-        if not self.api_key:
-            raise ValueError("OpenAI API key not configured")
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature,
-            "response_format": {"type": "json_object"},
-        }
-
-        last_error: Optional[Exception] = None
-
-        for attempt in range(max_retries):
-            try:
-                async with httpx.AsyncClient(timeout=60.0) as client:
-                    response = await client.post(
-                        self.base_url,
-                        headers=headers,
-                        json=payload,
-                    )
-                    response.raise_for_status()
-                    result = response.json()
-
-                    content = result["choices"][0]["message"]["content"]
-                    parsed = json.loads(content)
-
-                    # Log token usage
-                    usage = result.get("usage", {})
-                    logger.info(
-                        f"OpenAI API call: {usage.get('total_tokens', 0)} tokens used"
-                    )
-
-                    return {
-                        "content": parsed,
-                        "token_usage": usage.get("total_tokens", 0),
-                    }
-
-            except httpx.HTTPStatusError as e:
-                last_error = e
-                logger.warning(f"OpenAI API error (attempt {attempt + 1}): {e}")
-                if e.response.status_code == 429:
-                    # Rate limited, wait longer
-                    import asyncio
-                    await asyncio.sleep(2 ** attempt)
-                elif e.response.status_code >= 500:
-                    # Server error, retry
-                    import asyncio
-                    await asyncio.sleep(1)
-                else:
-                    raise
-
-            except json.JSONDecodeError as e:
-                last_error = e
-                logger.warning(f"JSON parse error (attempt {attempt + 1}): {e}")
-
-            except Exception as e:
-                last_error = e
-                logger.warning(f"Unexpected error (attempt {attempt + 1}): {e}")
-
-        raise RuntimeError(f"Failed after {max_retries} attempts: {last_error}")
-
-    async def _call_with_tools(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        max_retries: int = 3,
-    ) -> Dict[str, Any]:
-        """Make LLM call with tool support. Falls back to non-tool mode if API doesn't support tools."""
-        if not self.api_key:
-            raise ValueError("OpenAI API key not configured")
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-
-        messages: List[Dict[str, Any]] = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
-
-        tool_calls_count = 0
-        total_tokens = 0
-
-        while tool_calls_count < self.MAX_TOOL_CALLS:
-            payload = {
-                "model": self.model,
-                "messages": messages,
-                "max_tokens": self.max_tokens,
-                "temperature": self.temperature,
-                "tools": TOOL_DEFINITIONS,
-                "tool_choice": "auto",
-            }
-
-            last_error: Optional[Exception] = None
-            result = None
-
-            for attempt in range(max_retries):
-                try:
-                    async with httpx.AsyncClient(timeout=120.0) as client:
-                        response = await client.post(
-                            self.base_url,
-                            headers=headers,
-                            json=payload,
-                        )
-                        response.raise_for_status()
-                        result = response.json()
-                        break
-                except httpx.HTTPStatusError as e:
-                    last_error = e
-                    logger.warning(f"OpenAI API error (attempt {attempt + 1}): {e}")
-                    
-                    # Check if it's a tool-related error (API doesn't support tools)
-                    if e.response.status_code == 400:
-                        error_body = e.response.text
-                        if "tool" in error_body.lower() or "function" in error_body.lower():
-                            logger.warning("API doesn't support tool calling, falling back to non-tool mode")
-                            # Fall back to non-tool mode
-                            return await self._call_openai_fallback(system_prompt, user_prompt)
-                    
-                    if e.response.status_code == 429:
-                        import asyncio
-                        await asyncio.sleep(2 ** attempt)
-                    elif e.response.status_code >= 500:
-                        import asyncio
-                        await asyncio.sleep(1)
-                    else:
-                        # For other 4xx errors, try fallback
-                        logger.warning(f"API error {e.response.status_code}, trying fallback mode")
-                        return await self._call_openai_fallback(system_prompt, user_prompt)
-                except Exception as e:
-                    last_error = e
-                    logger.warning(f"Unexpected error (attempt {attempt + 1}): {e}")
-            
-            if result is None:
-                # All retries failed, try fallback
-                logger.warning("Tool calling failed, falling back to non-tool mode")
-                return await self._call_openai_fallback(system_prompt, user_prompt)
-
-            # Track token usage
-            usage = result.get("usage", {})
-            total_tokens += usage.get("total_tokens", 0)
-
-            message = result["choices"][0]["message"]
-            
-            # Check if LLM wants to call tools
-            tool_calls = message.get("tool_calls", [])
-            
-            if tool_calls:
-                # Add assistant message with tool calls
-                messages.append({
-                    "role": "assistant",
-                    "content": message.get("content"),
-                    "tool_calls": tool_calls,
-                })
-                
-                # Execute each tool call
-                for tool_call in tool_calls:
-                    tool_name = tool_call["function"]["name"]
-                    try:
-                        tool_args = json.loads(tool_call["function"]["arguments"])
-                    except json.JSONDecodeError:
-                        tool_args = {}
-                    
-                    logger.info(f"Executing tool: {tool_name} with args: {tool_args}")
-                    
-                    # Execute tool
-                    tool_result = self.tool_handler.handle_tool_call(tool_name, tool_args)
-                    
-                    # Add tool result to messages
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call["id"],
-                        "content": json.dumps(tool_result),
-                    })
-                    
-                    tool_calls_count += 1
-                    
-                    if tool_calls_count >= self.MAX_TOOL_CALLS:
-                        logger.warning(f"Reached max tool calls ({self.MAX_TOOL_CALLS})")
-                        break
-            else:
-                # LLM finished, parse final response
-                content = message.get("content", "")
-                
-                # Try to parse as JSON
-                try:
-                    parsed = json.loads(content)
-                except json.JSONDecodeError:
-                    # Try to extract JSON from the response
-                    import re
-                    json_match = re.search(r'\{[\s\S]*\}', content)
-                    if json_match:
-                        parsed = json.loads(json_match.group())
-                    else:
-                        raise ValueError(f"Could not parse JSON from response: {content[:200]}")
-                
-                logger.info(f"Tool calling complete: {tool_calls_count} tool calls, {total_tokens} tokens")
-                
-                return {
-                    "content": parsed,
-                    "token_usage": total_tokens,
-                    "tool_calls_count": tool_calls_count,
-                }
-
-        # Exceeded max tool calls
-        raise RuntimeError(f"Exceeded maximum tool calls ({self.MAX_TOOL_CALLS})")
-
-    async def _call_openai_fallback(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-    ) -> Dict[str, Any]:
-        """Fallback to non-tool mode with component info embedded in prompt."""
-        # Get component info to embed in prompt
-        components_info = self.tool_handler.handle_tool_call("get_available_components", {})
-        
-        # Build component reference for the prompt
-        component_ref = "=== AVAILABLE COMPONENTS ===\n"
-        for category, comps in components_info.get("categories", {}).items():
-            component_ref += f"\n{category}:\n"
-            for comp in comps:
-                component_ref += f"  - {comp['type']}: {comp['description']}\n"
-        
-        # Add comprehensive pin reference
-        pin_ref = """
+# Component reference for fallback mode
+COMPONENT_PIN_REFERENCE = """
 === COMPONENT PIN REFERENCE (USE EXACT NAMES) ===
 
 Logic Gates:
@@ -427,45 +188,239 @@ Connectors:
 3. Connect OUTPUT → INPUT only (never OUTPUT → OUTPUT or INPUT → INPUT)
 4. Wire format: "LABEL:PIN" (e.g., "SW1:OUT", "AND1:Y", "LED1:IN")
 5. GROUND receives signals - connect outputs TO ground, not FROM ground
+6. EVERY input pin on logic gates and LEDs MUST be connected - NO floating inputs!
+7. For unused gate inputs, connect them to CONST_HIGH or CONST_LOW
 
-=== EXAMPLE VALID CIRCUITS ===
-Simple LED circuit:
-  components: [{type: "SWITCH_TOGGLE", label: "SW1"}, {type: "LED_RED", label: "LED1"}]
-  wires: [{from: "SW1:OUT", to: "LED1:IN"}]
-
-AND gate circuit:
-  components: [{type: "SWITCH_TOGGLE", label: "SW1"}, {type: "SWITCH_TOGGLE", label: "SW2"}, {type: "AND_2", label: "AND1"}, {type: "LED_RED", label: "LED1"}]
-  wires: [{from: "SW1:OUT", to: "AND1:A"}, {from: "SW2:OUT", to: "AND1:B"}, {from: "AND1:Y", to: "LED1:IN"}]
+=== CIRCUIT COMPLETENESS CHECKLIST ===
+Before finalizing your circuit, verify:
+- [ ] Every AND/OR/NAND/NOR gate has ALL input pins connected
+- [ ] Every NOT/BUFFER gate has its input pin connected
+- [ ] Every LED has its input pin connected
+- [ ] No component is isolated (disconnected from the circuit)
 """
-        
+
+
+class LLMService:
+    """Service for LLM operations using user-provided API keys."""
+
+    MAX_TOOL_CALLS = 10
+
+    def __init__(self) -> None:
+        self.tool_handler = get_tool_handler()
+
+    def _get_provider(self, provider_id: str) -> LLMProviderStrategy:
+        """Get provider strategy by ID."""
+        return LLMProviderFactory.get_provider(provider_id)
+
+    def _validate_api_key(self, provider_id: str, api_key: str) -> None:
+        """Validate API key format for provider."""
+        provider = self._get_provider(provider_id)
+        is_valid, error = provider.validate_key_format(api_key)
+        if not is_valid:
+            raise ValueError(error)
+
+    async def _call_with_tools(
+        self,
+        provider: LLMProviderStrategy,
+        api_key: str,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> dict[str, Any]:
+        """Make LLM call with tool support."""
+        messages: list[dict[str, Any]] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        tool_calls_count = 0
+        total_tokens = 0
+
+        while tool_calls_count < self.MAX_TOOL_CALLS:
+            request = LLMRequest(
+                messages=messages,
+                tools=TOOL_DEFINITIONS,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+
+            try:
+                response = await provider.call(api_key, request)
+            except (RateLimitError, QuotaExceededError, ProviderUnavailableError):
+                raise
+            except AuthenticationError as e:
+                # Some providers return auth errors when tool calling isn't supported
+                # Try fallback mode first before failing
+                logger.warning(f"Auth error during tool call (may be unsupported tools): {e}, trying fallback mode")
+                return await self._call_fallback(
+                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+                )
+            except Exception as e:
+                logger.warning(f"Tool calling failed: {e}, trying fallback mode")
+                return await self._call_fallback(
+                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+                )
+
+            total_tokens += response.token_usage
+
+            if response.tool_calls:
+                # Add assistant message with tool calls
+                messages.append({
+                    "role": "assistant",
+                    "content": response.raw_content,
+                    "tool_calls": response.tool_calls,
+                })
+
+                # Execute each tool call
+                for tool_call in response.tool_calls:
+                    tool_name = tool_call["function"]["name"]
+                    try:
+                        tool_args = json.loads(tool_call["function"]["arguments"])
+                    except json.JSONDecodeError:
+                        tool_args = {}
+
+                    logger.info(f"Executing tool: {tool_name}")
+
+                    # Execute tool
+                    tool_result = self.tool_handler.handle_tool_call(tool_name, tool_args)
+
+                    # Add tool result to messages
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call["id"],
+                        "name": tool_name,
+                        "content": json.dumps(tool_result),
+                    })
+
+                    tool_calls_count += 1
+
+                    if tool_calls_count >= self.MAX_TOOL_CALLS:
+                        logger.warning(f"Reached max tool calls ({self.MAX_TOOL_CALLS})")
+                        break
+            else:
+                # LLM finished - check if we got valid content
+                if response.content is not None:
+                    logger.info(f"Tool calling complete: {tool_calls_count} tool calls, {total_tokens} tokens")
+                    return {
+                        "content": response.content,
+                        "token_usage": total_tokens,
+                        "tool_calls_count": tool_calls_count,
+                    }
+                else:
+                    # Model returned empty/non-JSON content, try fallback
+                    logger.warning(f"Model returned no parseable JSON content, trying fallback mode")
+                    return await self._call_fallback(
+                        provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+                    )
+
+        # If we exhausted tool calls without getting content, try fallback
+        logger.warning(f"Exceeded max tool calls without valid content, trying fallback mode")
+        return await self._call_fallback(
+            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+        )
+
+    async def _call_fallback(
+        self,
+        provider: LLMProviderStrategy,
+        api_key: str,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> dict[str, Any]:
+        """Fallback to non-tool mode with component info embedded in prompt."""
+        # Get component info to embed in prompt
+        components_info = self.tool_handler.handle_tool_call("get_available_components", {})
+
+        # Build component reference for the prompt
+        component_ref = "=== AVAILABLE COMPONENTS ===\n"
+        for category, comps in components_info.get("categories", {}).items():
+            component_ref += f"\n{category}:\n"
+            for comp in comps:
+                component_ref += f"  - {comp['type']}: {comp['description']}\n"
+
         # Modify system prompt to include component info
         enhanced_prompt = system_prompt.replace(
             "IMPORTANT WORKFLOW:",
-            f"{component_ref}\n{pin_ref}\nIMPORTANT:"
+            f"{component_ref}\n{COMPONENT_PIN_REFERENCE}\nIMPORTANT:"
         ).replace(
             "IMPORTANT: Before creating the course plan, you MUST call the get_available_components tool",
             f"{component_ref}\nIMPORTANT: Use only the components listed above"
         )
-        
+
         logger.info("Using fallback mode with embedded component info")
-        result = await self._call_openai(enhanced_prompt, user_prompt)
+
+        # Add explicit JSON formatting instruction
+        json_instruction = """
+
+CRITICAL: Your response MUST be a valid JSON object only. Do NOT include any text before or after the JSON.
+Do NOT use markdown code blocks. Start your response with { and end with }.
+"""
+        enhanced_user_prompt = user_prompt + json_instruction
+
+        request = LLMRequest(
+            messages=[
+                {"role": "system", "content": enhanced_prompt},
+                {"role": "user", "content": enhanced_user_prompt},
+            ],
+            tools=[],
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+        response = await provider.call(api_key, request)
         
+        # If content is still None, try to parse raw_content more aggressively
+        if response.content is None and response.raw_content:
+            logger.warning("Fallback: Attempting aggressive JSON extraction from raw content")
+            raw = response.raw_content
+            # Remove markdown code blocks if present
+            raw = re.sub(r'```json\s*', '', raw)
+            raw = re.sub(r'```\s*', '', raw)
+            # Try to find JSON object
+            try:
+                # Find the first { and last }
+                start = raw.find('{')
+                end = raw.rfind('}')
+                if start != -1 and end != -1 and end > start:
+                    json_str = raw[start:end+1]
+                    response = LLMResponse(
+                        content=json.loads(json_str),
+                        tool_calls=[],
+                        token_usage=response.token_usage,
+                        finish_reason=response.finish_reason,
+                        raw_content=response.raw_content,
+                    )
+                    logger.info("Successfully extracted JSON from raw content")
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse extracted JSON: {e}")
+
+        result = {
+            "content": response.content,
+            "token_usage": response.token_usage,
+        }
+
         # Post-generation validation and auto-fix for level content
-        content = result.get("content", {})
+        content = response.content or {}
         if "practical" in content and "circuitBlueprint" in content.get("practical", {}):
             blueprint = content["practical"]["circuitBlueprint"]
             validation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": blueprint})
-            
+
             if not validation.get("success"):
                 errors = validation.get("errors", [])
                 logger.warning(f"Blueprint validation failed: {errors}")
-                
+
                 # Auto-fix common errors
                 fixed_blueprint = self._auto_fix_blueprint(blueprint, errors)
-                
+
                 # Validate again
                 revalidation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": fixed_blueprint})
-                
+
                 if revalidation.get("success"):
                     logger.info("Blueprint auto-fixed successfully")
                     content["practical"]["circuitBlueprint"] = fixed_blueprint
@@ -473,70 +428,116 @@ AND gate circuit:
                 else:
                     logger.error(f"Blueprint auto-fix failed: {revalidation.get('errors', [])}")
                     result["validation_errors"] = revalidation.get("errors", [])
-        
+
         return result
-    
-    def _auto_fix_blueprint(self, blueprint: Dict[str, Any], errors: List[str]) -> Dict[str, Any]:
+
+    def _auto_fix_blueprint(self, blueprint: dict[str, Any], errors: list[str]) -> dict[str, Any]:
         """Attempt to automatically fix common blueprint errors."""
         fixed = {
             "components": list(blueprint.get("components", [])),
             "wires": list(blueprint.get("wires", []))
         }
-        
-        # Build component map
-        comp_map = {c["label"]: c for c in fixed["components"]}
-        
+
         # Track wires to remove
         wires_to_remove = []
-        
+
         for i, wire in enumerate(fixed["wires"]):
             from_str = wire.get("from", "")
             to_str = wire.get("to", "")
-            
-            # Fix 1: Remove wires with invalid pins
+
             for error in errors:
                 if "Invalid pin" in error and (from_str in error or to_str in error):
                     logger.info(f"Removing wire with invalid pin: {from_str} -> {to_str}")
                     wires_to_remove.append(i)
                     break
-                
-                # Fix 2: Remove wires causing multiple drivers
+
                 if "multiple drivers" in error and to_str in error:
                     logger.info(f"Removing wire causing multiple drivers: {from_str} -> {to_str}")
                     wires_to_remove.append(i)
                     break
-        
+
         # Remove problematic wires (in reverse to maintain indices)
         for i in sorted(wires_to_remove, reverse=True):
             fixed["wires"].pop(i)
+
+        # Fix floating inputs by adding CONST_LOW components
+        floating_inputs = []
+        for error in errors:
+            if "Floating input:" in error:
+                # Extract component label and pin from error message
+                # Format: "Floating input: LABEL (TYPE) pin 'PIN' has no connection..."
+                import re as regex
+                match = regex.search(r"Floating input: (\w+) \([^)]+\) pin '(\w+)'", error)
+                if match:
+                    label, pin = match.groups()
+                    floating_inputs.append((label, pin))
         
+        # Add CONST_LOW for each floating input
+        const_count = sum(1 for c in fixed["components"] if c.get("type") == "CONST_LOW")
+        for i, (label, pin) in enumerate(floating_inputs):
+            const_label = f"GND{const_count + i + 1}"
+            # Find the component position to place CONST_LOW nearby
+            comp = next((c for c in fixed["components"] if c.get("label") == label), None)
+            if comp:
+                pos = comp.get("position", {"x": 100, "y": 100})
+                # Add CONST_LOW component
+                fixed["components"].append({
+                    "type": "CONST_LOW",
+                    "label": const_label,
+                    "position": {"x": pos["x"] - 80, "y": pos["y"]},
+                    "properties": {}
+                })
+                # Add wire from CONST_LOW to floating input
+                fixed["wires"].append({
+                    "from": f"{const_label}:OUT",
+                    "to": f"{label}:{pin}"
+                })
+                logger.info(f"Auto-fixed floating input {label}:{pin} with {const_label}")
+
         return fixed
 
-    async def generate_course_plan(self, topic: str, use_tools: bool = True) -> tuple[CoursePlan, int]:
-        """Generate a course plan for the given topic.
-        
+    async def generate_course_plan(
+        self,
+        topic: str,
+        provider_id: str,
+        api_key: str,
+        model: str,
+        temperature: float = 0.7,
+        max_tokens: int = 4000,
+    ) -> tuple[CoursePlan, int]:
+        """Generate a course plan using user's API key.
+
         Args:
             topic: The course topic
-            use_tools: Whether to use tool calling (default True)
-        
+            provider_id: LLM provider ID (e.g., 'openai', 'anthropic')
+            api_key: User's API key (used only for this request)
+            model: Model to use
+            temperature: Temperature setting
+            max_tokens: Max tokens for response
+
         Returns:
             Tuple of (CoursePlan, token_usage)
         """
+        # Validate API key format
+        self._validate_api_key(provider_id, api_key)
+
+        provider = self._get_provider(provider_id)
         system_prompt = COURSE_PLAN_SYSTEM_PROMPT
         user_prompt = f"Create a comprehensive course plan for: {topic}"
 
-        if use_tools:
-            result = await self._call_with_tools(system_prompt, user_prompt)
-        else:
-            # Fallback to non-tool version with component list in prompt
-            fallback_prompt = system_prompt.replace(
-                "IMPORTANT: Before creating the course plan, you MUST call the get_available_components tool to see what components are available in CircuitForge.",
-                f"Available components in CircuitForge: {', '.join(AVAILABLE_COMPONENTS)}"
-            )
-            result = await self._call_openai(fallback_prompt, user_prompt)
-        
+        result = await self._call_with_tools(
+            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+        )
+
         content = result["content"]
         token_usage = result["token_usage"]
+
+        # Validate response content
+        if not content:
+            raise ValueError("LLM returned empty response. Please try again or use a different model.")
+        
+        if "levels" not in content or not content["levels"]:
+            raise ValueError(f"LLM response missing 'levels' field. Got: {list(content.keys()) if content else 'None'}")
 
         # Parse and validate the response
         levels = [
@@ -563,18 +564,29 @@ AND gate circuit:
         self,
         course_plan: CoursePlan,
         level_number: int,
-        use_tools: bool = True,
+        provider_id: str,
+        api_key: str,
+        model: str,
+        temperature: float = 0.7,
+        max_tokens: int = 4000,
     ) -> tuple[TheorySection, PracticalSection, int]:
-        """Generate content for a specific level.
-        
+        """Generate content for a specific level using user's API key.
+
         Args:
             course_plan: The course plan
             level_number: The level number to generate
-            use_tools: Whether to use tool calling (default True)
-        
+            provider_id: LLM provider ID
+            api_key: User's API key
+            model: Model to use
+            temperature: Temperature setting
+            max_tokens: Max tokens for response
+
         Returns:
             Tuple of (TheorySection, PracticalSection, token_usage)
         """
+        # Validate API key format
+        self._validate_api_key(provider_id, api_key)
+
         # Find the level outline
         level_outline = next(
             (l for l in course_plan.levels if l.level_number == level_number),
@@ -601,11 +613,11 @@ AND gate circuit:
         )
         user_prompt = f"Generate detailed content for Level {level_number}: {level_outline.title}"
 
-        if use_tools:
-            result = await self._call_with_tools(system_prompt, user_prompt)
-        else:
-            result = await self._call_openai(system_prompt, user_prompt)
-        
+        provider = self._get_provider(provider_id)
+        result = await self._call_with_tools(
+            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+        )
+
         content = result["content"]
         token_usage = result["token_usage"]
 
@@ -620,7 +632,7 @@ AND gate circuit:
 
         # Parse practical section
         practical_data = content["practical"]
-        
+
         # Parse circuit blueprint if present
         circuit_blueprint = None
         if "circuitBlueprint" in practical_data:
@@ -629,7 +641,7 @@ AND gate circuit:
                 components=blueprint_data.get("components", []),
                 wires=blueprint_data.get("wires", []),
             )
-        
+
         practical = PracticalSection(
             componentsNeeded=practical_data["componentsNeeded"],
             steps=practical_data["steps"],
@@ -640,6 +652,56 @@ AND gate circuit:
         )
 
         return theory, practical, token_usage
+
+    async def test_connection(
+        self,
+        provider_id: str,
+        api_key: str,
+        model: str,
+    ) -> dict[str, Any]:
+        """Test API key validity with a minimal request.
+
+        Args:
+            provider_id: LLM provider ID
+            api_key: User's API key
+            model: Model to test
+
+        Returns:
+            Dict with success status and any error message
+        """
+        # Validate API key format first
+        self._validate_api_key(provider_id, api_key)
+
+        provider = self._get_provider(provider_id)
+
+        # Make a minimal request to test the connection
+        request = LLMRequest(
+            messages=[
+                {"role": "user", "content": "Say 'OK' if you can read this."},
+            ],
+            tools=[],
+            model=model,
+            temperature=0,
+            max_tokens=10,
+        )
+
+        try:
+            response = await provider.call(api_key, request)
+            return {
+                "success": True,
+                "message": "Connection successful",
+                "token_usage": response.token_usage,
+            }
+        except AuthenticationError as e:
+            return {"success": False, "error": "authentication", "message": e.message}
+        except RateLimitError as e:
+            return {"success": False, "error": "rate_limit", "message": e.message}
+        except QuotaExceededError as e:
+            return {"success": False, "error": "quota", "message": e.message}
+        except ProviderUnavailableError as e:
+            return {"success": False, "error": "unavailable", "message": e.message}
+        except Exception as e:
+            return {"success": False, "error": "unknown", "message": str(e)}
 
 
 # Singleton instance

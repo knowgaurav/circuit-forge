@@ -1,14 +1,14 @@
 """Repository for course-related database operations."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.models.course import (
-    CoursePlan,
     CourseEnrollment,
+    CoursePlan,
     GenerationState,
     LevelContent,
     LevelProgress,
@@ -30,15 +30,15 @@ class CoursePlanRepository(BaseRepository[CoursePlan]):
         await self.insert_one(course_plan)
         return plan_id
 
-    async def get_by_id(self, plan_id: str) -> Optional[CoursePlan]:
+    async def get_by_id(self, plan_id: str) -> CoursePlan | None:
         """Get a course plan by ID."""
         return await self.find_one({"id": plan_id})
 
-    async def get_by_topic(self, topic: str) -> Optional[CoursePlan]:
+    async def get_by_topic(self, topic: str) -> CoursePlan | None:
         """Get a course plan by exact topic match."""
         return await self.find_one({"topic": topic})
 
-    async def get_featured(self, limit: int = 10) -> List[CoursePlan]:
+    async def get_featured(self, limit: int = 10) -> list[CoursePlan]:
         """Get featured course plans (those without a creator)."""
         return await self.find_many(
             {"creatorParticipantId": None},
@@ -63,14 +63,14 @@ class LevelContentRepository(BaseRepository[LevelContent]):
         self,
         course_plan_id: str,
         level_number: int,
-    ) -> Optional[LevelContent]:
+    ) -> LevelContent | None:
         """Get level content by course plan ID and level number."""
         return await self.find_one({
             "coursePlanId": course_plan_id,
             "levelNumber": level_number,
         })
 
-    async def get_all_for_course(self, course_plan_id: str) -> List[LevelContent]:
+    async def get_all_for_course(self, course_plan_id: str) -> list[LevelContent]:
         """Get all level contents for a course."""
         return await self.find_many(
             {"coursePlanId": course_plan_id},
@@ -81,11 +81,11 @@ class LevelContentRepository(BaseRepository[LevelContent]):
         self,
         content_id: str,
         state: GenerationState,
-        celery_task_id: Optional[str] = None,
-        error_message: Optional[str] = None,
+        celery_task_id: str | None = None,
+        error_message: str | None = None,
     ) -> bool:
         """Update the generation state of a level."""
-        update: Dict[str, Any] = {"generationState": state.value}
+        update: dict[str, Any] = {"generationState": state.value}
         if celery_task_id:
             update["celeryTaskId"] = celery_task_id
         if error_message:
@@ -95,8 +95,8 @@ class LevelContentRepository(BaseRepository[LevelContent]):
     async def set_content(
         self,
         content_id: str,
-        theory: Dict[str, Any],
-        practical: Dict[str, Any],
+        theory: dict[str, Any],
+        practical: dict[str, Any],
         token_usage: int,
     ) -> bool:
         """Set the generated content for a level."""
@@ -125,7 +125,7 @@ class CourseEnrollmentRepository(BaseRepository[CourseEnrollment]):
         await self.insert_one(enrollment)
         return enrollment_id
 
-    async def get_by_id(self, enrollment_id: str) -> Optional[CourseEnrollment]:
+    async def get_by_id(self, enrollment_id: str) -> CourseEnrollment | None:
         """Get an enrollment by ID."""
         return await self.find_one({"id": enrollment_id})
 
@@ -133,7 +133,7 @@ class CourseEnrollmentRepository(BaseRepository[CourseEnrollment]):
         self,
         participant_id: str,
         course_plan_id: str,
-    ) -> Optional[CourseEnrollment]:
+    ) -> CourseEnrollment | None:
         """Get enrollment for a participant in a specific course."""
         return await self.find_one({
             "participantId": participant_id,
@@ -144,7 +144,7 @@ class CourseEnrollmentRepository(BaseRepository[CourseEnrollment]):
         self,
         participant_id: str,
         limit: int = 50,
-    ) -> List[CourseEnrollment]:
+    ) -> list[CourseEnrollment]:
         """Get all enrollments for a participant."""
         return await self.find_many(
             {"participantId": participant_id},
@@ -183,7 +183,7 @@ class LevelProgressRepository(BaseRepository[LevelProgress]):
         self,
         enrollment_id: str,
         level_number: int,
-    ) -> Optional[LevelProgress]:
+    ) -> LevelProgress | None:
         """Get progress for a specific level."""
         return await self.find_one({
             "enrollmentId": enrollment_id,
@@ -193,7 +193,7 @@ class LevelProgressRepository(BaseRepository[LevelProgress]):
     async def get_all_for_enrollment(
         self,
         enrollment_id: str,
-    ) -> List[LevelProgress]:
+    ) -> list[LevelProgress]:
         """Get all progress records for an enrollment."""
         return await self.find_many(
             {"enrollmentId": enrollment_id},
@@ -204,10 +204,10 @@ class LevelProgressRepository(BaseRepository[LevelProgress]):
         self,
         progress_id: str,
         status: LevelStatus,
-        circuit_snapshot: Optional[Dict[str, Any]] = None,
+        circuit_snapshot: dict[str, Any] | None = None,
     ) -> bool:
         """Update the status of a level progress."""
-        update: Dict[str, Any] = {"status": status.value}
+        update: dict[str, Any] = {"status": status.value}
         if status == LevelStatus.COMPLETED:
             update["completedAt"] = datetime.utcnow()
         if circuit_snapshot:

@@ -1,6 +1,7 @@
 """Course API endpoints for LLM Course Generator."""
 
-from typing import Any, Dict, List, Optional
+import logging
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -8,14 +9,26 @@ from pydantic import BaseModel, Field
 from app.core.database import db_manager
 from app.exceptions.base import AppException, NotFoundException, ValidationException
 from app.models.course import (
-    CoursePlan,
     CourseEnrollment,
+    CoursePlan,
     GeneratePlanRequest,
     LevelContent,
+    LLMConfig,
+    TestConnectionRequest,
+    TestConnectionResponse,
     TopicSuggestion,
     ValidationResult,
 )
 from app.services.course_service import CourseService
+from app.services.llm_providers import (
+    AuthenticationError,
+    LLMError,
+    ProviderUnavailableError,
+    QuotaExceededError,
+    RateLimitError,
+)
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -42,16 +55,23 @@ class EnrollResponse(BaseModel):
 
 class LevelContentResponse(BaseModel):
     """Response for level content."""
-    content: Optional[LevelContent]
+    content: LevelContent | None
     is_generating: bool = Field(alias="isGenerating")
+
+    model_config = {"populate_by_name": True}
+
+
+class GenerateLevelContentRequest(BaseModel):
+    """Request to generate level content with user API key."""
+    llm_config: LLMConfig = Field(alias="llmConfig")
 
     model_config = {"populate_by_name": True}
 
 
 class ValidateRequest(BaseModel):
     """Request to validate a circuit."""
-    circuit_state: Dict[str, Any] = Field(alias="circuitState")
-    enrollment_id: Optional[str] = Field(default=None, alias="enrollmentId")
+    circuit_state: dict[str, Any] = Field(alias="circuitState")
+    enrollment_id: str | None = Field(default=None, alias="enrollmentId")
 
     model_config = {"populate_by_name": True}
 
@@ -59,7 +79,7 @@ class ValidateRequest(BaseModel):
 class CompleteRequest(BaseModel):
     """Request to complete a level."""
     enrollment_id: str = Field(alias="enrollmentId")
-    circuit_snapshot: Optional[Dict[str, Any]] = Field(
+    circuit_snapshot: dict[str, Any] | None = Field(
         default=None, alias="circuitSnapshot"
     )
 
@@ -69,7 +89,7 @@ class CompleteRequest(BaseModel):
 class CompleteResponse(BaseModel):
     """Response for level completion."""
     success: bool
-    next_level: Optional[int] = Field(alias="nextLevel")
+    next_level: int | None = Field(alias="nextLevel")
 
     model_config = {"populate_by_name": True}
 
@@ -93,7 +113,38 @@ def get_course_service() -> CourseService:
 # Exception handler helper
 def handle_exception(e: Exception) -> None:
     """Convert app exceptions to HTTP exceptions."""
-    if isinstance(e, NotFoundException):
+    # Handle LLM-specific errors first
+    if isinstance(e, AuthenticationError):
+        raise HTTPException(
+            status_code=401,
+            detail={"error": {"code": "AUTHENTICATION_ERROR", "message": e.message, "provider": e.provider}},
+        )
+    elif isinstance(e, RateLimitError):
+        headers = {}
+        if e.retry_after:
+            headers["Retry-After"] = str(e.retry_after)
+        raise HTTPException(
+            status_code=429,
+            detail={"error": {"code": "RATE_LIMITED", "message": e.message, "provider": e.provider}},
+            headers=headers if headers else None,
+        )
+    elif isinstance(e, QuotaExceededError):
+        raise HTTPException(
+            status_code=402,
+            detail={"error": {"code": "QUOTA_EXCEEDED", "message": e.message, "provider": e.provider}},
+        )
+    elif isinstance(e, ProviderUnavailableError):
+        raise HTTPException(
+            status_code=503,
+            detail={"error": {"code": "PROVIDER_UNAVAILABLE", "message": e.message, "provider": e.provider}},
+        )
+    elif isinstance(e, LLMError):
+        raise HTTPException(
+            status_code=400,
+            detail={"error": {"code": e.code, "message": e.message, "provider": e.provider}},
+        )
+    # Handle app exceptions
+    elif isinstance(e, NotFoundException):
         raise HTTPException(
             status_code=404,
             detail={"error": {"code": e.code, "message": e.message}},
@@ -114,16 +165,18 @@ def handle_exception(e: Exception) -> None:
             detail={"error": {"code": "VALIDATION_ERROR", "message": str(e)}},
         )
     else:
+        # Log unexpected errors but don't expose details
+        logger.exception(f"Unexpected error: {e}")
         raise HTTPException(
             status_code=500,
-            detail={"error": {"code": "INTERNAL_ERROR", "message": str(e)}},
+            detail={"error": {"code": "INTERNAL_ERROR", "message": "An unexpected error occurred"}},
         )
 
 
-@router.get("/courses/suggestions", response_model=List[TopicSuggestion])
+@router.get("/courses/suggestions", response_model=list[TopicSuggestion])
 async def get_suggestions(
     course_service: CourseService = Depends(get_course_service),
-) -> List[TopicSuggestion]:
+) -> list[TopicSuggestion]:
     """Get topic suggestions for course creation."""
     return course_service.get_topic_suggestions()
 
@@ -133,11 +186,19 @@ async def generate_plan(
     request: GeneratePlanRequest,
     course_service: CourseService = Depends(get_course_service),
 ) -> GeneratePlanResponse:
-    """Generate a course plan for the given topic."""
+    """Generate a course plan for the given topic using user's API key.
+    
+    The API key is used only for this request and is never stored.
+    """
     try:
         course_plan = await course_service.generate_course_plan(
-            request.topic,
-            request.participant_id,
+            topic=request.topic,
+            participant_id=request.participant_id,
+            provider_id=request.llm_config.provider,
+            api_key=request.llm_config.api_key,
+            model=request.llm_config.model,
+            temperature=request.llm_config.temperature,
+            max_tokens=request.llm_config.max_tokens,
         )
         return GeneratePlanResponse(coursePlan=course_plan)
     except Exception as e:
@@ -145,11 +206,37 @@ async def generate_plan(
         raise  # For type checker
 
 
+@router.post("/courses/test-connection", response_model=TestConnectionResponse)
+async def test_connection(
+    request: TestConnectionRequest,
+    course_service: CourseService = Depends(get_course_service),
+) -> TestConnectionResponse:
+    """Test API key validity with a minimal request.
+    
+    The API key is used only for this test and is never stored.
+    """
+    try:
+        result = await course_service.test_connection(
+            provider_id=request.provider,
+            api_key=request.api_key,
+            model=request.model,
+        )
+        return TestConnectionResponse(
+            success=result["success"],
+            message=result.get("message", ""),
+            error=result.get("error"),
+            tokenUsage=result.get("token_usage"),
+        )
+    except Exception as e:
+        handle_exception(e)
+        raise
+
+
 @router.get("/courses/{course_id}")
 async def get_course(
     course_id: str,
     course_service: CourseService = Depends(get_course_service),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get a course plan by ID."""
     try:
         course_plan = await course_service.get_course_plan(course_id)
@@ -184,13 +271,17 @@ async def enroll_in_course(
         raise
 
 
-@router.get("/courses/{course_id}/levels/{level_num}", response_model=LevelContentResponse)
-async def get_level_content(
+@router.post("/courses/{course_id}/levels/{level_num}", response_model=LevelContentResponse)
+async def generate_level_content(
     course_id: str,
     level_num: int,
+    request: GenerateLevelContentRequest,
     course_service: CourseService = Depends(get_course_service),
 ) -> LevelContentResponse:
-    """Get content for a specific level."""
+    """Generate content for a specific level using user's API key.
+    
+    The API key is used only for this request and is never stored.
+    """
     try:
         # Verify course exists
         course_plan = await course_service.get_course_plan(course_id)
@@ -204,10 +295,18 @@ async def get_level_content(
                 code="INVALID_LEVEL",
             )
 
-        content = await course_service.get_level_content(course_id, level_num)
-        
+        content = await course_service.get_level_content(
+            course_plan_id=course_id,
+            level_number=level_num,
+            provider_id=request.llm_config.provider,
+            api_key=request.llm_config.api_key,
+            model=request.llm_config.model,
+            temperature=request.llm_config.temperature,
+            max_tokens=request.llm_config.max_tokens,
+        )
+
         is_generating = (
-            content is not None and 
+            content is not None and
             content.generation_state.value in ["generating", "queued_priority", "queued_background"]
         )
 
@@ -272,7 +371,7 @@ async def complete_level(
 async def get_my_courses(
     participant_id: str,
     course_service: CourseService = Depends(get_course_service),
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Get all courses for a participant."""
     try:
         courses = await course_service.get_my_courses(participant_id)

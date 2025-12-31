@@ -1,21 +1,19 @@
 """Course Service for managing course generation and progress."""
 
 import logging
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.models.course import (
-    CoursePlan,
     CourseEnrollment,
+    CoursePlan,
     Difficulty,
     GenerationState,
     LevelContent,
     LevelProgress,
     LevelStatus,
     TopicSuggestion,
-    ValidationCriteria,
     ValidationResult,
 )
 from app.repositories.course_repository import (
@@ -30,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 # Predefined topic suggestions
-TOPIC_SUGGESTIONS: List[TopicSuggestion] = [
+TOPIC_SUGGESTIONS: list[TopicSuggestion] = [
     # Digital Logic Fundamentals
     TopicSuggestion(
         topic="4-bit Calculator",
@@ -111,21 +109,42 @@ class CourseService:
         self.enrollment_repo = CourseEnrollmentRepository(database)
         self.progress_repo = LevelProgressRepository(database)
 
-    def get_topic_suggestions(self) -> List[TopicSuggestion]:
+    def get_topic_suggestions(self) -> list[TopicSuggestion]:
         """Get predefined topic suggestions."""
         return TOPIC_SUGGESTIONS
 
     async def generate_course_plan(
         self,
         topic: str,
-        participant_id: Optional[str] = None,
+        participant_id: str | None = None,
+        provider_id: str = "openai",
+        api_key: str = "",
+        model: str = "gpt-4o",
+        temperature: float = 0.7,
+        max_tokens: int = 4000,
     ) -> CoursePlan:
-        """Generate a new course plan for the given topic."""
-        logger.info(f"Generating course plan for topic: {topic}")
+        """Generate a new course plan for the given topic using user's API key.
+        
+        Args:
+            topic: The course topic
+            participant_id: Optional participant ID
+            provider_id: LLM provider ID
+            api_key: User's API key (used only for this request)
+            model: Model to use
+            temperature: Temperature setting
+            max_tokens: Max tokens for response
+        """
+        logger.info(f"Generating course plan for topic: {topic} using {provider_id}/{model}")
 
-        # Always generate new plan (don't use cached plans)
-        # This ensures fresh content each time
-        course_plan, token_usage = await llm_service.generate_course_plan(topic)
+        # Generate plan using user's API key
+        course_plan, token_usage = await llm_service.generate_course_plan(
+            topic=topic,
+            provider_id=provider_id,
+            api_key=api_key,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
         course_plan.creator_participant_id = participant_id
 
         # Save to database
@@ -139,7 +158,20 @@ class CourseService:
 
         return course_plan
 
-    async def get_course_plan(self, plan_id: str) -> Optional[CoursePlan]:
+    async def test_connection(
+        self,
+        provider_id: str,
+        api_key: str,
+        model: str,
+    ) -> dict[str, Any]:
+        """Test API key validity with a minimal request."""
+        return await llm_service.test_connection(
+            provider_id=provider_id,
+            api_key=api_key,
+            model=model,
+        )
+
+    async def get_course_plan(self, plan_id: str) -> CoursePlan | None:
         """Get a course plan by ID."""
         return await self.course_plan_repo.get_by_id(plan_id)
 
@@ -147,10 +179,13 @@ class CourseService:
         self,
         course_plan_id: str,
         level_number: int,
-    ) -> Optional[LevelContent]:
-        """Get level content, generating if needed."""
-        # Always regenerate content (don't use cached content)
-        # This ensures fresh blueprints each time
+        provider_id: str = "openai",
+        api_key: str = "",
+        model: str = "gpt-4o",
+        temperature: float = 0.7,
+        max_tokens: int = 4000,
+    ) -> LevelContent | None:
+        """Get level content, generating if needed using user's API key."""
         course_plan = await self.course_plan_repo.get_by_id(course_plan_id)
         if not course_plan:
             return None
@@ -159,6 +194,11 @@ class CourseService:
         content = await self.level_content_repo.get_by_course_and_level(
             course_plan_id, level_number
         )
+
+        # Return cached content if it's already generated successfully
+        if content and content.generation_state == GenerationState.GENERATED:
+            logger.info(f"Returning cached level {level_number} content for course {course_plan_id}")
+            return content
 
         # Create or update level content record
         if not content:
@@ -170,15 +210,22 @@ class CourseService:
             content_id = await self.level_content_repo.create(content)
             content.id = content_id
         else:
+            # Only regenerate if failed or not completed
             await self.level_content_repo.update_generation_state(
                 content.id,  # type: ignore
                 GenerationState.GENERATING,
             )
 
-        # Generate content using LLM
+        # Generate content using LLM with user's API key
         try:
             theory, practical, token_usage = await llm_service.generate_level_content(
-                course_plan, level_number
+                course_plan=course_plan,
+                level_number=level_number,
+                provider_id=provider_id,
+                api_key=api_key,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
             )
 
             # Save content
@@ -246,7 +293,7 @@ class CourseService:
         self,
         participant_id: str,
         course_plan_id: str,
-    ) -> Optional[CourseEnrollment]:
+    ) -> CourseEnrollment | None:
         """Get enrollment for a participant in a course."""
         return await self.enrollment_repo.get_by_participant_and_course(
             participant_id, course_plan_id
@@ -255,10 +302,10 @@ class CourseService:
     async def get_my_courses(
         self,
         participant_id: str,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get all courses for a participant with progress info."""
         enrollments = await self.enrollment_repo.get_by_participant(participant_id)
-        
+
         result = []
         for enrollment in enrollments:
             course_plan = await self.course_plan_repo.get_by_id(
@@ -271,21 +318,21 @@ class CourseService:
                 completed_count = sum(
                     1 for p in progress_list if p.status == LevelStatus.COMPLETED
                 )
-                
+
                 result.append({
                     "enrollment": enrollment.model_dump(by_alias=True),
                     "coursePlan": course_plan.model_dump(by_alias=True),
                     "completedLevels": completed_count,
                     "totalLevels": len(course_plan.levels),
                 })
-        
+
         return result
 
     async def complete_level(
         self,
         enrollment_id: str,
         level_number: int,
-        circuit_snapshot: Optional[Dict[str, Any]] = None,
+        circuit_snapshot: dict[str, Any] | None = None,
     ) -> bool:
         """Mark a level as completed and unlock the next level."""
         # Get progress record
@@ -320,14 +367,14 @@ class CourseService:
         self,
         course_plan_id: str,
         level_number: int,
-        circuit_state: Dict[str, Any],
+        circuit_state: dict[str, Any],
     ) -> ValidationResult:
         """Validate a circuit against level requirements."""
         # Get level content with validation criteria
         content = await self.level_content_repo.get_by_course_and_level(
             course_plan_id, level_number
         )
-        
+
         if not content or not content.practical:
             return ValidationResult(
                 isValid=False,
@@ -340,8 +387,8 @@ class CourseService:
         components = circuit_state.get("components", [])
         wires = circuit_state.get("wires", [])
 
-        missing_components: List[str] = []
-        missing_connections: List[str] = []
+        missing_components: list[str] = []
+        missing_connections: list[str] = []
 
         # Check required components
         for req in criteria.required_components:
@@ -359,7 +406,7 @@ class CourseService:
                 # Check if wire connects the required component types
                 from_type = req.from_spec.split(":")[0]
                 to_type = req.to_spec.split(":")[0]
-                
+
                 from_component = next(
                     (c for c in components if c.get("id") == wire.get("fromComponentId")),
                     None,
@@ -368,13 +415,13 @@ class CourseService:
                     (c for c in components if c.get("id") == wire.get("toComponentId")),
                     None,
                 )
-                
+
                 if (from_component and to_component and
                     from_component.get("type") == from_type and
                     to_component.get("type") == to_type):
                     found = True
                     break
-            
+
             if not found:
                 missing_connections.append(f"{req.from_spec} -> {req.to_spec}")
 
