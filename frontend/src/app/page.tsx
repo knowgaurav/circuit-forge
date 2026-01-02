@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {
   Button, Input, Spinner, Modal, GradientText,
-  AnimatedCounter, CategoryCard, TemplateCard
+  AnimatedCounter, CategoryCard, TemplateCard, ThemeToggle
 } from '@/components/ui';
 import { useInView, useSessionRecovery } from '@/hooks';
 import { api } from '@/services/api';
@@ -126,39 +126,40 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 gradient-hero-bg rounded-lg flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-xl text-white">CircuitForge</span>
+              <span className="font-bold text-xl text-text">CircuitForge</span>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
-              <Link href="#features" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+              <Link href="#features" className="text-text-secondary hover:text-text text-sm font-medium transition-colors">
                 Features
               </Link>
-              <Link href="#topics" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+              <Link href="#topics" className="text-text-secondary hover:text-text text-sm font-medium transition-colors">
                 Topics
               </Link>
-              <Link href="/templates" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+              <Link href="/templates" className="text-text-secondary hover:text-text text-sm font-medium transition-colors">
                 Templates
               </Link>
-              <Link href="/courses/create" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+              <Link href="/courses/create" className="text-text-secondary hover:text-text text-sm font-medium transition-colors">
                 AI Courses
               </Link>
-              <Link href="/playground" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+              <Link href="/playground" className="text-text-secondary hover:text-text text-sm font-medium transition-colors">
                 Playground
               </Link>
             </div>
 
             <div className="hidden md:flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setShowJoinModal(true)} className="text-gray-300 hover:text-white">
+              <ThemeToggle />
+              <Button variant="ghost" size="sm" onClick={() => setShowJoinModal(true)} className="text-text-secondary hover:text-text">
                 Join Session
               </Button>
               <button
@@ -172,7 +173,7 @@ export default function HomePage() {
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden text-gray-400 hover:text-white"
+              className="md:hidden text-text-secondary hover:text-text"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -182,14 +183,15 @@ export default function HomePage() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden glass border-t border-white/5 px-4 py-4 space-y-3">
-            <Link href="#features" className="block text-gray-400 hover:text-white text-sm font-medium">Features</Link>
-            <Link href="#topics" className="block text-gray-400 hover:text-white text-sm font-medium">Topics</Link>
-            <Link href="/templates" className="block text-gray-400 hover:text-white text-sm font-medium">Templates</Link>
-            <Link href="/courses/create" className="block text-gray-400 hover:text-white text-sm font-medium">AI Courses</Link>
-            <Link href="/playground" className="block text-gray-400 hover:text-white text-sm font-medium">Playground</Link>
-            <div className="pt-3 border-t border-white/10 space-y-2">
-              <Button variant="ghost" size="sm" onClick={() => setShowJoinModal(true)} className="w-full text-gray-300">
+          <div className="md:hidden glass border-t border-border/50 px-4 py-4 space-y-3">
+            <Link href="#features" className="block text-text-secondary hover:text-text text-sm font-medium">Features</Link>
+            <Link href="#topics" className="block text-text-secondary hover:text-text text-sm font-medium">Topics</Link>
+            <Link href="/templates" className="block text-text-secondary hover:text-text text-sm font-medium">Templates</Link>
+            <Link href="/courses/create" className="block text-text-secondary hover:text-text text-sm font-medium">AI Courses</Link>
+            <Link href="/playground" className="block text-text-secondary hover:text-text text-sm font-medium">Playground</Link>
+            <div className="pt-3 border-t border-border/50 space-y-2 flex flex-col items-start">
+              <ThemeToggle />
+              <Button variant="ghost" size="sm" onClick={() => setShowJoinModal(true)} className="w-full text-text-secondary">
                 Join Session
               </Button>
               <button
@@ -208,13 +210,13 @@ export default function HomePage() {
       {/* Rejoin Session Banner */}
       {pendingSession && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 w-full max-w-md px-4">
-          <div className="glass-card p-4 rounded-xl border border-purple-500/30 shadow-lg">
+          <div className="glass-card p-4 rounded-xl border border-brand-500/30 shadow-lg">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
-                <p className="text-white font-medium text-sm">
+                <p className="text-text font-medium text-sm">
                   Rejoin session {pendingSession.sessionCode}?
                 </p>
-                <p className="text-gray-400 text-xs mt-0.5">
+                <p className="text-text-muted text-xs mt-0.5">
                   as {pendingSession.displayName}
                 </p>
               </div>
@@ -223,7 +225,7 @@ export default function HomePage() {
                   variant="ghost"
                   size="sm"
                   onClick={handleDismissRejoin}
-                  className="text-gray-400 hover:text-white"
+                  className="text-text-muted hover:text-text"
                 >
                   Dismiss
                 </Button>
@@ -245,23 +247,23 @@ export default function HomePage() {
         className="pt-32 pb-20 px-4 relative overflow-hidden"
       >
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-accent-blue/10 dark:from-brand-900/20 dark:to-accent-blue/20" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-500/5 dark:bg-brand-500/10 rounded-full blur-3xl" />
 
         <div className="max-w-7xl mx-auto relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left content */}
             <div className={`${heroInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 glass rounded-full text-sm font-medium mb-6 text-purple-300">
+              <div className="inline-flex items-center gap-2 px-3 py-1 glass rounded-full text-sm font-medium mb-6 text-brand-600 dark:text-brand-300">
                 <Sparkles className="w-4 h-4" />
                 Free for Education
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text mb-6 leading-tight">
                 Master{' '}
                 <GradientText>Circuit Design</GradientText>
                 {' '}with Interactive Learning
               </h1>
-              <p className="text-lg text-gray-400 mb-8 max-w-xl">
+              <p className="text-lg text-text-secondary mb-8 max-w-xl">
                 Build, simulate, and learn electronic circuits together in real-time.
                 Perfect for teachers and students exploring digital logic, robotics, and automation.
               </p>
@@ -276,7 +278,7 @@ export default function HomePage() {
                   <ArrowRight className="w-5 h-5" />
                 </button>
                 <Link href="/templates">
-                  <button className="px-6 py-3 rounded-xl text-white font-medium border border-white/20 hover:bg-white/5 transition-colors flex items-center justify-center gap-2 w-full">
+                  <button className="px-6 py-3 rounded-xl text-text font-medium border border-border hover:bg-surface-secondary transition-colors flex items-center justify-center gap-2 w-full">
                     <BookOpen className="w-5 h-5" />
                     Browse Templates
                   </button>
@@ -287,7 +289,7 @@ export default function HomePage() {
             {/* Right content - Hero illustration */}
             <div className={`${heroInView ? 'animate-fade-in-up animation-delay-200' : 'opacity-0'} hidden lg:block`}>
               <div className="relative">
-                <div className="rounded-2xl overflow-hidden">
+                <div className="rounded-2xl overflow-hidden shadow-xl dark:shadow-none">
                   <img
                     src="/hero-illustration.png"
                     alt="Student building electronic circuits with logic gates"
@@ -295,8 +297,8 @@ export default function HomePage() {
                   />
                 </div>
                 {/* Decorative elements */}
-                <div className="absolute -top-4 -right-4 w-20 h-20 bg-purple-500/20 rounded-full blur-xl" />
-                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-blue-500/20 rounded-full blur-xl" />
+                <div className="absolute -top-4 -right-4 w-20 h-20 bg-brand-500/20 rounded-full blur-xl" />
+                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-accent-blue/20 rounded-full blur-xl" />
               </div>
             </div>
           </div>
@@ -304,9 +306,9 @@ export default function HomePage() {
       </section>
 
       {/* Stats Bar */}
-      <section ref={statsRef} className="py-12 px-4">
+      <section ref={statsRef} className="py-12 px-4 bg-slate-100 dark:bg-gray-900/50 border-y border-slate-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto">
-          <div className={`glass-card p-8 rounded-2xl ${statsInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
+          <div className={`bg-white dark:bg-gray-800/80 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 ${statsInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat) => (
                 <AnimatedCounter
@@ -323,30 +325,30 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" ref={featuresRef} className="py-20 px-4">
+      <section id="features" ref={featuresRef} className="py-20 px-4 bg-white dark:bg-[#0a0a0f]">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left - Feature list */}
             <div className={`${featuresInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-text mb-4">
                 Your Personal{' '}
                 <GradientText>Learning Assistant</GradientText>
               </h2>
-              <p className="text-gray-400 mb-8">
+              <p className="text-text-secondary mb-8">
                 Everything you need to master circuit design, from basic logic gates to complex systems.
               </p>
               <div className="grid sm:grid-cols-2 gap-4">
                 {features.map((feature) => (
                   <div
                     key={feature.title}
-                    className="glass-card p-4 rounded-xl flex items-start gap-3 hover:bg-white/5 transition-colors"
+                    className="glass-card p-4 rounded-xl flex items-start gap-3"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-purple-400 flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500/20 to-accent-blue/20 flex items-center justify-center text-brand-500 flex-shrink-0">
                       {feature.icon}
                     </div>
                     <div>
-                      <h3 className="font-medium text-white text-sm">{feature.title}</h3>
-                      <p className="text-gray-500 text-xs mt-1">{feature.description}</p>
+                      <h3 className="font-medium text-text text-sm">{feature.title}</h3>
+                      <p className="text-text-muted text-xs mt-1">{feature.description}</p>
                     </div>
                   </div>
                 ))}
@@ -369,15 +371,15 @@ export default function HomePage() {
 
 
       {/* Interactive Practice Section */}
-      <section ref={practiceRef} className="py-20 px-4">
+      <section ref={practiceRef} className="py-20 px-4 bg-slate-50 dark:bg-gray-900/30 border-y border-slate-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto">
           <div className={`gradient-border p-8 md:p-12 ${practiceInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
             <div className="text-center mb-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-text mb-4">
                 Master Circuits with{' '}
                 <GradientText>Interactive Practice</GradientText>
               </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
+              <p className="text-text-secondary max-w-2xl mx-auto">
                 Learn by doing. Build real circuits, run simulations, and see results instantly.
               </p>
             </div>
@@ -392,10 +394,10 @@ export default function HomePage() {
                 'No installation required',
               ].map((benefit, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full gradient-hero-bg flex items-center justify-center flex-shrink-0">
                     <Check className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-gray-300 text-sm">{benefit}</span>
+                  <span className="text-text-secondary text-sm">{benefit}</span>
                 </div>
               ))}
             </div>
@@ -414,13 +416,13 @@ export default function HomePage() {
       </section>
 
       {/* Topics Section */}
-      <section id="topics" ref={topicsRef} className="py-20 px-4">
+      <section id="topics" ref={topicsRef} className="py-20 px-4 bg-white dark:bg-[#0a0a0f]">
         <div className="max-w-7xl mx-auto">
           <div className={`text-center mb-12 ${topicsInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-text mb-4">
               Explore Topics
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
+            <p className="text-text-secondary max-w-2xl mx-auto">
               Discover components across 11 categories, from basic logic gates to advanced processors.
             </p>
           </div>
@@ -438,13 +440,13 @@ export default function HomePage() {
       </section>
 
       {/* Templates Section */}
-      <section ref={templatesRef} className="py-20 px-4 bg-gradient-to-b from-transparent to-purple-900/10">
+      <section ref={templatesRef} className="py-20 px-4 bg-surface-secondary dark:bg-surface">
         <div className="max-w-7xl mx-auto">
           <div className={`text-center mb-12 ${templatesInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-text mb-4">
               Practice Circuits
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
+            <p className="text-text-secondary max-w-2xl mx-auto">
               Start with guided templates and build your way up to complex systems.
             </p>
           </div>
@@ -461,7 +463,7 @@ export default function HomePage() {
 
           <div className={`text-center ${templatesInView ? 'animate-fade-in-up animation-delay-300' : 'opacity-0'}`}>
             <Link href="/templates">
-              <button className="px-6 py-3 rounded-xl text-white font-medium border border-white/20 hover:bg-white/5 transition-colors inline-flex items-center gap-2">
+              <button className="px-6 py-3 rounded-xl text-text font-medium border border-border hover:bg-surface-secondary transition-colors inline-flex items-center gap-2">
                 View All Templates
                 <ArrowRight className="w-5 h-5" />
               </button>
@@ -471,16 +473,16 @@ export default function HomePage() {
       </section>
 
       {/* Final CTA Section */}
-      <section ref={ctaRef} className="py-24 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 to-blue-900/30" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-3xl" />
+      <section ref={ctaRef} className="py-24 px-4 relative overflow-hidden bg-gradient-to-br from-brand-50 to-accent-blue/10 dark:from-brand-950 dark:to-accent-blue/20">
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-accent-blue/5 dark:from-brand-900/30 dark:to-accent-blue/30" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/5 dark:bg-brand-500/20 rounded-full blur-3xl" />
 
         <div className={`max-w-3xl mx-auto text-center relative ${ctaInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-text mb-6">
             Ready to start your{' '}
             <GradientText>Journey</GradientText>?
           </h2>
-          <p className="text-gray-400 text-lg mb-8">
+          <p className="text-text-secondary text-lg mb-8">
             No account required. Create a session and start building circuits in seconds.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -493,7 +495,7 @@ export default function HomePage() {
               Get Started Free
             </button>
             <Link href="/templates">
-              <button className="px-8 py-4 rounded-xl text-white font-medium border border-white/20 hover:bg-white/5 transition-colors">
+              <button className="px-8 py-4 rounded-xl text-text font-medium border border-border hover:bg-surface-secondary transition-colors">
                 Explore Templates
               </button>
             </Link>
@@ -502,22 +504,22 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-white/5">
+      <footer className="py-12 px-4 border-t border-border">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 gradient-hero-bg rounded-lg flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-lg text-white">CircuitForge</span>
+              <span className="font-bold text-lg text-text">CircuitForge</span>
             </div>
-            <div className="flex items-center gap-8 text-sm text-gray-400">
-              <Link href="/templates" className="hover:text-white transition-colors">Templates</Link>
-              <Link href="/courses/create" className="hover:text-white transition-colors">AI Courses</Link>
-              <Link href="/playground" className="hover:text-white transition-colors">Playground</Link>
-              <Link href="#features" className="hover:text-white transition-colors">Features</Link>
+            <div className="flex items-center gap-8 text-sm text-text-secondary">
+              <Link href="/templates" className="hover:text-text transition-colors">Templates</Link>
+              <Link href="/courses/create" className="hover:text-text transition-colors">AI Courses</Link>
+              <Link href="/playground" className="hover:text-text transition-colors">Playground</Link>
+              <Link href="#features" className="hover:text-text transition-colors">Features</Link>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-text-muted">
               Sessions expire after 24 hours of inactivity
             </p>
           </div>

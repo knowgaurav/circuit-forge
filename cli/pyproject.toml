@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "circuitforge-bridge"
+version = "1.0.0"
+description = "Connect local LLMs (Ollama, LM Studio, vLLM, etc.) to CircuitForge"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+keywords = ["llm", "ollama", "circuitforge", "tunnel", "cloudflare"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.scripts]
+circuitforge-bridge = "circuitforge_bridge.main:main"
+
+[project.urls]
+Homepage = "https://github.com/Algozenith/circuit-forge"
+Documentation = "https://github.com/Algozenith/circuit-forge/tree/main/cli"
+Repository = "https://github.com/Algozenith/circuit-forge"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/circuitforge_bridge"]

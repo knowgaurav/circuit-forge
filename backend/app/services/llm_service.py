@@ -228,6 +228,8 @@ class LLMService:
         model: str,
         temperature: float,
         max_tokens: int,
+        base_url: str | None = None,
+        bridge_token: str | None = None,
     ) -> dict[str, Any]:
         """Make LLM call with tool support."""
         messages: list[dict[str, Any]] = [
@@ -237,6 +239,9 @@ class LLMService:
 
         tool_calls_count = 0
         total_tokens = 0
+
+        # Check if this is a local provider
+        is_local = provider.provider_id == "local"
 
         while tool_calls_count < self.MAX_TOOL_CALLS:
             request = LLMRequest(
@@ -248,7 +253,11 @@ class LLMService:
             )
 
             try:
-                response = await provider.call(api_key, request)
+                # For local provider, pass base_url and bridge_token
+                if is_local:
+                    response = await provider.call(api_key, request, base_url=base_url, bridge_token=bridge_token)
+                else:
+                    response = await provider.call(api_key, request)
             except (RateLimitError, QuotaExceededError, ProviderUnavailableError):
                 raise
             except AuthenticationError as e:
@@ -256,12 +265,14 @@ class LLMService:
                 # Try fallback mode first before failing
                 logger.warning(f"Auth error during tool call (may be unsupported tools): {e}, trying fallback mode")
                 return await self._call_fallback(
-                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
+                    base_url=base_url, bridge_token=bridge_token,
                 )
             except Exception as e:
                 logger.warning(f"Tool calling failed: {e}, trying fallback mode")
                 return await self._call_fallback(
-                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
+                    base_url=base_url, bridge_token=bridge_token,
                 )
 
             total_tokens += response.token_usage
@@ -313,13 +324,15 @@ class LLMService:
                     # Model returned empty/non-JSON content, try fallback
                     logger.warning(f"Model returned no parseable JSON content, trying fallback mode")
                     return await self._call_fallback(
-                        provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+                        provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
+                        base_url=base_url, bridge_token=bridge_token,
                     )
 
         # If we exhausted tool calls without getting content, try fallback
         logger.warning(f"Exceeded max tool calls without valid content, trying fallback mode")
         return await self._call_fallback(
-            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
+            base_url=base_url, bridge_token=bridge_token,
         )
 
     async def _call_fallback(
@@ -331,6 +344,8 @@ class LLMService:
         model: str,
         temperature: float,
         max_tokens: int,
+        base_url: str | None = None,
+        bridge_token: str | None = None,
     ) -> dict[str, Any]:
         """Fallback to non-tool mode with component info embedded in prompt."""
         # Get component info to embed in prompt
@@ -373,7 +388,12 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
             max_tokens=max_tokens,
         )
 
-        response = await provider.call(api_key, request)
+        # For local provider, pass base_url and bridge_token
+        is_local = provider.provider_id == "local"
+        if is_local:
+            response = await provider.call(api_key, request, base_url=base_url, bridge_token=bridge_token)
+        else:
+            response = await provider.call(api_key, request)
         
         # If content is still None, try to parse raw_content more aggressively
         if response.content is None and response.raw_content:
@@ -504,29 +524,35 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
         model: str,
         temperature: float = 0.7,
         max_tokens: int = 4000,
+        base_url: str | None = None,
+        bridge_token: str | None = None,
     ) -> tuple[CoursePlan, int]:
         """Generate a course plan using user's API key.
 
         Args:
             topic: The course topic
-            provider_id: LLM provider ID (e.g., 'openai', 'anthropic')
+            provider_id: LLM provider ID (e.g., 'openai', 'anthropic', 'local')
             api_key: User's API key (used only for this request)
             model: Model to use
             temperature: Temperature setting
             max_tokens: Max tokens for response
+            base_url: Tunnel URL for local LLM
+            bridge_token: Bridge token for local LLM
 
         Returns:
             Tuple of (CoursePlan, token_usage)
         """
-        # Validate API key format
-        self._validate_api_key(provider_id, api_key)
+        # Validate API key format (skip for local provider)
+        if provider_id != "local":
+            self._validate_api_key(provider_id, api_key)
 
         provider = self._get_provider(provider_id)
         system_prompt = COURSE_PLAN_SYSTEM_PROMPT
         user_prompt = f"Create a comprehensive course plan for: {topic}"
 
         result = await self._call_with_tools(
-            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
+            base_url=base_url, bridge_token=bridge_token,
         )
 
         content = result["content"]
@@ -569,6 +595,8 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
         model: str,
         temperature: float = 0.7,
         max_tokens: int = 4000,
+        base_url: str | None = None,
+        bridge_token: str | None = None,
     ) -> tuple[TheorySection, PracticalSection, int]:
         """Generate content for a specific level using user's API key.
 
@@ -580,12 +608,15 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
             model: Model to use
             temperature: Temperature setting
             max_tokens: Max tokens for response
+            base_url: Tunnel URL for local LLM
+            bridge_token: Bridge token for local LLM
 
         Returns:
             Tuple of (TheorySection, PracticalSection, token_usage)
         """
-        # Validate API key format
-        self._validate_api_key(provider_id, api_key)
+        # Validate API key format (skip for local provider)
+        if provider_id != "local":
+            self._validate_api_key(provider_id, api_key)
 
         # Find the level outline
         level_outline = next(
@@ -615,7 +646,8 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
 
         provider = self._get_provider(provider_id)
         result = await self._call_with_tools(
-            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens
+            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
+            base_url=base_url, bridge_token=bridge_token,
         )
 
         content = result["content"]

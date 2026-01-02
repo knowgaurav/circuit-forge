@@ -10,22 +10,66 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Semantic colors using CSS variables for light/dark mode
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // CircuitForge custom colors
+        
+        // Surface colors (cards, panels, etc.)
+        surface: {
+          DEFAULT: "var(--surface)",
+          secondary: "var(--surface-secondary)",
+          elevated: "var(--surface-elevated)",
+        },
+        
+        // Border colors
+        border: {
+          DEFAULT: "var(--border)",
+          muted: "var(--border-muted)",
+        },
+        
+        // Text colors
+        text: {
+          DEFAULT: "var(--text)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          inverse: "var(--text-inverse)",
+        },
+        
+        // Brand colors - blue/slate gradient theme
+        brand: {
+          50: "#f0f9ff",
+          100: "#e0f2fe",
+          200: "#bae6fd",
+          300: "#7dd3fc",
+          400: "#38bdf8",
+          500: "#0ea5e9",
+          600: "#0284c7",
+          700: "#0369a1",
+          800: "#075985",
+          900: "#0c4a6e",
+          950: "#082f49",
+        },
+        
+        // Accent colors - blue/slate theme
+        accent: {
+          primary: "#0ea5e9",
+          blue: "#3b82f6",
+          slate: "#475569",
+          cyan: "#06b6d4",
+        },
+        
+        // CircuitForge specific colors
         circuit: {
-          primary: "#3B82F6",    // Blue - primary actions
-          secondary: "#6B7280", // Gray - secondary elements
-          success: "#22C55E",   // Green - HIGH signal, success
-          warning: "#F59E0B",   // Amber - warnings
-          danger: "#EF4444",    // Red - errors, LOW signal
-          // Signal colors for simulation
+          primary: "#3B82F6",
+          secondary: "#6B7280",
+          success: "#22C55E",
+          warning: "#F59E0B",
+          danger: "#EF4444",
           signal: {
-            high: "#22C55E",    // Green wire
-            low: "#9CA3AF",     // Gray wire
-            error: "#EF4444",   // Red wire (undefined/error)
+            high: "#22C55E",
+            low: "#9CA3AF",
+            error: "#EF4444",
           },
-          // Annotation colors (8 colors from requirements)
           annotation: {
             black: "#000000",
             red: "#EF4444",
@@ -36,11 +80,10 @@ const config: Config = {
             brown: "#92400E",
             white: "#FFFFFF",
           },
-          // Canvas colors
           canvas: {
-            bg: "#F8FAFC",
-            grid: "#E2E8F0",
-            border: "#CBD5E1",
+            bg: "var(--canvas-bg)",
+            grid: "var(--canvas-grid)",
+            border: "var(--canvas-border)",
           },
         },
       },
@@ -49,6 +92,18 @@ const config: Config = {
         thin: "2px",
         medium: "4px",
         thick: "8px",
+      },
+      // Box shadows for elevation - blue glow
+      boxShadow: {
+        'glow-sm': '0 0 10px rgba(14, 165, 233, 0.2)',
+        'glow': '0 0 20px rgba(14, 165, 233, 0.3)',
+        'glow-lg': '0 0 30px rgba(14, 165, 233, 0.4)',
+        'glow-xl': '0 0 40px rgba(14, 165, 233, 0.5)',
+      },
+      // Background images for gradients - blue/slate
+      backgroundImage: {
+        'gradient-brand': 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)',
+        'gradient-hero': 'linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)',
       },
     },
   },

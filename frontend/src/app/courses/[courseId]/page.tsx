@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/services/api';
-import { Zap, ArrowLeft } from 'lucide-react';
+import { Navbar } from '@/components/ui/Navbar';
 import type { CoursePlan, CourseEnrollment } from '@/types';
 
 const difficultyColors: Record<string, string> = {
@@ -76,10 +76,10 @@ export default function CoursePage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p className="text-gray-400">Loading course...</p>
+                    <div className="animate-spin w-12 h-12 border-4 spinner-brand rounded-full mx-auto mb-4"></div>
+                    <p className="text-text-secondary">Loading course...</p>
                 </div>
             </div>
         );
@@ -87,10 +87,10 @@ export default function CoursePage() {
 
     if (error || !coursePlan) {
         return (
-            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-red-400 mb-4">{error || 'Course not found'}</p>
-                    <Link href="/courses/create" className="text-purple-400 hover:text-purple-300">
+                    <Link href="/courses/create" className="text-brand-link">
                         Create a new course
                     </Link>
                 </div>
@@ -99,24 +99,8 @@ export default function CoursePage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f]">
-            {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <Link href="/" className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                                <Zap className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="font-bold text-xl text-white">CircuitForge</span>
-                        </Link>
-                        <Link href="/courses/create" className="text-gray-400 hover:text-white text-sm font-medium flex items-center gap-1">
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Courses
-                        </Link>
-                    </div>
-                </div>
-            </nav>
+        <div className="min-h-screen bg-background transition-colors duration-300">
+            <Navbar />
 
             <div className="pt-24 pb-12 px-4">
                 <div className="max-w-4xl mx-auto">
@@ -228,7 +212,7 @@ export default function CoursePage() {
 
                     {/* Back Link */}
                     <div className="mt-6 text-center">
-                        <Link href="/courses/create" className="text-purple-400 hover:text-purple-300">
+                        <Link href="/courses/create" className="text-brand-link">
                             ← Create another course
                         </Link>
                     </div>

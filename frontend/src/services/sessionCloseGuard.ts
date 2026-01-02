@@ -22,7 +22,7 @@ export class SessionCloseGuard {
         this.isEnabled = true;
 
         // Register beforeunload handler
-        this.beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+        this.beforeUnloadHandler = (e: BeforeUnloadEvent): string | void => {
             // Only show warning if there are students (for teacher) or always for students
             if (this.shouldShowWarning()) {
                 e.preventDefault();

@@ -3,37 +3,77 @@
 @tailwind utilities;
 
 :root {
+  /* Background colors */
   --background: #ffffff;
-  --foreground: #171717;
-  --card: #ffffff;
-  --card-foreground: #171717;
-  --border: #e5e7eb;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --canvas-bg: #F8FAFC;
-  --canvas-grid: #E2E8F0;
-
-  /* Homepage dark theme colors */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #111827;
-  --bg-card: rgba(17, 24, 39, 0.8);
-  --accent-purple: #8b5cf6;
+  --foreground: #0f172a;
+  
+  /* Surface colors */
+  --surface: #ffffff;
+  --surface-secondary: #f8fafc;
+  --surface-alt: #f1f5f9;
+  --surface-elevated: #ffffff;
+  
+  /* Border colors */
+  --border: #e2e8f0;
+  --border-muted: #f1f5f9;
+  
+  /* Text colors */
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+  
+  /* Accent colors - blue/slate theme */
+  --accent-primary: #0ea5e9;
   --accent-blue: #3b82f6;
-  --accent-pink: #ec4899;
-  --glassmorphism-bg: rgba(255, 255, 255, 0.05);
-  --glassmorphism-border: rgba(255, 255, 255, 0.1);
+  --accent-slate: #475569;
+  
+  /* Canvas colors */
+  --canvas-bg: #f8fafc;
+  --canvas-grid: #e2e8f0;
+  --canvas-border: #cbd5e1;
+  
+  /* Glass effect - light mode */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  
+  /* Card colors */
+  --card-bg: #ffffff;
+  --card-hover: #f8fafc;
 }
 
 html.dark {
-  --background: #111827;
-  --foreground: #f3f4f6;
-  --card: #1f2937;
-  --card-foreground: #f3f4f6;
+  /* Background colors */
+  --background: #0a0a0f;
+  --foreground: #f8fafc;
+  
+  /* Surface colors */
+  --surface: #111827;
+  --surface-secondary: #1f2937;
+  --surface-elevated: #1f2937;
+  
+  /* Border colors */
   --border: #374151;
-  --muted: #1f2937;
-  --muted-foreground: #9ca3af;
+  --border-muted: #1f2937;
+  
+  /* Text colors */
+  --text: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #6b7280;
+  --text-inverse: #0f172a;
+  
+  /* Canvas colors */
   --canvas-bg: #1f2937;
   --canvas-grid: #374151;
+  --canvas-border: #4b5563;
+  
+  /* Glass effect - dark mode */
+  --glass-bg: rgba(17, 24, 39, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  
+  /* Card colors */
+  --card-bg: rgba(17, 24, 39, 0.6);
+  --card-hover: rgba(31, 41, 55, 0.8);
 }
 
 body {
@@ -88,23 +128,28 @@ html.dark * {
 /* Glassmorphism utility */
 @layer components {
   .glass {
-    background: var(--glassmorphism-bg);
+    background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glassmorphism-border);
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
   }
 
   .glass-card {
-    background: rgba(17, 24, 39, 0.6);
+    background: var(--card-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
+    transition: background-color 0.2s ease;
+  }
+
+  .glass-card:hover {
+    background: var(--card-hover);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -112,7 +157,7 @@ html.dark * {
 
   .gradient-border {
     position: relative;
-    background: var(--bg-secondary);
+    background: var(--surface);
     border-radius: 16px;
   }
 
@@ -122,7 +167,7 @@ html.dark * {
     inset: 0;
     padding: 1px;
     border-radius: 16px;
-    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-blue));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -131,17 +176,80 @@ html.dark * {
   }
 
   .gradient-btn {
-    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%);
     transition: all 0.3s ease;
   }
 
   .gradient-btn:hover {
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.4);
     transform: translateY(-2px);
   }
 
   .glow-effect {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+  }
+
+  /* Centralized gradient backgrounds - change colors here to update everywhere */
+  .gradient-hero-bg {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%);
+  }
+
+  .gradient-card-bg {
+    background: linear-gradient(135deg, var(--accent-primary), #3b82f6, #06b6d4);
+  }
+
+  .gradient-subtle-bg {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  }
+
+  .gradient-subtle-bg-dark {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+  }
+
+  /* Brand colored elements */
+  .bg-brand-primary {
+    background-color: var(--accent-primary);
+  }
+
+  .text-brand-primary {
+    color: var(--accent-primary);
+  }
+
+  .border-brand-primary {
+    border-color: var(--accent-primary);
+  }
+
+  .ring-brand-primary {
+    --tw-ring-color: var(--accent-primary);
+  }
+
+  /* Spinner/loading colors */
+  .spinner-brand {
+    border-color: var(--accent-primary);
+    border-top-color: transparent;
+  }
+
+  /* Brand text colors with hover states */
+  .text-brand-link {
+    color: #38bdf8; /* sky-400 equivalent */
+  }
+  .text-brand-link:hover {
+    color: #7dd3fc; /* sky-300 equivalent */
+  }
+
+  .text-brand-muted {
+    color: #7dd3fc; /* sky-300 equivalent */
+  }
+
+  /* Brand background utilities with opacity */
+  .bg-brand-subtle {
+    background-color: rgba(14, 165, 233, 0.1);
+  }
+  .border-brand-subtle {
+    border-color: rgba(14, 165, 233, 0.2);
+  }
+  .bg-brand-subtle-hover:hover {
+    background-color: rgba(14, 165, 233, 0.15);
   }
 }
 
@@ -172,11 +280,11 @@ html.dark * {
 
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
   }
 
   50% {
-    box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 40px rgba(14, 165, 233, 0.6);
   }
 }
 

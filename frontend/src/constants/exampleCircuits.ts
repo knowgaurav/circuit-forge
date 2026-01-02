@@ -36,12 +36,12 @@ function resolvePin(
     componentMap: Map<string, ComponentType>
 ): string {
     const parts = spec.split(':');
-    const label = parts[0];
+    const label = parts[0] ?? '';
     const pinName = parts[1];
     
     const compType = componentMap.get(label);
     if (!compType) {
-        throw new Error(`Unknown component label: "${label}". Available: ${[...componentMap.keys()].join(', ')}`);
+        throw new Error(`Unknown component label: "${label}". Available: ${Array.from(componentMap.keys()).join(', ')}`);
     }
     
     const def = getComponentDefinition(compType);
@@ -54,21 +54,20 @@ function resolvePin(
     if (pinName) {
         // Explicit pin name - validate it exists
         const pin = pins.find(p => 
-            (p.id && p.id.toLowerCase() === pinName.toLowerCase()) || 
             (p.name && p.name.toLowerCase() === pinName.toLowerCase())
         );
         if (!pin) {
-            const available = pins.map(p => p.id || p.name || 'unknown').join(', ');
+            const available = pins.map(p => p.name || 'unknown').join(', ');
             throw new Error(`${direction} pin "${pinName}" not found on ${compType} (${label}). Available: ${available}`);
         }
-        return `${label}:${pin.id || pin.name}`;
+        return `${label}:${pin.name}`;
     }
     
     // No pin specified - use first pin of that direction
     if (pins.length === 0) {
         throw new Error(`No ${direction} pins on ${compType} (${label})`);
     }
-    return `${label}:${pins[0].id || pins[0].name}`;
+    return `${label}:${pins[0]?.name ?? 'unknown'}`;
 }
 
 /**

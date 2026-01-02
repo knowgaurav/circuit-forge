@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, BookOpen, Wrench, ChevronRight, Sparkles, Zap } from 'lucide-react';
-import { Button, Badge, Panel, ThemeToggle } from '@/components/ui';
+import { BookOpen, Wrench, ChevronRight, Sparkles, Zap, ArrowLeft } from 'lucide-react';
+import { Button, Badge, Panel } from '@/components/ui';
+import { Navbar } from '@/components/ui/Navbar';
 import {
     TEMPLATES,
     TEMPLATE_CATEGORIES,
@@ -48,24 +48,10 @@ export default function TemplatesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            {/* Header */}
-            <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Link>
-                        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Circuit Templates</h1>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Badge variant="info">{TEMPLATES.length} Templates</Badge>
-                        <ThemeToggle />
-                    </div>
-                </div>
-            </header>
+        <div className="min-h-screen bg-background transition-colors duration-300">
+            <Navbar />
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="max-w-7xl mx-auto px-6 py-8 pt-24">
                 <div className="flex gap-8">
                     {/* Sidebar - Categories */}
                     <div className="w-64 flex-shrink-0">
@@ -199,7 +185,7 @@ export default function TemplatesPage() {
                                 {selectedCategory === 'all' && (
                                     <button
                                         onClick={handleOpenPlayground}
-                                        className="col-span-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-lg p-6 text-left hover:shadow-lg hover:scale-[1.01] transition-all group"
+                                        className="col-span-full gradient-card-bg rounded-lg p-6 text-left hover:shadow-lg hover:scale-[1.01] transition-all group"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">

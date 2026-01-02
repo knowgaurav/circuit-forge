@@ -22,6 +22,8 @@ type StatusCallback = (status: TabSyncStatus) => void;
 export class TabSyncManager {
     private tabId: string;
     private sessionCode: string = '';
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - reserved for future use
     private participantId: string = '';
     private channel: BroadcastChannel | null = null;
     private heartbeatInterval: NodeJS.Timeout | null = null;

@@ -23,6 +23,7 @@ from app.services.course_service import CourseService
 from app.services.llm_providers import (
     AuthenticationError,
     LLMError,
+    LocalLLMStrategy,
     ProviderUnavailableError,
     QuotaExceededError,
     RateLimitError,
@@ -199,6 +200,8 @@ async def generate_plan(
             model=request.llm_config.model,
             temperature=request.llm_config.temperature,
             max_tokens=request.llm_config.max_tokens,
+            base_url=request.llm_config.base_url,
+            bridge_token=request.llm_config.bridge_token,
         )
         return GeneratePlanResponse(coursePlan=course_plan)
     except Exception as e:
@@ -230,6 +233,82 @@ async def test_connection(
     except Exception as e:
         handle_exception(e)
         raise
+
+
+# --- Local LLM Endpoints ---
+
+class TestLocalConnectionRequest(BaseModel):
+    """Request to test local LLM connection."""
+    base_url: str = Field(alias="baseUrl")
+    token: str
+    model: str
+
+    model_config = {"populate_by_name": True}
+
+
+class FetchLocalModelsRequest(BaseModel):
+    """Request to fetch models from local LLM."""
+    base_url: str = Field(alias="baseUrl")
+    token: str
+
+    model_config = {"populate_by_name": True}
+
+
+class FetchLocalModelsResponse(BaseModel):
+    """Response for fetching local models."""
+    success: bool
+    models: list[str] | None = None
+    message: str | None = None
+
+
+@router.post("/courses/test-local-connection", response_model=TestConnectionResponse)
+async def test_local_connection(request: TestLocalConnectionRequest) -> TestConnectionResponse:
+    """Test connection to local LLM via tunnel.
+    
+    Uses the bridge token for authentication.
+    """
+    try:
+        local_provider = LocalLLMStrategy()
+        result = await local_provider.test_connection(
+            base_url=request.base_url,
+            bridge_token=request.token,
+            model=request.model,
+        )
+        return TestConnectionResponse(
+            success=result["success"],
+            message=result.get("message", ""),
+            error=result.get("error"),
+        )
+    except Exception as e:
+        handle_exception(e)
+        raise
+
+
+@router.post("/courses/local-models", response_model=FetchLocalModelsResponse)
+async def fetch_local_models(request: FetchLocalModelsRequest) -> FetchLocalModelsResponse:
+    """Fetch available models from local LLM server.
+    
+    Uses the bridge token for authentication.
+    """
+    try:
+        local_provider = LocalLLMStrategy()
+        models = await local_provider.list_models(
+            base_url=request.base_url,
+            bridge_token=request.token,
+        )
+        if models:
+            return FetchLocalModelsResponse(success=True, models=models)
+        else:
+            return FetchLocalModelsResponse(
+                success=False,
+                message="No models found. Make sure your LLM server is running and has models loaded.",
+            )
+    except Exception as e:
+        logger.error(f"Failed to fetch local models: {e}")
+        return FetchLocalModelsResponse(
+            success=False,
+            message=str(e),
+        )
 
 
 @router.get("/courses/{course_id}")
@@ -303,6 +382,8 @@ async def generate_level_content(
             model=request.llm_config.model,
             temperature=request.llm_config.temperature,
             max_tokens=request.llm_config.max_tokens,
+            base_url=request.llm_config.base_url,
+            bridge_token=request.llm_config.bridge_token,
         )
 
         is_generating = (

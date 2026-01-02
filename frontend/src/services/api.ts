@@ -16,12 +16,7 @@ import type { LLMConfig } from '@/stores/llmConfigStore';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-interface ApiError {
-    error: {
-        code: string;
-        message: string;
-    };
-}
+
 
 class ApiClient {
     private baseUrl: string;
@@ -133,18 +128,28 @@ class ApiClient {
         llmConfig: LLMConfig,
         participantId?: string
     ): Promise<{ coursePlan: CoursePlan }> {
+        const config: Record<string, unknown> = {
+            provider: llmConfig.provider,
+            apiKey: llmConfig.apiKey,
+            model: llmConfig.model,
+            temperature: llmConfig.temperature,
+            maxTokens: llmConfig.maxTokens,
+        };
+        
+        // Add local LLM specific fields
+        if (llmConfig.baseUrl) {
+            config.baseUrl = llmConfig.baseUrl;
+        }
+        if (llmConfig.bridgeToken) {
+            config.bridgeToken = llmConfig.bridgeToken;
+        }
+        
         return this.request('/courses/generate-plan', {
             method: 'POST',
             body: JSON.stringify({
                 topic,
                 participantId,
-                llmConfig: {
-                    provider: llmConfig.provider,
-                    apiKey: llmConfig.apiKey,
-                    model: llmConfig.model,
-                    temperature: llmConfig.temperature,
-                    maxTokens: llmConfig.maxTokens,
-                },
+                llmConfig: config,
             }),
         });
     }
@@ -160,6 +165,34 @@ class ApiClient {
                 provider,
                 apiKey,
                 model,
+            }),
+        });
+    }
+
+    async testLocalConnection(
+        baseUrl: string,
+        token: string,
+        model: string
+    ): Promise<{ success: boolean; message: string }> {
+        return this.request('/courses/test-local-connection', {
+            method: 'POST',
+            body: JSON.stringify({
+                baseUrl,
+                token,
+                model,
+            }),
+        });
+    }
+
+    async fetchLocalModels(
+        baseUrl: string,
+        token: string
+    ): Promise<{ success: boolean; models?: string[]; message?: string }> {
+        return this.request('/courses/local-models', {
+            method: 'POST',
+            body: JSON.stringify({
+                baseUrl,
+                token,
             }),
         });
     }
@@ -183,16 +216,26 @@ class ApiClient {
         levelNum: number,
         llmConfig: LLMConfig
     ): Promise<{ content: LevelContent | null; isGenerating: boolean }> {
+        const config: Record<string, unknown> = {
+            provider: llmConfig.provider,
+            apiKey: llmConfig.apiKey,
+            model: llmConfig.model,
+            temperature: llmConfig.temperature,
+            maxTokens: llmConfig.maxTokens,
+        };
+        
+        // Add local LLM specific fields
+        if (llmConfig.baseUrl) {
+            config.baseUrl = llmConfig.baseUrl;
+        }
+        if (llmConfig.bridgeToken) {
+            config.bridgeToken = llmConfig.bridgeToken;
+        }
+        
         return this.request(`/courses/${courseId}/levels/${levelNum}`, {
             method: 'POST',
             body: JSON.stringify({
-                llmConfig: {
-                    provider: llmConfig.provider,
-                    apiKey: llmConfig.apiKey,
-                    model: llmConfig.model,
-                    temperature: llmConfig.temperature,
-                    maxTokens: llmConfig.maxTokens,
-                },
+                llmConfig: config,
             }),
         });
     }
