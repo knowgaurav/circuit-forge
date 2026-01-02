@@ -3,7 +3,7 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { useInView } from '@/hooks';
 
-interface AnimatedCounterProps {
+export interface AnimatedCounterProps {
     end: number;
     suffix?: string;
     duration?: number;
@@ -59,14 +59,14 @@ export function AnimatedCounter({
     return (
         <div ref={ref} className="flex flex-col items-center text-center">
             {icon && (
-                <div className="mb-2 text-purple-400">
+                <div className="mb-2 text-brand-500">
                     {icon}
                 </div>
             )}
-            <div className="text-3xl md:text-4xl font-bold text-white">
+            <div className="text-3xl md:text-4xl font-bold text-text">
                 {count}{suffix}
             </div>
-            <div className="text-sm text-gray-400 mt-1">
+            <div className="text-sm text-text-secondary mt-1">
                 {label}
             </div>
         </div>

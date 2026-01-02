@@ -9,7 +9,7 @@ import { EmbeddedPlayground } from '@/components/circuit';
 import { useCircuitStore } from '@/stores/circuitStore';
 import { useLLMConfigStore } from '@/stores/llmConfigStore';
 import { APIKeyModal } from '@/components/ui/APIKeyModal';
-import { Zap, ArrowLeft } from 'lucide-react';
+import { Navbar } from '@/components/ui/Navbar';
 import type { CoursePlan, LevelContent, LevelOutline } from '@/types';
 
 export default function LevelPage() {
@@ -178,10 +178,10 @@ export default function LevelPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p className="text-gray-400">Loading level...</p>
+                    <div className="animate-spin w-12 h-12 border-4 spinner-brand rounded-full mx-auto mb-4"></div>
+                    <p className="text-text-secondary">Loading level...</p>
                 </div>
             </div>
         );
@@ -199,17 +199,17 @@ export default function LevelPage() {
 
     if (isGenerating) {
         return (
-            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
                 <div className="text-center max-w-md">
-                    <div className="animate-spin w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-6"></div>
-                    <h2 className="text-xl font-semibold text-white mb-2">
+                    <div className="animate-spin w-16 h-16 border-4 spinner-brand rounded-full mx-auto mb-6"></div>
+                    <h2 className="text-xl font-semibold text-text mb-2">
                         Generating Your Personalized Content
                     </h2>
-                    <p className="text-gray-400 mb-4">
+                    <p className="text-text-secondary mb-4">
                         Our AI is creating custom learning materials for this level. This usually takes 15-30 seconds.
                     </p>
-                    <div className="glass-card rounded-xl p-4 text-sm text-purple-300">
-                        💡 Tip: While you wait, you can review previous levels or explore the course outline.
+                    <div className="glass-card rounded-xl p-4 text-sm text-brand-muted">
+                        Tip: While you wait, you can review previous levels or explore the course outline.
                     </div>
                 </div>
             </div>
@@ -218,10 +218,10 @@ export default function LevelPage() {
 
     if (error || !coursePlan || !levelOutline) {
         return (
-            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-red-400 mb-4">{error || 'Level not found'}</p>
-                    <Link href={`/courses/${courseId}`} className="text-purple-400 hover:text-purple-300">
+                    <Link href={`/courses/${courseId}`} className="text-brand-link">
                         Back to course
                     </Link>
                 </div>
@@ -232,47 +232,30 @@ export default function LevelPage() {
     const theory = levelContent?.theory;
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f]">
-            {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <Link href="/" className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                                <Zap className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="font-bold text-xl text-white">CircuitForge</span>
-                        </Link>
-                        <div className="flex items-center gap-4">
-                            <Link
-                                href={`/courses/${courseId}`}
-                                className="text-gray-400 hover:text-white text-sm font-medium flex items-center gap-1"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                                Back
-                            </Link>
-                            <div className="text-right">
-                                <p className="text-sm text-gray-500">
-                                    Level {levelNum} of {coursePlan.levels.length}
-                                </p>
-                                <h1 className="text-sm font-semibold text-white">
-                                    {levelOutline.title}
-                                </h1>
-                            </div>
-                            <button
-                                onClick={handleCompleteLevel}
-                                className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
-                            >
-                                Complete Level
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+        <div className="min-h-screen bg-background transition-colors duration-300">
+            <Navbar />
 
             {/* Content */}
             <div className="pt-24 pb-12 px-4">
                 <div className="max-w-6xl mx-auto">
+                    {/* Level Header */}
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <p className="text-sm text-text-muted">
+                                Level {levelNum} of {coursePlan.levels.length}
+                            </p>
+                            <h1 className="text-xl font-semibold text-text">
+                                {levelOutline.title}
+                            </h1>
+                        </div>
+                        <button
+                            onClick={handleCompleteLevel}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+                        >
+                            Complete Level
+                        </button>
+                    </div>
+
                     {/* Tabs */}
                     <div className="flex gap-2 mb-6">
                         <button
@@ -327,8 +310,8 @@ export default function LevelPage() {
                                     <h2 className="text-lg font-semibold text-white mb-4">🌍 Real World Examples</h2>
                                     <ul className="space-y-3">
                                         {theory.realWorldExamples.map((example, i) => (
-                                            <li key={i} className="flex items-start gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                                                <span className="text-purple-400">💡</span>
+                                            <li key={i} className="flex items-start gap-3 p-3 bg-brand-subtle border border-brand-subtle rounded-xl">
+                                                <span className="text-brand-link">💡</span>
                                                 <span className="text-gray-300">{example}</span>
                                             </li>
                                         ))}

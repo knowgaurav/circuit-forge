@@ -186,9 +186,9 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                             Pins ({component.pins.length})
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                            {component.pins.map((pin) => (
+                            {component.pins.map((pin, index) => (
                                 <span
-                                    key={pin.id}
+                                    key={`${pin.name}-${index}`}
                                     className={`text-xs px-2.5 py-1 rounded-md font-medium border ${
                                         pin.type === 'input'
                                             ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-700/50'

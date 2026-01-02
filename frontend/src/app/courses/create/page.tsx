@@ -2,18 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { api } from '@/services/api';
-import { Zap, ArrowLeft, Sparkles, Settings, AlertTriangle } from 'lucide-react';
+import { Sparkles, AlertTriangle } from 'lucide-react';
 import type { TopicSuggestion, CoursePlan } from '@/types';
 import { APIKeyModal } from '@/components/ui/APIKeyModal';
+import { Navbar } from '@/components/ui/Navbar';
 import { useLLMConfigStore } from '@/stores/llmConfigStore';
-import { getProvider } from '@/constants/llmProviders';
 
 // Category colors for visual distinction (dark theme)
 const categoryColors: Record<string, string> = {
     'Digital Logic': 'bg-blue-500/20 border-blue-500/50 hover:bg-blue-500/30',
-    'Computing': 'bg-purple-500/20 border-purple-500/50 hover:bg-purple-500/30',
+    'Computing': 'bg-cyan-500/20 border-cyan-500/50 hover:bg-cyan-500/30',
     'Robotics': 'bg-green-500/20 border-green-500/50 hover:bg-green-500/30',
     'Automation': 'bg-orange-500/20 border-orange-500/50 hover:bg-orange-500/30',
 };
@@ -35,8 +34,6 @@ export default function CreateCoursePage() {
     const [showApiKeyModal, setShowApiKeyModal] = useState(false);
     const [pendingTopic, setPendingTopic] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
-
-    const provider = getProvider(llmStore.provider);
 
     useEffect(() => {
         setIsMounted(true);
@@ -116,20 +113,8 @@ export default function CreateCoursePage() {
 
     if (generatedPlan) {
         return (
-            <div className="min-h-screen bg-[#0a0a0f]">
-                {/* Navigation */}
-                <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between h-16">
-                            <Link href="/" className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                                    <Zap className="w-5 h-5 text-white" />
-                                </div>
-                                <span className="font-bold text-xl text-white">CircuitForge</span>
-                            </Link>
-                        </div>
-                    </div>
-                </nav>
+            <div className="min-h-screen bg-background transition-colors duration-300">
+                <Navbar />
 
                 <div className="pt-24 pb-12 px-4">
                     <div className="max-w-4xl mx-auto">
@@ -206,49 +191,8 @@ export default function CreateCoursePage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f]">
-            {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <Link href="/" className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                                <Zap className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="font-bold text-xl text-white">CircuitForge</span>
-                        </Link>
-                        <div className="flex items-center gap-4">
-                            {/* API Key Status */}
-                            {isMounted && llmStore.isConfigured() && provider ? (
-                                <button
-                                    onClick={() => setShowApiKeyModal(true)}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-500/50 rounded-lg text-sm"
-                                >
-                                    {provider.logoUrl ? (
-                                        <img src={provider.logoUrl} alt={provider.name} className="w-4 h-4 object-contain" />
-                                    ) : (
-                                        <span className="text-green-400">{provider.icon}</span>
-                                    )}
-                                    <span className="text-green-300">{provider.name}</span>
-                                    <Settings className="w-3.5 h-3.5 text-green-400" />
-                                </button>
-                            ) : isMounted ? (
-                                <button
-                                    onClick={() => setShowApiKeyModal(true)}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-sm text-yellow-300"
-                                >
-                                    <Settings className="w-3.5 h-3.5" />
-                                    Configure API Key
-                                </button>
-                            ) : null}
-                            <Link href="/" className="text-gray-400 hover:text-white text-sm font-medium flex items-center gap-1">
-                                <ArrowLeft className="w-4 h-4" />
-                                Back to Home
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+        <div className="min-h-screen bg-background transition-colors duration-300">
+            <Navbar />
 
             {/* API Key Modal */}
             <APIKeyModal
@@ -260,7 +204,7 @@ export default function CreateCoursePage() {
             <div className="pt-24 pb-12 px-4">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 glass rounded-full text-sm font-medium mb-4 text-purple-300">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 glass rounded-full text-sm font-medium mb-4 text-brand-muted">
                             <Sparkles className="w-4 h-4" />
                             AI-Powered Learning
                         </div>
@@ -295,7 +239,7 @@ export default function CreateCoursePage() {
                                 value={customTopic}
                                 onChange={(e) => setCustomTopic(e.target.value)}
                                 placeholder="e.g., 4-bit calculator, digital clock, traffic light controller..."
-                                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 ring-brand-primary focus:border-brand-primary outline-none"
                                 disabled={isLoading}
                             />
                             <button
@@ -314,7 +258,7 @@ export default function CreateCoursePage() {
                     {/* Loading State */}
                     {isLoading && (
                         <div className="glass-card p-8 rounded-2xl mb-8 text-center">
-                            <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                            <div className="animate-spin w-12 h-12 border-4 spinner-brand rounded-full mx-auto mb-4"></div>
                             <p className="text-gray-300">Generating your personalized course plan...</p>
                             <p className="text-sm text-gray-500 mt-2">This may take up to 30 seconds</p>
                         </div>

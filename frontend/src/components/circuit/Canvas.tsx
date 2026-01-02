@@ -1043,7 +1043,7 @@ function drawClockSymbol(ctx: CanvasRenderingContext2D, width: number, height: n
     ctx.fillText('CLK', 0, 14);
 }
 
-function drawConstHighSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+function drawConstHighSymbol(ctx: CanvasRenderingContext2D, width: number, _height: number) {
     // Logic HIGH (1) source - square wave at high level
     ctx.strokeStyle = '#22C55E';
     ctx.lineWidth = 2.5;
@@ -1080,7 +1080,7 @@ function drawConstHighSymbol(ctx: CanvasRenderingContext2D, width: number, heigh
     ctx.stroke();
 }
 
-function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, _height: number) {
     // Logic LOW (0) source - square wave at low level
     ctx.strokeStyle = '#6B7280';
     ctx.lineWidth = 2.5;
@@ -1117,7 +1117,7 @@ function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.stroke();
 }
 
-function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, color: string, isLit = false) {
+function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, _height: number, color: string, isLit = false) {
     // LED schematic symbol: diode with light arrows
     const triSize = 14;
     
@@ -1315,7 +1315,7 @@ function drawFlipFlopSymbol(ctx: CanvasRenderingContext2D, width: number, height
     }
 }
 
-function drawVccSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+function drawVccSymbol(ctx: CanvasRenderingContext2D, _width: number, height: number) {
     // Glow effect
     ctx.shadowColor = 'rgba(239, 68, 68, 0.4)';
     ctx.shadowBlur = 6;
@@ -1352,7 +1352,7 @@ function drawVccSymbol(ctx: CanvasRenderingContext2D, width: number, height: num
     ctx.fillText('VCC', 0, height / 2 - 6);
 }
 
-function drawGroundSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+function drawGroundSymbol(ctx: CanvasRenderingContext2D, _width: number, height: number) {
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
@@ -1480,7 +1480,7 @@ function drawTrafficLightCtrlSymbol(ctx: CanvasRenderingContext2D, width: number
     ctx.fillText('CTRL', 0, height / 2 - 10);
 }
 
-function drawJunctionSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+function drawJunctionSymbol(ctx: CanvasRenderingContext2D, _width: number, _height: number) {
     // Simple dot for junction
     ctx.fillStyle = '#374151';
     ctx.beginPath();
@@ -1488,7 +1488,7 @@ function drawJunctionSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.fill();
 }
 
-function drawProbeSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isHigh = false) {
+function drawProbeSymbol(ctx: CanvasRenderingContext2D, _width: number, height: number, isHigh = false) {
     // Probe indicator - shows signal state
     ctx.fillStyle = isHigh ? '#22C55E' : '#6B7280';
     ctx.strokeStyle = '#374151';
@@ -1741,7 +1741,7 @@ function drawCapacitorSymbol(ctx: CanvasRenderingContext2D, width: number, heigh
     ctx.fillText('C', 0, height / 2 - 4);
 }
 
-function drawDiodeSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
+function drawDiodeSymbol(ctx: CanvasRenderingContext2D, width: number, _height: number) {
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';

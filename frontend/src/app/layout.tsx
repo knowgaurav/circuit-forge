@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui";
+import { FloatingLLMButton } from "@/components/ui/FloatingLLMButton";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -76,6 +77,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           {children}
+          <FloatingLLMButton />
         </ThemeProvider>
       </body>
     </html>

@@ -6,6 +6,7 @@ from app.services.llm_providers import (
     AnthropicStrategy,
     GoogleStrategy,
     LLMProviderStrategy,
+    LocalLLMStrategy,
     OpenAICompatibleStrategy,
 )
 
@@ -34,6 +35,7 @@ class LLMProviderFactory:
             base_url="https://openrouter.ai/api/v1/chat/completions",
             key_prefix="sk-or-"
         ),
+        "local": lambda: LocalLLMStrategy(),
     }
 
     @classmethod

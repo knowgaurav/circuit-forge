@@ -239,6 +239,9 @@ export type ClientMessageType =
     | 'permission:kick'
     | 'simulation:start'
     | 'simulation:stop'
+    | 'simulation:toggle'
+    | 'simulation:clock:tick'
+    | 'simulation:step'
     | 'simulation:state';
 
 export type ClientMessage =
@@ -260,6 +263,9 @@ export type ClientMessage =
     | { type: 'permission:kick'; payload: { participantId: string } }
     | { type: 'simulation:start'; payload: Record<string, never> }
     | { type: 'simulation:stop'; payload: Record<string, never> }
+    | { type: 'simulation:toggle'; payload: { componentId: string } }
+    | { type: 'simulation:clock:tick'; payload: { componentId: string } }
+    | { type: 'simulation:step'; payload: Record<string, never> }
     | { type: 'simulation:state'; payload: { wireStates: Record<string, string>; pinStates: Record<string, Record<string, string>>; errors: Array<{ errorType: string; message: string; componentId?: string; pinId?: string }> } };
 
 // Server -> Client

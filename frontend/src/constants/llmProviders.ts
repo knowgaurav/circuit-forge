@@ -21,6 +21,8 @@ export interface LLMProvider {
     keyPrefix?: string;
     docsUrl: string;
     models: ModelOption[];
+    requiresBaseUrl?: boolean;
+    requiresToken?: boolean;
 }
 
 export const LLM_PROVIDERS: LLMProvider[] = [
@@ -108,6 +110,16 @@ export const LLM_PROVIDERS: LLMProvider[] = [
             { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash (Free)', description: 'Free - Google 1M context experimental' },
         ],
     },
+    {
+        id: 'local',
+        name: 'Local LLM',
+        icon: '🏠',
+        description: 'Connect your local Ollama, LM Studio, vLLM, or any OpenAI-compatible server',
+        docsUrl: 'https://github.com/Algozenith/circuit-forge/tree/main/cli',
+        requiresBaseUrl: true,
+        requiresToken: true,
+        models: [],
+    },
 ];
 
 /**
@@ -130,18 +142,55 @@ export function getDefaultModel(providerId: string): ModelOption | undefined {
  * Validate API key format for a provider
  */
 export function validateKeyFormat(providerId: string, apiKey: string): { valid: boolean; error?: string } {
-    if (!apiKey || apiKey.length < 10) {
-        return { valid: false, error: 'API key is too short' };
-    }
-
     const provider = getProvider(providerId);
     if (!provider) {
         return { valid: false, error: 'Unknown provider' };
+    }
+
+    // Local provider doesn't use API keys
+    if (provider.requiresBaseUrl) {
+        return { valid: true };
+    }
+
+    if (!apiKey || apiKey.length < 10) {
+        return { valid: false, error: 'API key is too short' };
     }
 
     if (provider.keyPrefix && !apiKey.startsWith(provider.keyPrefix)) {
         return { valid: false, error: `API key should start with '${provider.keyPrefix}'` };
     }
 
+    return { valid: true };
+}
+
+/**
+ * Validate base URL format for local provider
+ */
+export function validateBaseUrl(baseUrl: string): { valid: boolean; error?: string } {
+    if (!baseUrl) {
+        return { valid: false, error: 'Tunnel URL is required' };
+    }
+
+    try {
+        const url = new URL(baseUrl);
+        if (!['http:', 'https:'].includes(url.protocol)) {
+            return { valid: false, error: 'URL must start with http:// or https://' };
+        }
+        return { valid: true };
+    } catch {
+        return { valid: false, error: 'Invalid URL format' };
+    }
+}
+
+/**
+ * Validate bridge token format
+ */
+export function validateBridgeToken(token: string): { valid: boolean; error?: string } {
+    if (!token) {
+        return { valid: false, error: 'Bridge token is required' };
+    }
+    if (token.length < 20) {
+        return { valid: false, error: 'Token appears to be too short' };
+    }
     return { valid: true };
 }
