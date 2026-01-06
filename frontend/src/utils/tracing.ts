@@ -87,6 +87,7 @@ export function logErrorWithTrace(
   requestId?: string | null
 ): void {
   logger.error(message, {
+    level: "error",
     error: error instanceof Error ? error.message : String(error),
     trace_id: traceId || getSessionTraceId(),
     request_id: requestId || "unknown",
@@ -104,6 +105,7 @@ export function logInfoWithTrace(
   requestId?: string | null
 ): void {
   logger.info(message, {
+    level: "info",
     ...data,
     trace_id: traceId || getSessionTraceId(),
     request_id: requestId || generateRequestId(),
