@@ -46,6 +46,7 @@ async def root():
         "health": "/health",
     }
 
+
 # Wide event logging middleware (must be added first to wrap all requests)
 app.add_middleware(WideEventMiddleware)
 
