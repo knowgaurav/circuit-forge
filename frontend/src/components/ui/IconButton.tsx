@@ -16,23 +16,23 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             <button
                 ref={ref}
                 className={clsx(
-                    'inline-flex items-center justify-center rounded-md transition-colors',
-                    'focus:outline-none focus:ring-2 focus:ring-offset-2',
+                    'inline-flex items-center justify-center rounded-md transition-all duration-200',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     {
                         // Variants
-                        'bg-circuit-primary text-white hover:bg-blue-600 focus:ring-blue-500':
+                        'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow':
                             variant === 'primary',
-                        'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500':
+                        'bg-surface-secondary text-foreground hover:bg-surface-elevated border border-border/50':
                             variant === 'secondary',
-                        'bg-transparent text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-gray-500':
+                        'bg-transparent text-text-secondary hover:text-foreground hover:bg-surface-secondary':
                             variant === 'ghost',
-                        'bg-circuit-danger text-white hover:bg-red-600 focus:ring-red-500':
+                        'bg-error text-white hover:bg-error/90 shadow-sm hover:shadow-error/20':
                             variant === 'danger',
                         // Sizes
-                        'p-1': size === 'sm',
-                        'p-2': size === 'md',
-                        'p-3': size === 'lg',
+                        'p-1.5': size === 'sm',
+                        'p-2.5': size === 'md',
+                        'p-3.5': size === 'lg',
                     },
                     className
                 )}

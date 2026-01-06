@@ -3,24 +3,24 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
-import { Sparkles, AlertTriangle } from 'lucide-react';
+import { Sparkles, AlertTriangle, Lock, Unlock } from 'lucide-react';
 import type { TopicSuggestion, CoursePlan } from '@/types';
 import { APIKeyModal } from '@/components/ui/APIKeyModal';
-import { Navbar } from '@/components/ui/Navbar';
+import { Navbar, Button, Input, Spinner } from '@/components/ui';
 import { useLLMConfigStore } from '@/stores/llmConfigStore';
 
-// Category colors for visual distinction (dark theme)
+// Category colors using semantic tokens
 const categoryColors: Record<string, string> = {
-    'Digital Logic': 'bg-blue-500/20 border-blue-500/50 hover:bg-blue-500/30',
-    'Computing': 'bg-cyan-500/20 border-cyan-500/50 hover:bg-cyan-500/30',
-    'Robotics': 'bg-green-500/20 border-green-500/50 hover:bg-green-500/30',
-    'Automation': 'bg-orange-500/20 border-orange-500/50 hover:bg-orange-500/30',
+    'Digital Logic': 'bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary',
+    'Computing': 'bg-accent/10 border-accent/20 hover:bg-accent/20 text-accent',
+    'Robotics': 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20 text-green-600 dark:text-green-400',
+    'Automation': 'bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400',
 };
 
 const difficultyColors: Record<string, string> = {
-    'Beginner': 'text-green-400 bg-green-500/20',
-    'Intermediate': 'text-yellow-400 bg-yellow-500/20',
-    'Advanced': 'text-red-400 bg-red-500/20',
+    'Beginner': 'text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20',
+    'Intermediate': 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border border-yellow-500/20',
+    'Advanced': 'text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20',
 };
 
 export default function CreateCoursePage() {
@@ -119,69 +119,80 @@ export default function CreateCoursePage() {
                 <div className="pt-24 pb-12 px-4">
                     <div className="max-w-4xl mx-auto">
                         <div className="glass-card p-8 rounded-2xl">
-                            <h1 className="text-2xl font-bold text-white mb-2">
+                            <h1 className="text-3xl font-bold text-foreground mb-2">
                                 {generatedPlan.title}
                             </h1>
-                            <p className="text-gray-400 mb-4">{generatedPlan.description}</p>
+                            <p className="text-text-secondary mb-6">{generatedPlan.description}</p>
 
-                            <div className="flex gap-4 mb-6">
+                            <div className="flex gap-4 mb-8">
                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${difficultyColors[generatedPlan.difficulty]}`}>
                                     {generatedPlan.difficulty}
                                 </span>
-                                <span className="text-gray-500">
+                                <span className="text-text-muted flex items-center bg-surface-secondary px-3 py-1 rounded-full text-sm">
                                     {generatedPlan.levels.length} levels • ~{generatedPlan.estimatedHours} hours
                                 </span>
                             </div>
 
-                            <h2 className="text-lg font-semibold text-white mb-4">Course Outline</h2>
-                            <div className="space-y-3 mb-6">
+                            <h2 className="text-xl font-semibold text-foreground mb-6">Course Outline</h2>
+                            <div className="space-y-4 mb-8">
                                 {generatedPlan.levels.map((level, index) => (
                                     <div
                                         key={level.levelNumber}
-                                        className={`p-4 rounded-lg border ${index === 0 ? 'border-green-500/50 bg-green-500/10' : 'border-white/10 bg-white/5'}`}
+                                        className={`p-5 rounded-xl border transition-colors ${index === 0
+                                                ? 'border-primary/30 bg-primary/5'
+                                                : 'border-border bg-surface-secondary/30'
+                                            }`}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${index === 0 ? 'bg-green-500 text-white' : 'bg-white/20 text-gray-400'}`}>
+                                        <div className="flex items-center gap-4">
+                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index === 0
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'bg-surface-secondary text-text-muted border border-border'
+                                                }`}>
                                                 {level.levelNumber}
                                             </span>
                                             <div className="flex-1">
-                                                <h3 className="font-medium text-white">{level.title}</h3>
-                                                <p className="text-sm text-gray-500">{level.description}</p>
+                                                <h3 className="font-semibold text-foreground">{level.title}</h3>
+                                                <p className="text-sm text-text-secondary mt-0.5">{level.description}</p>
                                             </div>
                                             {index === 0 && (
-                                                <span className="text-green-400 text-sm font-medium">
+                                                <div className="flex items-center gap-1.5 text-primary text-sm font-medium px-2 py-1 bg-primary/10 rounded-lg">
+                                                    <Unlock className="w-4 h-4" />
                                                     Unlocked
-                                                </span>
+                                                </div>
                                             )}
                                             {index > 0 && (
-                                                <span className="text-gray-500">
-                                                    🔒
-                                                </span>
+                                                <div className="text-text-muted">
+                                                    <Lock className="w-4 h-4" />
+                                                </div>
                                             )}
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="flex gap-4">
-                                <button
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Button
                                     onClick={handleStartCourse}
-                                    className="flex-1 gradient-btn py-3 px-6 rounded-xl text-white font-medium"
+                                    variant="glow"
+                                    size="lg"
+                                    className="flex-1"
                                 >
                                     Start Course
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={handleRegeneratePlan}
-                                    className="px-6 py-3 border border-white/20 rounded-xl font-medium text-gray-300 hover:bg-white/5 transition-colors"
+                                    variant="ghost"
+                                    size="lg"
                                 >
                                     Regenerate
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={() => setGeneratedPlan(null)}
-                                    className="px-6 py-3 border border-white/20 rounded-xl font-medium text-gray-300 hover:bg-white/5 transition-colors"
+                                    variant="secondary"
+                                    size="lg"
                                 >
                                     Change Topic
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -201,108 +212,119 @@ export default function CreateCoursePage() {
                 onSave={handleApiKeySaved}
             />
 
-            <div className="pt-24 pb-12 px-4">
+            <div className="pt-28 pb-12 px-4">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 glass rounded-full text-sm font-medium mb-4 text-brand-muted">
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-sm font-medium mb-6 text-primary border-primary/20 bg-primary/5">
                             <Sparkles className="w-4 h-4" />
                             AI-Powered Learning
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
                             Create Your Circuit Course
                         </h1>
-                        <p className="text-gray-400">
+                        <p className="text-lg text-text-secondary max-w-2xl mx-auto">
                             Choose a topic or enter your own to generate a personalized learning path
                         </p>
                     </div>
 
                     {/* Custom Topic Input */}
-                    <div className="glass-card p-6 rounded-2xl mb-8">
-                        <h2 className="text-lg font-semibold text-white mb-4">Enter Your Own Topic</h2>
+                    <div className="glass-card p-8 rounded-2xl mb-12 shadow-glass-lg border-primary/10">
+                        <h2 className="text-xl font-semibold text-foreground mb-6">Enter Your Own Topic</h2>
                         {isMounted && !llmStore.isConfigured() && (
-                            <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-3">
-                                <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-                                <p className="text-sm text-yellow-300">
+                            <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center gap-3">
+                                <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                                <p className="text-sm text-yellow-600 dark:text-yellow-400">
                                     Please configure your API key first to generate courses.
                                     <button
                                         onClick={() => setShowApiKeyModal(true)}
-                                        className="ml-2 underline hover:text-yellow-200"
+                                        className="ml-2 font-medium underline hover:text-yellow-700 dark:hover:text-yellow-300 transition-colors"
                                     >
                                         Configure now
                                     </button>
                                 </p>
                             </div>
                         )}
-                        <div className="flex gap-4">
-                            <input
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Input
                                 type="text"
                                 value={customTopic}
                                 onChange={(e) => setCustomTopic(e.target.value)}
                                 placeholder="e.g., 4-bit calculator, digital clock, traffic light controller..."
-                                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 ring-brand-primary focus:border-brand-primary outline-none"
+                                className="flex-1 text-lg py-3"
                                 disabled={isLoading}
                             />
-                            <button
+                            <Button
                                 onClick={() => handleGeneratePlan(customTopic)}
                                 disabled={!customTopic.trim() || isLoading || (isMounted && !llmStore.isConfigured())}
-                                className="px-6 py-3 gradient-btn rounded-xl text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                variant="glow"
+                                size="lg"
+                                className="sm:w-auto"
                             >
+                                {isLoading ? <Spinner size="sm" className="mr-2" /> : null}
                                 {isLoading ? 'Generating...' : 'Generate Course'}
-                            </button>
+                            </Button>
                         </div>
                         {error && (
-                            <p className="mt-2 text-red-400 text-sm">{error}</p>
+                            <p className="mt-3 text-error text-sm font-medium px-2">{error}</p>
                         )}
                     </div>
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="glass-card p-8 rounded-2xl mb-8 text-center">
-                            <div className="animate-spin w-12 h-12 border-4 spinner-brand rounded-full mx-auto mb-4"></div>
-                            <p className="text-gray-300">Generating your personalized course plan...</p>
-                            <p className="text-sm text-gray-500 mt-2">This may take up to 30 seconds</p>
+                        <div className="glass-card p-12 rounded-2xl mb-12 text-center animate-fade-in-up">
+                            <div className="flex justify-center mb-6">
+                                <Spinner size="lg" className="text-primary" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-foreground mb-2">Generating your course...</h3>
+                            <p className="text-text-secondary">Using AI to build a personalized curriculum. This may take up to 30 seconds.</p>
                         </div>
                     )}
 
                     {/* Suggested Topics */}
                     {!isLoading && (
-                        <div>
-                            <h2 className="text-xl font-semibold text-white mb-4">Or Choose a Suggested Topic</h2>
+                        <div className="animate-fade-in-up animation-delay-200">
+                            <h2 className="text-2xl font-bold text-foreground mb-8 text-center">Or Choose a Suggested Topic</h2>
                             {Object.entries(groupedSuggestions).map(([category, items]) => (
-                                <div key={category} className="mb-6">
-                                    <h3 className="text-lg font-medium text-gray-300 mb-3">{category}</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div key={category} className="mb-10 last:mb-0">
+                                    <h3 className="text-lg font-semibold text-text-muted mb-4 px-1">{category}</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                         {items.map((suggestion) => (
                                             <div
                                                 key={suggestion.topic}
-                                                className="relative group"
+                                                className="relative group h-full"
                                             >
                                                 <button
                                                     onClick={() => (isMounted && llmStore.isConfigured()) ? handleGeneratePlan(suggestion.topic) : setShowApiKeyModal(true)}
-                                                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${isMounted && !llmStore.isConfigured() ? 'opacity-50' : ''} ${categoryColors[category] || 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                                    className={`w-full h-full p-5 rounded-xl border text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${isMounted && !llmStore.isConfigured() ? 'opacity-60 grayscale' : ''
+                                                        } ${categoryColors[category] || 'bg-surface-secondary border-border hover:border-primary/30'}`}
                                                 >
-                                                    <h4 className="font-semibold text-white mb-1">
+                                                    <h4 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                                                         {suggestion.title}
                                                     </h4>
-                                                    <p className="text-sm text-gray-400 mb-2">
+                                                    <p className="text-sm text-text-secondary mb-4 line-clamp-2">
                                                         {suggestion.description}
                                                     </p>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyColors[suggestion.difficulty]}`}>
+                                                    <div className="flex items-center gap-3 mt-auto">
+                                                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${difficultyColors[suggestion.difficulty]}`}>
                                                             {suggestion.difficulty}
                                                         </span>
-                                                        <span className="text-xs text-gray-500">
+                                                        <span className="text-xs text-text-muted font-medium">
                                                             ~{suggestion.estimatedLevels} levels
                                                         </span>
                                                     </div>
                                                 </button>
+
                                                 {isMounted && !llmStore.isConfigured() && (
-                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-xl">
-                                                        <div className="text-center px-4">
-                                                            <AlertTriangle className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
-                                                            <p className="text-sm text-yellow-300 font-medium">Configure API key to generate courses</p>
+                                                    <button
+                                                        onClick={() => setShowApiKeyModal(true)}
+                                                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-surface/80 backdrop-blur-sm rounded-xl border-2 border-dashed border-yellow-500/50"
+                                                    >
+                                                        <div className="text-center px-4 transform scale-95 group-hover:scale-100 transition-transform">
+                                                            <AlertTriangle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                                                            <p className="text-sm font-bold text-foreground">Configure API Key</p>
+                                                            <span className="text-xs text-text-secondary">Click to setup</span>
                                                         </div>
-                                                    </div>
+                                                    </button>
                                                 )}
                                             </div>
                                         ))}

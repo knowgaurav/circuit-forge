@@ -38,14 +38,14 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
             role="dialog"
             aria-modal="true"
             aria-labelledby={title ? 'modal-title' : undefined}
         >
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/30 transition-opacity"
+                className="absolute inset-0 bg-background/80 transition-opacity"
                 onClick={onClose}
                 aria-hidden="true"
             />
@@ -53,8 +53,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {/* Modal content */}
             <div
                 className={clsx(
-                    'relative bg-white dark:bg-gray-800 rounded-lg shadow-xl',
-                    'max-h-[90vh] overflow-auto',
+                    'relative bg-surface rounded-xl shadow-2xl border border-border/50 animate-in fade-in zoom-in-95 duration-200',
+                    'max-h-[85vh] overflow-y-auto custom-scrollbar',
                     {
                         'w-full max-w-sm': size === 'sm',
                         'w-full max-w-md': size === 'md',
@@ -66,8 +66,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             >
                 {/* Header */}
                 {title && (
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                        <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-surface/50 sticky top-0 backdrop-blur z-10">
+                        <h2 id="modal-title" className="text-lg font-semibold text-foreground">
                             {title}
                         </h2>
                         <IconButton
@@ -76,12 +76,13 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
                             aria-label="Close modal"
                             variant="ghost"
                             size="sm"
+                            className="text-text-muted hover:text-foreground"
                         />
                     </div>
                 )}
 
-                {/* Body */}
-                <div className="p-4">{children}</div>
+                {/* Body */}-
+                <div className="p-6">{children}</div>
             </div>
         </div>
     );

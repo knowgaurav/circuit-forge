@@ -9,101 +9,111 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+        mono: ["var(--font-jetbrains-mono)", "monospace"],
+        heading: ["var(--font-outfit)", "sans-serif"],
+      },
       colors: {
-        // Semantic colors using CSS variables for light/dark mode
+        // Semantic Base Colors
         background: "var(--background)",
         foreground: "var(--foreground)",
-        
-        // Surface colors (cards, panels, etc.)
+
+        // Brand / Primary Actions
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+          hover: "var(--primary-hover)",
+        },
+
+        // Secondary / Muted Actions
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+
+        // Accent Colors (for highlights, gradients)
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+          blue: "#3b82f6",
+          cyan: "#06b6d4",
+          purple: "#a855f7",
+        },
+
+        // Surface Colors (Cards, Panels, Modals)
         surface: {
           DEFAULT: "var(--surface)",
-          secondary: "var(--surface-secondary)",
-          elevated: "var(--surface-elevated)",
+          secondary: "var(--surface-secondary)", // Slightly different shade
+          tertiary: "var(--surface-tertiary)",
+          elevated: "var(--surface-elevated)", // For modals/popovers
         },
-        
-        // Border colors
+
+        // Feedback Colors
+        success: {
+          DEFAULT: "var(--success)",
+          foreground: "var(--success-foreground)",
+        },
+        warning: {
+          DEFAULT: "var(--warning)",
+          foreground: "var(--warning-foreground)",
+        },
+        error: {
+          DEFAULT: "var(--error)",
+          foreground: "var(--error-foreground)",
+        },
+
+        // Borders & Dividers
         border: {
           DEFAULT: "var(--border)",
-          muted: "var(--border-muted)",
+          subtle: "var(--border-subtle)",
+          strong: "var(--border-strong)",
         },
-        
-        // Text colors
+
+        // Text Colors (Semantic)
         text: {
-          DEFAULT: "var(--text)",
+          DEFAULT: "var(--foreground)",
           secondary: "var(--text-secondary)",
           muted: "var(--text-muted)",
           inverse: "var(--text-inverse)",
         },
-        
-        // Brand colors - blue/slate gradient theme
-        brand: {
-          50: "#f0f9ff",
-          100: "#e0f2fe",
-          200: "#bae6fd",
-          300: "#7dd3fc",
-          400: "#38bdf8",
-          500: "#0ea5e9",
-          600: "#0284c7",
-          700: "#0369a1",
-          800: "#075985",
-          900: "#0c4a6e",
-          950: "#082f49",
-        },
-        
-        // Accent colors - blue/slate theme
-        accent: {
-          primary: "#0ea5e9",
-          blue: "#3b82f6",
-          slate: "#475569",
-          cyan: "#06b6d4",
-        },
-        
-        // CircuitForge specific colors
+
+        // CircuitForge Domain Specific
         circuit: {
-          primary: "#3B82F6",
-          secondary: "#6B7280",
-          success: "#22C55E",
-          warning: "#F59E0B",
-          danger: "#EF4444",
-          signal: {
-            high: "#22C55E",
-            low: "#9CA3AF",
-            error: "#EF4444",
-          },
-          annotation: {
-            black: "#000000",
-            red: "#EF4444",
-            blue: "#3B82F6",
-            green: "#22C55E",
-            orange: "#F97316",
-            purple: "#A855F7",
-            brown: "#92400E",
-            white: "#FFFFFF",
-          },
-          canvas: {
-            bg: "var(--canvas-bg)",
-            grid: "var(--canvas-grid)",
-            border: "var(--canvas-border)",
-          },
+          canvas: "var(--canvas-bg)",
+          grid: "var(--canvas-grid)",
+          node: "var(--circuit-node)",
+          wire: {
+            active: "var(--wire-active)",
+            inactive: "var(--wire-inactive)",
+          }
         },
       },
-      // Stroke widths for annotations
-      strokeWidth: {
-        thin: "2px",
-        medium: "4px",
-        thick: "8px",
-      },
-      // Box shadows for elevation - blue glow
-      boxShadow: {
-        'glow-sm': '0 0 10px rgba(14, 165, 233, 0.2)',
-        'glow': '0 0 20px rgba(14, 165, 233, 0.3)',
-        'glow-lg': '0 0 30px rgba(14, 165, 233, 0.4)',
-        'glow-xl': '0 0 40px rgba(14, 165, 233, 0.5)',
-      },
-      // Background images for gradients - blue/slate
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)',
-        'gradient-hero': 'linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)',
+        'gradient-brand': 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+        'gradient-glow': 'radial-gradient(circle at center, var(--primary) 0%, transparent 70%)',
+        'glass-gradient': 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+      },
+      boxShadow: {
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.12)',
+        'glass-sm': '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+        'neon': '0 0 10px var(--primary), 0 0 20px var(--primary)',
+        'float': '0 10px 30px -10px rgba(0, 0, 0, 0.3)',
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'glow': 'glow 2s ease-in-out infinite alternate',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        glow: {
+          '0%': { boxShadow: '0 0 10px var(--primary)' },
+          '100%': { boxShadow: '0 0 20px var(--primary), 0 0 10px var(--accent)' },
+        },
       },
     },
   },

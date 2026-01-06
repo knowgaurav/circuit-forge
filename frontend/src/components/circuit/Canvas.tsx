@@ -392,7 +392,7 @@ export function Canvas({
     return (
         <div
             ref={containerRef}
-            className="w-full h-full bg-circuit-canvas-bg dark:bg-gray-800 overflow-hidden"
+            className="w-full h-full bg-canvas-bg overflow-hidden"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
         >
@@ -411,7 +411,7 @@ export function Canvas({
 
 function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, panOffset: Position, zoom: number, isDarkMode = false) {
     const gridSize = 5;
-    
+
     // Calculate visible area in canvas coordinates
     const startX = Math.floor(-panOffset.x / zoom / gridSize) * gridSize - gridSize;
     const startY = Math.floor(-panOffset.y / zoom / gridSize) * gridSize - gridSize;
@@ -433,14 +433,14 @@ function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, 
         ctx.lineTo(endX, y);
         ctx.stroke();
     }
-    
+
     // Major grid lines every 10 cells (50px)
     ctx.strokeStyle = isDarkMode ? '#4b5563' : '#CBD5E1';
     ctx.lineWidth = 1;
     const majorGridSize = gridSize * 10;
     const majorStartX = Math.floor(startX / majorGridSize) * majorGridSize;
     const majorStartY = Math.floor(startY / majorGridSize) * majorGridSize;
-    
+
     for (let x = majorStartX; x < endX; x += majorGridSize) {
         ctx.beginPath();
         ctx.moveTo(x, startY);
@@ -643,24 +643,24 @@ function drawDefaultComponent(ctx: CanvasRenderingContext2D, width: number, heig
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
-    
+
     // Rounded rectangle body
     ctx.beginPath();
     ctx.roundRect(-width / 2 + 2, -height / 2 + 2, width - 4, height - 4, 4);
-    
+
     const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
     gradient.addColorStop(0, isDarkMode ? '#4a4a6a' : '#F9FAFB');
     gradient.addColorStop(1, isDarkMode ? '#3a3a5a' : '#E5E7EB');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
     ctx.strokeStyle = isDarkMode ? '#6a6a8a' : '#9CA3AF';
     ctx.lineWidth = 2;
     ctx.stroke();
-    
+
     // Label
     ctx.fillStyle = isDarkMode ? '#e0e0e0' : '#374151';
     ctx.font = 'bold 9px "SF Pro Display", -apple-system, sans-serif';
@@ -673,7 +673,7 @@ function drawDefaultComponent(ctx: CanvasRenderingContext2D, width: number, heig
 function drawAndGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isNand: boolean) {
     const w = width * 0.75;
     const h = height * 0.85;
-    
+
     // Shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
     ctx.shadowBlur = 4;
@@ -687,14 +687,14 @@ function drawAndGateSymbol(ctx: CanvasRenderingContext2D, width: number, height:
     ctx.bezierCurveTo(w / 2 + 5, -h / 2, w / 2 + 5, h / 2, w / 6, h / 2);
     ctx.lineTo(-w / 2, h / 2);
     ctx.closePath();
-    
+
     // Gradient fill
     const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
     gradient.addColorStop(0, '#FAFAFA');
     gradient.addColorStop(1, '#E5E7EB');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -723,7 +723,7 @@ function drawAndGateSymbol(ctx: CanvasRenderingContext2D, width: number, height:
 function drawOrGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isNor: boolean) {
     const w = width * 0.75;
     const h = height * 0.85;
-    
+
     // Shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
     ctx.shadowBlur = 4;
@@ -737,14 +737,14 @@ function drawOrGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: 
     ctx.bezierCurveTo(0, h / 2, w / 3, h / 3, w / 2 + 2, 0);
     ctx.bezierCurveTo(w / 3, -h / 3, 0, -h / 2, -w / 2, -h / 2);
     ctx.closePath();
-    
+
     // Gradient fill
     const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
     gradient.addColorStop(0, '#FAFAFA');
     gradient.addColorStop(1, '#E5E7EB');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -772,7 +772,7 @@ function drawOrGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: 
 function drawXorGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, isXnor: boolean) {
     const w = width * 0.75;
     const h = height * 0.85;
-    
+
     // Shadow for main body
     ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
     ctx.shadowBlur = 4;
@@ -786,14 +786,14 @@ function drawXorGateSymbol(ctx: CanvasRenderingContext2D, width: number, height:
     ctx.bezierCurveTo(0, h / 2, w / 3, h / 3, w / 2 + 2, 0);
     ctx.bezierCurveTo(w / 3, -h / 3, 0, -h / 2, -w / 2, -h / 2);
     ctx.closePath();
-    
+
     // Gradient fill
     const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
     gradient.addColorStop(0, '#FAFAFA');
     gradient.addColorStop(1, '#E5E7EB');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -827,7 +827,7 @@ function drawXorGateSymbol(ctx: CanvasRenderingContext2D, width: number, height:
 function drawNotGateSymbol(ctx: CanvasRenderingContext2D, width: number, height: number, hasInversion: boolean) {
     const w = width * 0.65;
     const h = height * 0.85;
-    
+
     // Shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
     ctx.shadowBlur = 4;
@@ -840,14 +840,14 @@ function drawNotGateSymbol(ctx: CanvasRenderingContext2D, width: number, height:
     ctx.lineTo(w / 2 - 6, 0);
     ctx.lineTo(-w / 2, h / 2);
     ctx.closePath();
-    
+
     // Gradient fill
     const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
     gradient.addColorStop(0, '#FAFAFA');
     gradient.addColorStop(1, '#E5E7EB');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -877,30 +877,30 @@ function drawToggleSwitchSymbol(ctx: CanvasRenderingContext2D, width: number, he
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
-    
+
     // Left terminal (fixed contact)
     ctx.beginPath();
     ctx.moveTo(-width / 2 + 6, 0);
     ctx.lineTo(-10, 0);
     ctx.stroke();
-    
+
     // Left contact point
     ctx.fillStyle = '#374151';
     ctx.beginPath();
     ctx.arc(-10, 0, 3, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Right terminal  
     ctx.beginPath();
     ctx.moveTo(width / 2 - 6, 0);
     ctx.lineTo(10, 0);
     ctx.stroke();
-    
+
     // Right contact point (where lever connects when ON)
     ctx.beginPath();
     ctx.arc(10, 0, 3, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Switch lever (arm)
     ctx.strokeStyle = isOn ? '#22C55E' : '#374151';
     ctx.lineWidth = 3;
@@ -914,7 +914,7 @@ function drawToggleSwitchSymbol(ctx: CanvasRenderingContext2D, width: number, he
         ctx.lineTo(8, -12);
     }
     ctx.stroke();
-    
+
     // Lever knob
     ctx.fillStyle = isOn ? '#22C55E' : '#6B7280';
     ctx.beginPath();
@@ -924,7 +924,7 @@ function drawToggleSwitchSymbol(ctx: CanvasRenderingContext2D, width: number, he
         ctx.arc(8, -12, 4, 0, Math.PI * 2);
     }
     ctx.fill();
-    
+
     // State label
     ctx.fillStyle = isOn ? '#16A34A' : '#6B7280';
     ctx.font = 'bold 8px "SF Pro Display", -apple-system, sans-serif';
@@ -937,30 +937,30 @@ function drawPushButtonSymbol(ctx: CanvasRenderingContext2D, width: number, heig
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
-    
+
     // Left terminal
     ctx.beginPath();
     ctx.moveTo(-width / 2 + 6, 0);
     ctx.lineTo(-8, 0);
     ctx.stroke();
-    
+
     // Left contact
     ctx.fillStyle = '#374151';
     ctx.beginPath();
     ctx.arc(-8, 0, 3, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Right terminal
     ctx.beginPath();
     ctx.moveTo(width / 2 - 6, 0);
     ctx.lineTo(8, 0);
     ctx.stroke();
-    
+
     // Right contact
     ctx.beginPath();
     ctx.arc(8, 0, 3, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Contact bar (the part that moves)
     ctx.strokeStyle = isPressed ? '#22C55E' : '#374151';
     ctx.lineWidth = 3;
@@ -975,7 +975,7 @@ function drawPushButtonSymbol(ctx: CanvasRenderingContext2D, width: number, heig
         ctx.lineTo(8, -8);
     }
     ctx.stroke();
-    
+
     // Push button actuator (vertical line with arrow)
     ctx.strokeStyle = '#6B7280';
     ctx.lineWidth = 2;
@@ -983,14 +983,14 @@ function drawPushButtonSymbol(ctx: CanvasRenderingContext2D, width: number, heig
     ctx.moveTo(0, -8);
     ctx.lineTo(0, -16);
     ctx.stroke();
-    
+
     // Arrow head pointing down
     ctx.beginPath();
     ctx.moveTo(-4, -12);
     ctx.lineTo(0, -8);
     ctx.lineTo(4, -12);
     ctx.stroke();
-    
+
     // Label
     ctx.fillStyle = isPressed ? '#16A34A' : '#6B7280';
     ctx.font = 'bold 7px "SF Pro Display", -apple-system, sans-serif';
@@ -1004,17 +1004,17 @@ function drawClockSymbol(ctx: CanvasRenderingContext2D, width: number, height: n
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
-    
+
     // Body with rounded corners
     ctx.beginPath();
     ctx.roundRect(-width / 2 + 2, -height / 2 + 2, width - 4, height - 4, 4);
-    
+
     const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
     gradient.addColorStop(0, '#EFF6FF');
     gradient.addColorStop(1, '#DBEAFE');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -1048,13 +1048,13 @@ function drawConstHighSymbol(ctx: CanvasRenderingContext2D, width: number, _heig
     ctx.strokeStyle = '#22C55E';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
-    
+
     // Output terminal
     ctx.beginPath();
     ctx.moveTo(width / 2 - 6, 0);
     ctx.lineTo(8, 0);
     ctx.stroke();
-    
+
     // High level indicator box
     ctx.fillStyle = '#DCFCE7';
     ctx.strokeStyle = '#22C55E';
@@ -1063,14 +1063,14 @@ function drawConstHighSymbol(ctx: CanvasRenderingContext2D, width: number, _heig
     ctx.roundRect(-12, -10, 20, 20, 3);
     ctx.fill();
     ctx.stroke();
-    
+
     // "1" label inside
     ctx.fillStyle = '#166534';
     ctx.font = 'bold 14px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('1', -2, 0);
-    
+
     // High level line on top
     ctx.strokeStyle = '#22C55E';
     ctx.lineWidth = 3;
@@ -1085,13 +1085,13 @@ function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, _heigh
     ctx.strokeStyle = '#6B7280';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
-    
+
     // Output terminal
     ctx.beginPath();
     ctx.moveTo(width / 2 - 6, 0);
     ctx.lineTo(8, 0);
     ctx.stroke();
-    
+
     // Low level indicator box
     ctx.fillStyle = '#F3F4F6';
     ctx.strokeStyle = '#6B7280';
@@ -1100,14 +1100,14 @@ function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, _heigh
     ctx.roundRect(-12, -10, 20, 20, 3);
     ctx.fill();
     ctx.stroke();
-    
+
     // "0" label inside
     ctx.fillStyle = '#374151';
     ctx.font = 'bold 14px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('0', -2, 0);
-    
+
     // Low level line on bottom
     ctx.strokeStyle = '#6B7280';
     ctx.lineWidth = 3;
@@ -1120,13 +1120,13 @@ function drawConstLowSymbol(ctx: CanvasRenderingContext2D, width: number, _heigh
 function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, _height: number, color: string, isLit = false) {
     // LED schematic symbol: diode with light arrows
     const triSize = 14;
-    
+
     // Glow effect when lit
     if (isLit) {
         ctx.shadowColor = color;
         ctx.shadowBlur = 15;
     }
-    
+
     // Left lead (anode)
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
@@ -1135,7 +1135,7 @@ function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, _height: nu
     ctx.moveTo(-width / 2 + 6, 0);
     ctx.lineTo(-triSize / 2, 0);
     ctx.stroke();
-    
+
     // Diode triangle (anode)
     ctx.fillStyle = isLit ? color : color + '40';
     ctx.strokeStyle = isLit ? color : '#374151';
@@ -1147,16 +1147,16 @@ function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, _height: nu
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    
+
     // Cathode bar
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(triSize / 2, -triSize / 2);
     ctx.lineTo(triSize / 2, triSize / 2);
     ctx.stroke();
-    
+
     ctx.shadowBlur = 0;
-    
+
     // Right lead (cathode)
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
@@ -1164,11 +1164,11 @@ function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, _height: nu
     ctx.moveTo(triSize / 2, 0);
     ctx.lineTo(width / 2 - 6, 0);
     ctx.stroke();
-    
+
     // Light emission arrows (always shown, but brighter when lit)
     ctx.strokeStyle = isLit ? color : color + '60';
     ctx.lineWidth = 1.5;
-    
+
     // Arrow 1 (upper)
     ctx.beginPath();
     ctx.moveTo(2, -triSize / 2 - 2);
@@ -1181,7 +1181,7 @@ function drawLedSymbol(ctx: CanvasRenderingContext2D, width: number, _height: nu
     ctx.moveTo(8, -triSize - 4);
     ctx.lineTo(6, -triSize);
     ctx.stroke();
-    
+
     // Arrow 2 (lower)
     ctx.beginPath();
     ctx.moveTo(6, -triSize / 2 + 2);
@@ -1202,13 +1202,13 @@ function draw7SegmentSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.shadowBlur = 6;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
-    
+
     // Body
     ctx.beginPath();
     ctx.roundRect(-width / 2 + 2, -height / 2 + 2, width - 4, height - 4, 4);
     ctx.fillStyle = '#111827';
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -1223,7 +1223,7 @@ function draw7SegmentSymbol(ctx: CanvasRenderingContext2D, width: number, height
     // Glow effect for segments
     ctx.shadowColor = '#EF4444';
     ctx.shadowBlur = 8;
-    
+
     // Draw "8" pattern with glow
     ctx.strokeStyle = '#EF4444';
     ctx.lineWidth = 3;
@@ -1245,7 +1245,7 @@ function draw7SegmentSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.beginPath(); ctx.moveTo(segW / 2, -segH); ctx.lineTo(segW / 2, 0); ctx.stroke();
     // Right bottom
     ctx.beginPath(); ctx.moveTo(segW / 2, 0); ctx.lineTo(segW / 2, segH); ctx.stroke();
-    
+
     ctx.shadowBlur = 0;
 }
 
@@ -1255,24 +1255,24 @@ function drawFlipFlopSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.shadowBlur = 5;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
-    
+
     // Body with rounded corners
     ctx.beginPath();
     ctx.roundRect(-width / 2 + 3, -height / 2 + 3, width - 6, height - 6, 4);
-    
+
     const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
     gradient.addColorStop(0, '#FEF3C7');
     gradient.addColorStop(1, '#FDE68A');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
     ctx.strokeStyle = '#D97706';
     ctx.lineWidth = 2;
     ctx.stroke();
-    
+
     // Divider line
     ctx.strokeStyle = '#F59E0B';
     ctx.lineWidth = 1;
@@ -1319,7 +1319,7 @@ function drawVccSymbol(ctx: CanvasRenderingContext2D, _width: number, height: nu
     // Glow effect
     ctx.shadowColor = 'rgba(239, 68, 68, 0.4)';
     ctx.shadowBlur = 6;
-    
+
     // Arrow pointing up
     ctx.strokeStyle = '#DC2626';
     ctx.lineWidth = 3;
@@ -1340,7 +1340,7 @@ function drawVccSymbol(ctx: CanvasRenderingContext2D, _width: number, height: nu
     ctx.lineTo(8, -height / 2 + 14);
     ctx.closePath();
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.strokeStyle = '#B91C1C';
     ctx.lineWidth = 1.5;
@@ -1369,13 +1369,13 @@ function drawGroundSymbol(ctx: CanvasRenderingContext2D, _width: number, height:
     ctx.moveTo(-12, 0);
     ctx.lineTo(12, 0);
     ctx.stroke();
-    
+
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(-8, 5);
     ctx.lineTo(8, 5);
     ctx.stroke();
-    
+
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(-4, 10);
@@ -1389,7 +1389,7 @@ function drawMuxSymbol(ctx: CanvasRenderingContext2D, width: number, height: num
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
-    
+
     // Trapezoid shape - wide input side, narrow output side
     ctx.beginPath();
     ctx.moveTo(-width / 2 + 4, -height / 2 + 4);
@@ -1397,13 +1397,13 @@ function drawMuxSymbol(ctx: CanvasRenderingContext2D, width: number, height: num
     ctx.lineTo(width / 2 - 4, height / 3);
     ctx.lineTo(-width / 2 + 4, height / 2 - 4);
     ctx.closePath();
-    
+
     const gradient = ctx.createLinearGradient(-width / 2, 0, width / 2, 0);
     gradient.addColorStop(0, '#F3E8FF');
     gradient.addColorStop(1, '#DDD6FE');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -1423,20 +1423,20 @@ function drawMuxSymbol(ctx: CanvasRenderingContext2D, width: number, height: num
     ctx.moveTo(-width / 2 + 8, height / 3);
     ctx.lineTo(-width / 2 + 16, height / 3);
     ctx.stroke();
-    
+
     // Output arrow on right
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(width / 2 - 16, 0);
     ctx.lineTo(width / 2 - 8, 0);
     ctx.stroke();
-    
+
     // SEL label at bottom
     ctx.fillStyle = '#7C3AED';
     ctx.font = '7px "SF Pro Display", -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('SEL', 0, height / 3 + 4);
-    
+
     // MUX label
     ctx.font = 'bold 9px "SF Pro Display", -apple-system, sans-serif';
     ctx.fillText('MUX', 0, -4);
@@ -1540,7 +1540,7 @@ function drawWire(ctx: CanvasRenderingContext2D, wire: Wire, components: Circuit
     let wireColor = '#6B7280';
     let wireWidth = 2.5;
     let glowColor = '';
-    
+
     if (signalState) {
         const style = getWireStyle(signalState);
         wireColor = style.color;
@@ -1564,7 +1564,7 @@ function drawWire(ctx: CanvasRenderingContext2D, wire: Wire, components: Circuit
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.globalAlpha = 0.3;
-        
+
         ctx.beginPath();
         if (path.length > 0 && path[0]) {
             ctx.moveTo(path[0].x, path[0].y);
@@ -1598,16 +1598,16 @@ function drawWire(ctx: CanvasRenderingContext2D, wire: Wire, components: Circuit
     const dotGradient = ctx.createRadialGradient(startX, startY, 0, startX, startY, 4);
     dotGradient.addColorStop(0, wireColor);
     dotGradient.addColorStop(1, wireColor + '80');
-    
+
     ctx.fillStyle = dotGradient;
     ctx.beginPath();
     ctx.arc(startX, startY, 4, 0, Math.PI * 2);
     ctx.fill();
-    
+
     const dotGradient2 = ctx.createRadialGradient(endX, endY, 0, endX, endY, 4);
     dotGradient2.addColorStop(0, wireColor);
     dotGradient2.addColorStop(1, wireColor + '80');
-    
+
     ctx.fillStyle = dotGradient2;
     ctx.beginPath();
     ctx.arc(endX, endY, 4, 0, Math.PI * 2);
@@ -1675,11 +1675,11 @@ function drawResistorSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    
+
     // Zigzag resistor symbol
     const zigWidth = 6;
     const zigHeight = height * 0.6;
-    
+
     ctx.beginPath();
     ctx.moveTo(-width / 2 + 8, 0);
     ctx.lineTo(-zigWidth * 3, 0);
@@ -1692,7 +1692,7 @@ function drawResistorSymbol(ctx: CanvasRenderingContext2D, width: number, height
     ctx.lineTo(zigWidth * 3, 0);
     ctx.lineTo(width / 2 - 8, 0);
     ctx.stroke();
-    
+
     // Label
     ctx.fillStyle = '#6B7280';
     ctx.font = '8px "SF Pro Display", -apple-system, sans-serif';
@@ -1704,36 +1704,36 @@ function drawCapacitorSymbol(ctx: CanvasRenderingContext2D, width: number, heigh
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
-    
+
     const plateHeight = height * 0.5;
     const gap = 6;
-    
+
     // Left lead
     ctx.beginPath();
     ctx.moveTo(-width / 2 + 8, 0);
     ctx.lineTo(-gap / 2, 0);
     ctx.stroke();
-    
+
     // Left plate
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(-gap / 2, -plateHeight / 2);
     ctx.lineTo(-gap / 2, plateHeight / 2);
     ctx.stroke();
-    
+
     // Right plate
     ctx.beginPath();
     ctx.moveTo(gap / 2, -plateHeight / 2);
     ctx.lineTo(gap / 2, plateHeight / 2);
     ctx.stroke();
-    
+
     // Right lead
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(gap / 2, 0);
     ctx.lineTo(width / 2 - 8, 0);
     ctx.stroke();
-    
+
     // Label
     ctx.fillStyle = '#6B7280';
     ctx.font = '8px "SF Pro Display", -apple-system, sans-serif';
@@ -1745,15 +1745,15 @@ function drawDiodeSymbol(ctx: CanvasRenderingContext2D, width: number, _height: 
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
-    
+
     const triSize = 12;
-    
+
     // Left lead
     ctx.beginPath();
     ctx.moveTo(-width / 2 + 8, 0);
     ctx.lineTo(-triSize / 2, 0);
     ctx.stroke();
-    
+
     // Triangle (anode)
     ctx.fillStyle = '#E5E7EB';
     ctx.beginPath();
@@ -1763,14 +1763,14 @@ function drawDiodeSymbol(ctx: CanvasRenderingContext2D, width: number, _height: 
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    
+
     // Cathode bar
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(triSize / 2, -triSize / 2);
     ctx.lineTo(triSize / 2, triSize / 2);
     ctx.stroke();
-    
+
     // Right lead
     ctx.lineWidth = 2.5;
     ctx.beginPath();
@@ -1782,14 +1782,14 @@ function drawDiodeSymbol(ctx: CanvasRenderingContext2D, width: number, _height: 
 // Counter symbol - shows incrementing count
 function drawCounterSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
     drawICBase(ctx, width, height, '#1E3A8A', '#1E40AF');
-    
+
     // Count display showing "0→F" to indicate counting
     ctx.fillStyle = '#60A5FA';
     ctx.font = 'bold 10px "SF Mono", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('0→F', 0, -8);
-    
+
     // Up arrow indicating count up
     ctx.strokeStyle = '#60A5FA';
     ctx.lineWidth = 2;
@@ -1800,7 +1800,7 @@ function drawCounterSymbol(ctx: CanvasRenderingContext2D, width: number, height:
     ctx.lineTo(0, 6);
     ctx.lineTo(4, 10);
     ctx.stroke();
-    
+
     // Label
     ctx.fillStyle = '#93C5FD';
     ctx.font = '7px "SF Pro Display", -apple-system, sans-serif';
@@ -1810,21 +1810,21 @@ function drawCounterSymbol(ctx: CanvasRenderingContext2D, width: number, height:
 // Shift Register symbol - shows data shifting
 function drawShiftRegisterSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
     drawICBase(ctx, width, height, '#7C2D12', '#9A3412');
-    
+
     // Shift arrows showing data movement
     ctx.strokeStyle = '#FDBA74';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-    
+
     // Draw shifting boxes with arrow
     const boxSize = 10;
     const startX = -20;
     for (let i = 0; i < 4; i++) {
         const x = startX + i * 12;
         ctx.strokeStyle = '#FDBA74';
-        ctx.strokeRect(x, -boxSize/2, boxSize, boxSize);
+        ctx.strokeRect(x, -boxSize / 2, boxSize, boxSize);
     }
-    
+
     // Arrow showing shift direction
     ctx.beginPath();
     ctx.moveTo(-24, 0);
@@ -1833,7 +1833,7 @@ function drawShiftRegisterSymbol(ctx: CanvasRenderingContext2D, width: number, h
     ctx.lineTo(22, 0);
     ctx.lineTo(18, 4);
     ctx.stroke();
-    
+
     // Label
     ctx.fillStyle = '#FED7AA';
     ctx.font = '7px "SF Pro Display", -apple-system, sans-serif';
@@ -1844,7 +1844,7 @@ function drawShiftRegisterSymbol(ctx: CanvasRenderingContext2D, width: number, h
 // Adder symbol - shows addition operation
 function drawAdderSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
     drawICBase(ctx, width, height, '#14532D', '#166534');
-    
+
     // Large plus symbol
     ctx.strokeStyle = '#86EFAC';
     ctx.lineWidth = 4;
@@ -1855,7 +1855,7 @@ function drawAdderSymbol(ctx: CanvasRenderingContext2D, width: number, height: n
     ctx.moveTo(0, -10);
     ctx.lineTo(0, 10);
     ctx.stroke();
-    
+
     // A + B labels
     ctx.fillStyle = '#86EFAC';
     ctx.font = 'bold 8px "SF Pro Display", -apple-system, sans-serif';
@@ -1863,7 +1863,7 @@ function drawAdderSymbol(ctx: CanvasRenderingContext2D, width: number, height: n
     ctx.fillText('A', -18, -8);
     ctx.fillText('B', -18, 8);
     ctx.fillText('Σ', 18, 0);
-    
+
     // Label
     ctx.fillStyle = '#BBF7D0';
     ctx.font = '7px "SF Pro Display", -apple-system, sans-serif';
@@ -1873,7 +1873,7 @@ function drawAdderSymbol(ctx: CanvasRenderingContext2D, width: number, height: n
 // Comparator symbol - shows comparison
 function drawComparatorSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
     drawICBase(ctx, width, height, '#581C87', '#6B21A8');
-    
+
     // Comparison symbols
     ctx.fillStyle = '#D8B4FE';
     ctx.font = 'bold 10px "SF Pro Display", -apple-system, sans-serif';
@@ -1881,11 +1881,11 @@ function drawComparatorSymbol(ctx: CanvasRenderingContext2D, width: number, heig
     ctx.textBaseline = 'middle';
     ctx.fillText('A', -16, 0);
     ctx.fillText('B', 16, 0);
-    
+
     // Comparison operators in center
     ctx.font = 'bold 8px "SF Pro Display", -apple-system, sans-serif';
     ctx.fillText('< = >', 0, 0);
-    
+
     // Label
     ctx.fillStyle = '#E9D5FF';
     ctx.font = '7px "SF Pro Display", -apple-system, sans-serif';
@@ -1895,12 +1895,12 @@ function drawComparatorSymbol(ctx: CanvasRenderingContext2D, width: number, heig
 // Decoder symbol - shows 1-to-many
 function drawDecoderSymbol(ctx: CanvasRenderingContext2D, width: number, height: number) {
     drawICBase(ctx, width, height, '#0C4A6E', '#075985');
-    
+
     // Input lines converging to expansion
     ctx.strokeStyle = '#7DD3FC';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-    
+
     // Input side (narrow)
     ctx.beginPath();
     ctx.moveTo(-18, -6);
@@ -1908,7 +1908,7 @@ function drawDecoderSymbol(ctx: CanvasRenderingContext2D, width: number, height:
     ctx.moveTo(-18, 6);
     ctx.lineTo(-8, 6);
     ctx.stroke();
-    
+
     // Expansion triangle
     ctx.beginPath();
     ctx.moveTo(-8, -10);
@@ -1918,7 +1918,7 @@ function drawDecoderSymbol(ctx: CanvasRenderingContext2D, width: number, height:
     ctx.moveTo(-8, -10);
     ctx.lineTo(-8, 10);
     ctx.stroke();
-    
+
     // Output lines (expanded)
     ctx.beginPath();
     ctx.moveTo(8, -16);
@@ -1930,7 +1930,7 @@ function drawDecoderSymbol(ctx: CanvasRenderingContext2D, width: number, height:
     ctx.moveTo(8, 16);
     ctx.lineTo(18, 16);
     ctx.stroke();
-    
+
     // Label
     ctx.fillStyle = '#BAE6FD';
     ctx.font = '7px "SF Pro Display", -apple-system, sans-serif';
@@ -1945,21 +1945,21 @@ function drawICBase(ctx: CanvasRenderingContext2D, width: number, height: number
     ctx.shadowBlur = 6;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
-    
+
     // Chip body
     ctx.beginPath();
     ctx.roundRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8, 3);
-    
+
     const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
     gradient.addColorStop(0, colorLight);
     gradient.addColorStop(1, colorDark);
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
-    
+
     // Notch at top
     ctx.fillStyle = colorLight + '80';
     ctx.beginPath();
@@ -1973,28 +1973,28 @@ function drawDipSwitchSymbol(ctx: CanvasRenderingContext2D, width: number, heigh
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 2;
-    
+
     // Body
     ctx.beginPath();
     ctx.roundRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8, 3);
-    
+
     const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
     gradient.addColorStop(0, '#FEF3C7');
     gradient.addColorStop(1, '#FDE68A');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.strokeStyle = '#D97706';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    
+
     // Draw 4 mini switches
     const switchWidth = 8;
     const switchHeight = 12;
     const startX = -width / 2 + 14;
     const gap = 12;
-    
+
     for (let i = 0; i < 4; i++) {
         const x = startX + i * gap;
         ctx.fillStyle = '#FFFFFF';
@@ -2002,12 +2002,12 @@ function drawDipSwitchSymbol(ctx: CanvasRenderingContext2D, width: number, heigh
         ctx.strokeStyle = '#9CA3AF';
         ctx.lineWidth = 1;
         ctx.strokeRect(x - switchWidth / 2, -switchHeight / 2, switchWidth, switchHeight);
-        
+
         // Switch position indicator
         ctx.fillStyle = '#374151';
         ctx.fillRect(x - switchWidth / 2 + 1, -switchHeight / 2 + 1, switchWidth - 2, switchHeight / 2 - 1);
     }
-    
+
     // Label
     ctx.fillStyle = '#92400E';
     ctx.font = 'bold 7px "SF Pro Display", -apple-system, sans-serif';
@@ -2021,33 +2021,33 @@ function drawNumericInputSymbol(ctx: CanvasRenderingContext2D, width: number, he
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 2;
-    
+
     // Body
     ctx.beginPath();
     ctx.roundRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8, 4);
-    
+
     const gradient = ctx.createLinearGradient(0, -height / 2, 0, height / 2);
     gradient.addColorStop(0, '#DBEAFE');
     gradient.addColorStop(1, '#BFDBFE');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.strokeStyle = '#3B82F6';
     ctx.lineWidth = 2;
     ctx.stroke();
-    
+
     // Display area
     ctx.fillStyle = '#1E3A8A';
     ctx.fillRect(-width / 2 + 10, -height / 2 + 10, width - 20, height - 24);
-    
+
     // Number display
     ctx.fillStyle = '#60A5FA';
     ctx.font = 'bold 16px "SF Mono", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('00', 0, -2);
-    
+
     // Up/down arrows
     ctx.fillStyle = '#3B82F6';
     ctx.font = '10px sans-serif';

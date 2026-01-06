@@ -10,7 +10,7 @@ export function FloatingLLMButton() {
   const [showModal, setShowModal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const llmStore = useLLMConfigStore();
-  
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -30,9 +30,9 @@ export function FloatingLLMButton() {
           transition-all duration-300 ease-out
           hover:scale-110 active:scale-95
           group
-          ${isConfigured 
-            ? 'bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500' 
-            : 'gradient-hero-bg hover:opacity-90'
+          ${isConfigured
+            ? 'bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500'
+            : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 shadow-lg shadow-blue-500/25'
           }
         `}
         title={isConfigured ? `${provider?.name || 'AI'} configured` : 'Configure AI Provider'}
@@ -47,7 +47,7 @@ export function FloatingLLMButton() {
         ) : (
           <Key className="w-6 h-6 text-white" />
         )}
-        
+
         {/* Tooltip */}
         <span className="
           absolute right-full mr-3 

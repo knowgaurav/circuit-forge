@@ -1,4 +1,4 @@
-import localFont from "next/font/local";
+import { Inter, Outfit, JetBrains_Mono } from "next/font/google"; // Using JetBrains Mono for a better code aesthetic
 
 import type { Metadata } from "next";
 
@@ -7,15 +7,22 @@ import { ThemeProvider } from "@/components/ui";
 import { FloatingLLMButton } from "@/components/ui/FloatingLLMButton";
 import { AxiomProvider } from "@/components/providers/AxiomProvider";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -74,7 +81,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}
       >
         <AxiomProvider>
           <ThemeProvider>

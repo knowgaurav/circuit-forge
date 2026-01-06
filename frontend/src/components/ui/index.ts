@@ -76,3 +76,7 @@ export { CategoryCard } from './CategoryCard';
 export type { CategoryCardProps } from './CategoryCard';
 export { TemplateCard } from './TemplateCard';
 export type { TemplateCardProps } from './TemplateCard';
+export * from './Footer';
+
+export { Navbar } from './Navbar';
+export { FadeIn, StaggerContainer, fadeInItemVariants } from './FadeIn';

@@ -49,79 +49,79 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
     };
 
     return (
-        <div className="h-full overflow-y-auto bg-white dark:bg-gray-800">
+        <div className="h-full overflow-y-auto bg-surface custom-scrollbar">
             {/* Header */}
-            <div className="sticky top-0 z-10 px-3 py-2.5 bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Components</h3>
+            <div className="sticky top-0 z-10 px-3 py-3 bg-surface border-b border-border shadow-sm">
+                <h3 className="text-sm font-semibold text-foreground">Components</h3>
             </div>
 
             {/* Categories */}
-            <div className="divide-y-2 divide-gray-100 dark:divide-gray-700">
+            <div className="divide-y divide-border/50">
                 {Object.entries(COMPONENT_CATEGORIES).map(([category, components]) => (
                     <div key={category}>
                         {/* Category Header */}
                         <button
-                            className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700"
+                            className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-surface-secondary transition-colors bg-surface-secondary/20 border-b border-border/50"
                             onClick={() => toggleCategory(category)}
                         >
-                            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
                                 {category}
                             </span>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-medium text-gray-500 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 px-1.5 py-0.5 rounded">
+                                <span className="text-[10px] font-medium text-text-muted bg-surface-elevated border border-border px-1.5 py-0.5 rounded">
                                     {components.length}
                                 </span>
                                 {expandedCategories.has(category) ? (
-                                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    <ChevronDown className="w-4 h-4 text-text-muted" />
                                 ) : (
-                                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                                    <ChevronRight className="w-4 h-4 text-text-muted" />
                                 )}
                             </div>
                         </button>
 
                         {/* Components Grid */}
                         {expandedCategories.has(category) && (
-                            <div className="p-2 grid grid-cols-2 gap-2">
+                            <div className="p-2 grid grid-cols-2 gap-2 bg-background/50">
                                 {components.map((comp) => {
                                     const detail = getComponentDetail(comp.type);
                                     const tooltipContent = detail?.shortDescription || comp.description;
-                                    
+
                                     return (
                                         <Tooltip key={comp.type} content={tooltipContent} position="right">
                                             <div
                                                 draggable={!disabled}
                                                 onDragStart={(e) => handleDragStart(e, comp)}
                                                 className={`
-                                                    relative flex flex-col items-center justify-center p-2 rounded-md border-2
-                                                    cursor-grab active:cursor-grabbing transition-all duration-150
-                                                    min-h-[80px] group
+                                                    relative flex flex-col items-center justify-center p-2 rounded-lg border-2
+                                                    cursor-grab active:cursor-grabbing transition-all duration-200
+                                                    min-h-[84px] group hover:shadow-md hover:scale-[1.02]
                                                     ${disabled
-                                                        ? 'bg-gray-50 dark:bg-gray-700 text-gray-400 cursor-not-allowed border-gray-200 dark:border-gray-600'
-                                                        : 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-400 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600'
+                                                        ? 'bg-surface-secondary text-text-muted cursor-not-allowed border-border'
+                                                        : 'bg-surface hover:bg-primary/5 hover:border-primary/30 text-foreground border-border'
                                                     }
                                                 `}
                                             >
                                                 {/* Info button */}
                                                 <button
                                                     onClick={(e) => handleInfoClick(e, comp)}
-                                                    className="absolute top-0.5 right-0.5 p-0.5 rounded opacity-0 group-hover:opacity-100 
-                                                               hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity z-10"
+                                                    className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 
+                                                               hover:bg-surface-secondary text-text-muted hover:text-primary transition-all z-10"
                                                     title="View details"
                                                 >
-                                                    <Info className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                                                    <Info className="w-3.5 h-3.5" />
                                                 </button>
-                                                
+
                                                 <div className={`
-                                                    w-9 h-9 flex items-center justify-center rounded mb-1 border
-                                                    transition-all duration-150
+                                                    w-10 h-10 flex items-center justify-center rounded-md mb-2 border shadow-sm
+                                                    transition-all duration-200
                                                     ${disabled
-                                                        ? 'bg-gray-100 dark:bg-gray-600 border-gray-200 dark:border-gray-500 text-gray-400'
-                                                        : 'bg-gray-50 dark:bg-gray-600 border-gray-200 dark:border-gray-500 text-gray-700 dark:text-gray-100 group-hover:bg-blue-100 dark:group-hover:bg-blue-700 group-hover:border-blue-300'
+                                                        ? 'bg-surface-secondary border-border text-text-muted'
+                                                        : 'bg-white dark:bg-gray-800 border-border text-foreground group-hover:border-primary/30 group-hover:shadow-primary/5'
                                                     }
                                                 `}>
                                                     <ComponentIcon type={comp.type} />
                                                 </div>
-                                                <span className="text-[11px] font-medium text-center leading-tight max-w-full px-0.5">
+                                                <span className="text-[11px] font-medium text-center leading-tight max-w-full px-1 text-text-secondary group-hover:text-foreground transition-colors">
                                                     {comp.name}
                                                 </span>
                                             </div>
@@ -147,12 +147,14 @@ export function ComponentPalette({ onDragStart, disabled }: ComponentPaletteProp
 // Professional SVG component icons - matching canvas schematic symbols
 function ComponentIcon({ type }: { type: string }) {
     const iconClass = "w-6 h-6";
+    // Using explicit colors for components to maintain schematic look
+    // but using CSS variables for key structural elements where possible
 
     // AND Gate - D-shape with flat back
     if (type.startsWith('AND') || type.startsWith('NAND')) {
         return (
             <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M4 5h8a7 7 0 0 1 0 14H4V5z" fill="#F3F4F6" />
+                <path d="M4 5h8a7 7 0 0 1 0 14H4V5z" className="fill-surface-secondary stroke-foreground" />
                 {type.startsWith('NAND') && <circle cx="19" cy="12" r="2" fill="none" stroke="currentColor" />}
                 <line x1="1" y1="8" x2="4" y2="8" />
                 <line x1="1" y1="16" x2="4" y2="16" />
@@ -165,7 +167,7 @@ function ComponentIcon({ type }: { type: string }) {
     if (type.startsWith('OR') || type.startsWith('NOR')) {
         return (
             <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M3 5c3 0 4 3 4 7s-1 7-4 7c8 0 14-3 16-7-2-4-8-7-16-7z" fill="#F3F4F6" />
+                <path d="M3 5c3 0 4 3 4 7s-1 7-4 7c8 0 14-3 16-7-2-4-8-7-16-7z" className="fill-surface-secondary stroke-foreground" />
                 {type.startsWith('NOR') && <circle cx="20" cy="12" r="2" fill="none" stroke="currentColor" />}
                 <line x1="1" y1="8" x2="5" y2="8" />
                 <line x1="1" y1="16" x2="5" y2="16" />
@@ -179,7 +181,7 @@ function ComponentIcon({ type }: { type: string }) {
         return (
             <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M2 5c2 3 2 7 0 14" />
-                <path d="M5 5c3 0 4 3 4 7s-1 7-4 7c8 0 14-3 16-7-2-4-8-7-16-7z" fill="#F3F4F6" />
+                <path d="M5 5c3 0 4 3 4 7s-1 7-4 7c8 0 14-3 16-7-2-4-8-7-16-7z" className="fill-surface-secondary stroke-foreground" />
                 {type.startsWith('XNOR') && <circle cx="21" cy="12" r="2" fill="none" stroke="currentColor" />}
                 <line x1="1" y1="8" x2="6" y2="8" />
                 <line x1="1" y1="16" x2="6" y2="16" />
@@ -192,7 +194,7 @@ function ComponentIcon({ type }: { type: string }) {
     if (type === 'NOT' || type === 'BUFFER') {
         return (
             <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M4 5l13 7-13 7V5z" fill="#F3F4F6" />
+                <path d="M4 5l13 7-13 7V5z" className="fill-surface-secondary stroke-foreground" />
                 {type === 'NOT' && <circle cx="19" cy="12" r="2" fill="none" stroke="currentColor" />}
                 <line x1="1" y1="12" x2="4" y2="12" />
                 <line x1={type === 'NOT' ? "21" : "17"} y1="12" x2="23" y2="12" />
@@ -250,8 +252,8 @@ function ComponentIcon({ type }: { type: string }) {
     if (type === 'CLOCK') {
         return (
             <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="3" y="5" width="14" height="14" rx="2" fill="#DBEAFE" stroke="#3B82F6" />
-                <path d="M6 14V10h3v4h3v-4h3" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <rect x="3" y="5" width="14" height="14" rx="2" className="fill-primary/20 stroke-primary" />
+                <path d="M6 14V10h3v4h3v-4h3" className="stroke-primary" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <line x1="17" y1="12" x2="22" y2="12" />
             </svg>
         );
@@ -273,10 +275,10 @@ function ComponentIcon({ type }: { type: string }) {
     if (type === 'GROUND' || type === 'CONST_LOW') {
         return (
             <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="4" y="6" width="12" height="12" rx="2" fill="#F3F4F6" stroke="#6B7280" />
-                <text x="10" y="15" textAnchor="middle" fontSize="10" fill="#374151" fontWeight="bold">0</text>
-                <line x1="16" y1="12" x2="22" y2="12" stroke="#6B7280" />
-                <line x1="4" y1="20" x2="16" y2="20" stroke="#6B7280" strokeWidth="3" />
+                <rect x="4" y="6" width="12" height="12" rx="2" className="fill-surface-secondary stroke-text-muted" />
+                <text x="10" y="15" textAnchor="middle" fontSize="10" className="fill-text-secondary" fontWeight="bold">0</text>
+                <line x1="16" y1="12" x2="22" y2="12" className="stroke-text-muted" />
+                <line x1="4" y1="20" x2="16" y2="20" className="stroke-text-muted" strokeWidth="3" />
             </svg>
         );
     }
@@ -470,7 +472,7 @@ function ComponentIcon({ type }: { type: string }) {
         return (
             <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="1" y1="12" x2="8" y2="12" />
-                <path d="M8 6l8 6-8 6V6z" fill="#E5E7EB" />
+                <path d="M8 6l8 6-8 6V6z" className="fill-surface-secondary" />
                 <line x1="16" y1="6" x2="16" y2="18" strokeWidth="3" />
                 <line x1="16" y1="12" x2="23" y2="12" />
             </svg>
@@ -480,7 +482,7 @@ function ComponentIcon({ type }: { type: string }) {
     // Default box with label
     return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <rect x="4" y="5" width="16" height="14" rx="2" fill="#F3F4F6" />
+            <rect x="4" y="5" width="16" height="14" rx="2" className="fill-surface-secondary" />
             <line x1="1" y1="9" x2="4" y2="9" />
             <line x1="1" y1="15" x2="4" y2="15" />
             <line x1="20" y1="12" x2="23" y2="12" />
