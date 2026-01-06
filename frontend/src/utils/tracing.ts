@@ -3,6 +3,18 @@
  * Generates trace IDs at the origin (frontend) that flow through all backend services.
  */
 
+import { useLogger } from "@axiomhq/nextjs";
+
+// Get the Axiom logger instance for use in non-hook contexts
+let axiomLogger: ReturnType<typeof useLogger> | null = null;
+
+/**
+ * Initialize the Axiom logger (call from a React component)
+ */
+export function initAxiomLogger(logger: ReturnType<typeof useLogger>): void {
+  axiomLogger = logger;
+}
+
 /**
  * Generate a unique trace ID for correlating requests across services.
  * Format: trace_<16 hex chars>
@@ -75,6 +87,7 @@ export function extractTraceFromResponse(response: Response): {
 
 /**
  * Log an error with trace context for easier debugging.
+ * Sends to both console and Axiom (if configured).
  */
 export function logErrorWithTrace(
   message: string,
@@ -82,8 +95,50 @@ export function logErrorWithTrace(
   traceId?: string | null,
   requestId?: string | null
 ): void {
-  const traceInfo = traceId || requestId
-    ? ` [trace=${traceId || 'unknown'}, request=${requestId || 'unknown'}]`
-    : '';
-  console.error(`${message}${traceInfo}:`, error);
+  const logData = {
+    message,
+    error: error instanceof Error ? error.message : String(error),
+    trace_id: traceId || getSessionTraceId(),
+    request_id: requestId || 'unknown',
+    source: 'frontend',
+    timestamp: new Date().toISOString(),
+  };
+
+  // Log to console
+  console.error(`${message} [trace=${logData.trace_id}, request=${logData.request_id}]:`, error);
+
+  // Send to Axiom if available
+  if (axiomLogger) {
+    axiomLogger.error(message, logData);
+  }
+}
+
+/**
+ * Log an info event with trace context.
+ * Sends to both console and Axiom (if configured).
+ */
+export function logInfoWithTrace(
+  message: string,
+  data?: Record<string, unknown>,
+  traceId?: string | null,
+  requestId?: string | null
+): void {
+  const logData = {
+    message,
+    ...data,
+    trace_id: traceId || getSessionTraceId(),
+    request_id: requestId || generateRequestId(),
+    source: 'frontend',
+    timestamp: new Date().toISOString(),
+  };
+
+  // Log to console in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`${message} [trace=${logData.trace_id}]`, data);
+  }
+
+  // Send to Axiom if available
+  if (axiomLogger) {
+    axiomLogger.info(message, logData);
+  }
 }

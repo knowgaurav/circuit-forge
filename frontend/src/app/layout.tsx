@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui";
 import { FloatingLLMButton } from "@/components/ui/FloatingLLMButton";
+import { AxiomProvider } from "@/components/providers/AxiomProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -75,10 +76,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <ThemeProvider>
-          {children}
-          <FloatingLLMButton />
-        </ThemeProvider>
+        <AxiomProvider>
+          <ThemeProvider>
+            {children}
+            <FloatingLLMButton />
+          </ThemeProvider>
+        </AxiomProvider>
       </body>
     </html>
   );
