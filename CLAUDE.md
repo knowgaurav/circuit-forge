@@ -1,14 +1,16 @@
 # CircuitForge
 
-Collaborative circuit design and robotics education platform with real-time multi-user collaboration and AI-powered course generation.
+Collaborative circuit design and robotics education platform with real-time multi-user collaboration, AI-powered course generation, and comprehensive circuit simulation.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, TypeScript, Zustand, Tailwind CSS, Vitest, fast-check (PBT)
-- **Backend**: FastAPI, Python 3.11+, Pydantic v2, Motor (MongoDB async), httpx
-- **Database**: MongoDB Atlas
-- **LLM**: OpenAI-compatible API with tool calling for course generation
-- **Testing**: Vitest (frontend), pytest + Hypothesis (backend)
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 14, TypeScript, Zustand, Tailwind CSS, Vitest, fast-check (PBT) |
+| **Backend** | FastAPI, Python 3.11+, Pydantic v2, Motor (MongoDB async), httpx |
+| **Database** | MongoDB Atlas |
+| **LLM** | OpenAI-compatible API with tool calling for course generation |
+| **Testing** | Vitest (frontend), pytest + Hypothesis (backend) |
 
 ## Project Structure
 
@@ -44,7 +46,8 @@ circuit-forge/
 │       └── websocket/        # Real-time collaboration (broadcaster, handler, messages)
 ├── shared/schemas/           # JSON Schema definitions
 ├── .kiro/specs/              # Feature specifications
-└── docker-compose.yml        # Local development
+├── docker-compose.yml        # Local development
+└── docker-compose.dev.yml    # Development with hot reload
 ```
 
 ## Development
@@ -97,6 +100,41 @@ pytest --cov=app            # Coverage
 
 ## Key Features
 
+### Components Library (40+ Components)
+| Category | Components |
+|----------|------------|
+| **Logic Gates** | AND, OR, NOT, NAND, NOR, XOR, XNOR, Buffer |
+| **Input Devices** | Toggle Switch, Push Button, Clock, DIP Switch (4-bit), Numeric Input, VCC/GND Constants |
+| **Output Devices** | LEDs (Red, Green, Blue, Yellow), 7-Segment Display, DC Motor |
+| **Flip-Flops** | D Flip-Flop, SR Latch, JK Flip-Flop |
+| **Combinational** | 2:1 Multiplexer, 2-to-4 Decoder, 4-bit Adder, 4-bit Comparator, BCD to 7-Segment Decoder |
+| **Sequential** | 4-bit Counter, 8-bit Shift Register |
+| **Power** | VCC +5V, VCC +3.3V, Ground |
+| **Passive** | Resistor, Capacitor, Diode |
+| **Connectors** | Wire Junction, Signal Probe |
+
+### Circuit Simulation Engine
+Real-time simulation with signal propagation:
+1. **Signal Flow**: Signals propagate from input devices through components to outputs
+2. **Component Evaluation**: Each component evaluates inputs and produces outputs based on logic (AND, OR, flip-flop state)
+3. **State Management**: Sequential components (flip-flops, counters) maintain state across clock cycles
+4. **Visualization**: Color-coded signal states on wires and components
+
+Supported operations:
+- Logic gates (AND, OR, NOT, NAND, NOR, XOR, XNOR, Buffer)
+- Input devices (switches, buttons, clock, DIP switches)
+- Output devices (LEDs, 7-segment displays, motors)
+- Flip-flops (D, SR, JK)
+- Combinational circuits (MUX, decoder, adder, comparator)
+- Sequential circuits (counter, shift register)
+
+### Real-time Collaboration
+WebSocket-based multi-user editing:
+1. **Session Creation**: Host creates session, receives 6-character code
+2. **Join Flow**: Participants join using session code (no account required)
+3. **Sync Protocol**: All changes broadcast to participants via WebSocket
+4. **Conflict Resolution**: Server maintains authoritative state
+
 ### LLM Tool Functions
 The LLM service uses OpenAI-compatible tool calling for accurate circuit generation:
 - `get_available_components` - Lists all 40+ components by category
@@ -111,20 +149,11 @@ Backend mirror of frontend components with:
 - Example connection patterns
 - Fuzzy search for suggestions
 
-### Circuit Simulation
-Real-time simulation engine supporting:
-- Logic gates (AND, OR, NOT, NAND, NOR, XOR, XNOR, Buffer)
-- Input devices (switches, buttons, clock, DIP switches)
-- Output devices (LEDs, 7-segment displays, motors)
-- Flip-flops (D, SR, JK)
-- Combinational circuits (MUX, decoder, adder, comparator)
-- Sequential circuits (counter, shift register)
-
 ### Course Generation
 AI-powered course creation:
-- Generates 8-15 level course plans
+- Generates 8-15 level course plans based on topic
 - Creates theory and practical content per level
-- Produces validated circuit blueprints
+- Produces validated circuit blueprints using tool calling
 - Supports fallback mode for APIs without tool calling
 
 ## API Endpoints
@@ -144,7 +173,7 @@ AI-powered course creation:
 ## Environment Variables
 
 **Backend** (`.env`):
-```
+```env
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DATABASE=circuitforge
 CORS_ORIGINS=http://localhost:3000
@@ -156,7 +185,7 @@ OPENAI_TEMPERATURE=0.7
 ```
 
 **Frontend** (`.env`):
-```
+```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_WS_URL=ws://localhost:8000
 ```
@@ -168,11 +197,11 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - API routes prefixed with `/api`
 - WebSocket endpoint at `/api/ws`
 - Async/await throughout backend codebase
-- Pydantic v2 models with field aliases (snake_case ↔ camelCase)
+- Pydantic v2 models with field aliases (snake_case <-> camelCase)
 
 ## Feature Specs
 
-Specs are located in `.kiro/specs/` and follow the requirements → design → tasks workflow:
+Specs are located in `.kiro/specs/` and follow the requirements -> design -> tasks workflow:
 - `circuit-forge/` - Core circuit editor
 - `llm-course-generator/` - AI course generation
 - `llm-tool-functions/` - LLM tool calling integration
