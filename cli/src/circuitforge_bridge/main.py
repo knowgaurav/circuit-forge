@@ -10,12 +10,43 @@ import re
 import secrets
 import subprocess
 import sys
+import time
+import uuid
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 __version__ = "1.0.0"
+
+
+def generate_request_id() -> str:
+    """Generate a unique request ID for tracing."""
+    return f"req_{uuid.uuid4().hex[:8]}"
+
+
+def log_request(
+    method: str,
+    path: str,
+    status: int,
+    duration_ms: float,
+    trace_id: str | None = None,
+    request_id: str | None = None,
+) -> None:
+    """Log a request in structured format for debugging."""
+    log_data = {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "service": "circuitforge-bridge",
+        "method": method,
+        "path": path,
+        "status": status,
+        "duration_ms": round(duration_ms, 2),
+    }
+    if trace_id:
+        log_data["trace_id"] = trace_id
+    if request_id:
+        log_data["request_id"] = request_id
+    print(json.dumps(log_data))
 
 # Common local LLM servers and their configurations
 LLM_SERVERS = [
@@ -60,9 +91,13 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Bridge-Token")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Bridge-Token, X-Trace-ID, X-Request-ID")
 
     def _proxy_request(self) -> None:
+        start_time = time.perf_counter()
+        trace_id = self.headers.get("X-Trace-ID")
+        request_id = self.headers.get("X-Request-ID") or generate_request_id()
+
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length) if content_length else None
 
@@ -70,19 +105,28 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
         headers = {"Content-Type": self.headers.get("Content-Type", "application/json")}
 
         req = Request(target_url, data=body, headers=headers, method=self.command)
+        status = 500
 
         try:
             with urlopen(req, timeout=120) as resp:
                 response_data = resp.read()
+                status = 200
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
+                self.send_header("X-Trace-ID", trace_id or "")
+                self.send_header("X-Request-ID", request_id)
                 self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(response_data)
         except URLError as e:
+            status = 502
             self.send_error(502, f"Failed to reach local LLM: {e.reason}")
         except Exception as e:
+            status = 500
             self.send_error(500, str(e))
+        finally:
+            duration_ms = (time.perf_counter() - start_time) * 1000
+            log_request(self.command, self.path, status, duration_ms, trace_id, request_id)
 
     def log_message(self, format: str, *args) -> None:
         pass  # Suppress default logging
