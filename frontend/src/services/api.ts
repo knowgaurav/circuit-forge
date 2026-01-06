@@ -13,16 +13,27 @@ import type {
     ValidationResult
 } from '@/types';
 import type { LLMConfig } from '@/stores/llmConfigStore';
+import {
+    extractTraceFromResponse,
+    getTracingHeaders,
+    logErrorWithTrace,
+} from '@/utils/tracing';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-
-
 class ApiClient {
     private baseUrl: string;
+    private sessionCode?: string;
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
+    }
+
+    /**
+     * Set the current session code for request tracing.
+     */
+    setSessionCode(code: string | undefined): void {
+        this.sessionCode = code;
     }
 
     private async request<T>(
@@ -30,13 +41,18 @@ class ApiClient {
         options: RequestInit = {}
     ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
+        const tracingHeaders = getTracingHeaders(this.sessionCode);
+
         const response = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                ...tracingHeaders,
                 ...options.headers,
             },
         });
+
+        const { traceId, requestId } = extractTraceFromResponse(response);
 
         if (!response.ok) {
             let errorMessage = 'An unknown error occurred';
@@ -55,6 +71,7 @@ class ApiClient {
             } catch {
                 errorMessage = `HTTP ${response.status}: ${response.statusText}`;
             }
+            logErrorWithTrace(`API request failed: ${endpoint}`, errorMessage, traceId, requestId);
             throw new Error(errorMessage);
         }
 

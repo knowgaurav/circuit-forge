@@ -4,6 +4,7 @@
  */
 
 import type { ClientMessage, ServerMessage, Position, SyncAction } from '@/types';
+import { getSessionTraceId, logErrorWithTrace } from '@/utils/tracing';
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/ws';
 
@@ -78,7 +79,9 @@ export class WebSocketClient {
     }
 
     private createConnection(): void {
-        const url = `${WS_URL}/${this.sessionCode}/${this.participantId}`;
+        // Include trace_id in WebSocket URL for correlation
+        const traceId = getSessionTraceId();
+        const url = `${WS_URL}/${this.sessionCode}/${this.participantId}?trace_id=${traceId}`;
 
         try {
             this.ws = new WebSocket(url);
@@ -93,7 +96,7 @@ export class WebSocketClient {
                     const message: ServerMessage = JSON.parse(event.data);
                     this.options.onMessage(message);
                 } catch (error) {
-                    console.error('Failed to parse WebSocket message:', error);
+                    logErrorWithTrace('Failed to parse WebSocket message', error, traceId);
                 }
             };
 
@@ -105,10 +108,10 @@ export class WebSocketClient {
             };
 
             this.ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                logErrorWithTrace('WebSocket error', error, traceId);
             };
         } catch (error) {
-            console.error('Failed to create WebSocket connection:', error);
+            logErrorWithTrace('Failed to create WebSocket connection', error, traceId);
             this.attemptReconnect();
         }
     }
