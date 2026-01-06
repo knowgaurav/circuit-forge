@@ -19,21 +19,19 @@ class LLMProviderFactory:
         "openai": lambda: OpenAICompatibleStrategy(
             provider_id="openai",
             base_url="https://api.openai.com/v1/chat/completions",
-            key_prefix="sk-"
+            key_prefix="sk-",
         ),
         "anthropic": lambda: AnthropicStrategy(),
         "google": lambda: GoogleStrategy(),
         "ohmygpt": lambda: OpenAICompatibleStrategy(
             provider_id="ohmygpt",
             base_url="https://api.ohmygpt.com/v1/chat/completions",
-            key_prefix=""
+            key_prefix="",
         ),
-
-
         "openrouter": lambda: OpenAICompatibleStrategy(
             provider_id="openrouter",
             base_url="https://openrouter.ai/api/v1/chat/completions",
-            key_prefix="sk-or-"
+            key_prefix="sk-or-",
         ),
         "local": lambda: LocalLLMStrategy(),
     }
@@ -41,13 +39,13 @@ class LLMProviderFactory:
     @classmethod
     def get_provider(cls, provider_id: str) -> LLMProviderStrategy:
         """Get provider strategy by ID.
-        
+
         Args:
             provider_id: The provider identifier (e.g., 'openai', 'anthropic')
-            
+
         Returns:
             LLMProviderStrategy instance for the provider
-            
+
         Raises:
             ValueError: If provider_id is not supported
         """

@@ -35,8 +35,12 @@ from app.models.circuit import (
 # Strategy for generating valid positions
 position_strategy = st.builds(
     Position,
-    x=st.floats(min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False),
-    y=st.floats(min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False),
+    x=st.floats(
+        min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False
+    ),
+    y=st.floats(
+        min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False
+    ),
 )
 
 # Strategy for generating valid pin types
@@ -45,8 +49,12 @@ pin_type_strategy = st.sampled_from([PinType.INPUT, PinType.OUTPUT])
 # Strategy for generating valid pins
 pin_strategy = st.builds(
     Pin,
-    id=st.text(min_size=1, max_size=36, alphabet=st.characters(whitelist_categories=("L", "N"))),
-    name=st.text(min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("L", "N"))),
+    id=st.text(
+        min_size=1, max_size=36, alphabet=st.characters(whitelist_categories=("L", "N"))
+    ),
+    name=st.text(
+        min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("L", "N"))
+    ),
     type=pin_type_strategy,
     position=position_strategy,
 )
@@ -59,10 +67,14 @@ rotation_strategy = st.sampled_from(list(Rotation))
 
 # Strategy for generating valid component properties
 properties_strategy = st.dictionaries(
-    keys=st.text(min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("L",))),
+    keys=st.text(
+        min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("L",))
+    ),
     values=st.one_of(
         st.integers(min_value=-1000, max_value=1000),
-        st.floats(min_value=-1000, max_value=1000, allow_nan=False, allow_infinity=False),
+        st.floats(
+            min_value=-1000, max_value=1000, allow_nan=False, allow_infinity=False
+        ),
         st.booleans(),
         st.text(min_size=0, max_size=50),
     ),
@@ -81,36 +93,48 @@ circuit_component_strategy = st.builds(
     pins=st.lists(pin_strategy, min_size=0, max_size=8),
 )
 
+
 # Strategy for generating valid wires (requires component IDs)
 def wire_strategy_for_components(component_ids: list[str]) -> st.SearchStrategy[Wire]:
     """Generate wires that reference existing component IDs."""
     if len(component_ids) < 2:
         return st.just(None)  # type: ignore
-    
+
     return st.builds(
         Wire,
         id=st.uuids().map(str),
         fromComponentId=st.sampled_from(component_ids),
-        fromPinId=st.text(min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("L", "N"))),
+        fromPinId=st.text(
+            min_size=1,
+            max_size=10,
+            alphabet=st.characters(whitelist_categories=("L", "N")),
+        ),
         toComponentId=st.sampled_from(component_ids),
-        toPinId=st.text(min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("L", "N"))),
+        toPinId=st.text(
+            min_size=1,
+            max_size=10,
+            alphabet=st.characters(whitelist_categories=("L", "N")),
+        ),
         waypoints=st.lists(position_strategy, min_size=0, max_size=10),
     )
+
 
 # Strategy for stroke widths
 stroke_width_strategy = st.sampled_from(list(StrokeWidth))
 
 # Strategy for annotation colors (8 colors from requirements)
-annotation_color_strategy = st.sampled_from([
-    "#000000",  # black
-    "#EF4444",  # red
-    "#3B82F6",  # blue
-    "#22C55E",  # green
-    "#F97316",  # orange
-    "#A855F7",  # purple
-    "#92400E",  # brown
-    "#FFFFFF",  # white
-])
+annotation_color_strategy = st.sampled_from(
+    [
+        "#000000",  # black
+        "#EF4444",  # red
+        "#3B82F6",  # blue
+        "#22C55E",  # green
+        "#F97316",  # orange
+        "#A855F7",  # purple
+        "#92400E",  # brown
+        "#FFFFFF",  # white
+    ]
+)
 
 # Strategy for stroke data
 stroke_data_strategy = st.builds(
@@ -125,7 +149,9 @@ text_data_strategy = st.builds(
     TextData,
     content=st.text(min_size=1, max_size=200),
     position=position_strategy,
-    fontSize=st.floats(min_value=8, max_value=72, allow_nan=False, allow_infinity=False),
+    fontSize=st.floats(
+        min_value=8, max_value=72, allow_nan=False, allow_infinity=False
+    ),
 )
 
 # Strategy for annotations
@@ -162,10 +188,10 @@ schema_version_strategy = st.builds(
 )
 
 
-
 # ============================================================================
 # Property-Based Tests
 # ============================================================================
+
 
 @given(
     session_id=session_id_strategy,
@@ -185,13 +211,13 @@ def test_circuit_state_serialization_round_trip(
     """
     **Feature: circuit-forge, Property 9: Circuit State Serialization Round-Trip**
     **Validates: Requirements 14.1, 14.2, 14.3**
-    
+
     For any valid circuit state, serializing to JSON and then deserializing
     SHALL produce a circuit state that is equivalent to the original.
     """
     # Get component IDs for wire generation
     component_ids = [c.id for c in components]
-    
+
     # Generate wires that reference existing components
     wires: list[Wire] = []
     if len(component_ids) >= 2:
@@ -206,7 +232,7 @@ def test_circuit_state_serialization_round_trip(
                 waypoints=[],
             )
             wires.append(wire)
-    
+
     # Create the original circuit state
     original = CircuitState(
         sessionId=session_id,
@@ -217,13 +243,13 @@ def test_circuit_state_serialization_round_trip(
         annotations=annotations,
         updatedAt=datetime.utcnow(),
     )
-    
+
     # Serialize to JSON (using model_dump with by_alias for camelCase)
     json_data = original.model_dump(mode="json", by_alias=True)
-    
+
     # Deserialize back to CircuitState
     deserialized = CircuitState.model_validate(json_data)
-    
+
     # Verify equivalence (excluding updatedAt which may have microsecond differences)
     assert deserialized.session_id == original.session_id
     assert deserialized.version == original.version
@@ -231,7 +257,7 @@ def test_circuit_state_serialization_round_trip(
     assert len(deserialized.components) == len(original.components)
     assert len(deserialized.wires) == len(original.wires)
     assert len(deserialized.annotations) == len(original.annotations)
-    
+
     # Verify components
     for orig_comp, deser_comp in zip(original.components, deserialized.components):
         assert deser_comp.id == orig_comp.id
@@ -241,7 +267,7 @@ def test_circuit_state_serialization_round_trip(
         assert deser_comp.rotation == orig_comp.rotation
         assert deser_comp.properties == orig_comp.properties
         assert len(deser_comp.pins) == len(orig_comp.pins)
-    
+
     # Verify wires
     for orig_wire, deser_wire in zip(original.wires, deserialized.wires):
         assert deser_wire.id == orig_wire.id
@@ -265,10 +291,10 @@ def test_component_serialization_round_trip(
     for original in components:
         # Serialize
         json_data = original.model_dump(mode="json", by_alias=True)
-        
+
         # Deserialize
         deserialized = CircuitComponent.model_validate(json_data)
-        
+
         # Verify
         assert deserialized.id == original.id
         assert deserialized.type == original.type
@@ -288,10 +314,10 @@ def test_annotation_serialization_round_trip(
     for original in annotations:
         # Serialize
         json_data = original.model_dump(mode="json", by_alias=True)
-        
+
         # Deserialize
         deserialized = Annotation.model_validate(json_data)
-        
+
         # Verify
         assert deserialized.id == original.id
         assert deserialized.type == original.type

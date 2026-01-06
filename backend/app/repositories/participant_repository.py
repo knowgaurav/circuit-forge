@@ -19,9 +19,7 @@ class ParticipantRepository(BaseRepository[Participant]):
         self, session_code: str, participant_id: str
     ) -> Participant | None:
         """Find a participant by session code and participant ID."""
-        return await self.find_one(
-            {"sessionCode": session_code, "id": participant_id}
-        )
+        return await self.find_one({"sessionCode": session_code, "id": participant_id})
 
     async def find_by_session(self, session_code: str) -> list[Participant]:
         """Find all participants in a session."""
@@ -59,9 +57,7 @@ class ParticipantRepository(BaseRepository[Participant]):
             {"canEdit": can_edit},
         )
 
-    async def update_last_seen(
-        self, session_code: str, participant_id: str
-    ) -> bool:
+    async def update_last_seen(self, session_code: str, participant_id: str) -> bool:
         """Update participant's last seen timestamp."""
         return await self.update_one(
             {"sessionCode": session_code, "id": participant_id},
@@ -72,9 +68,7 @@ class ParticipantRepository(BaseRepository[Participant]):
         """Delete all participants in a session."""
         return await self.delete_many({"sessionCode": session_code})
 
-    async def delete_participant(
-        self, session_code: str, participant_id: str
-    ) -> bool:
+    async def delete_participant(self, session_code: str, participant_id: str) -> bool:
         """Delete a specific participant from a session."""
         result = await self.delete_many(
             {"sessionCode": session_code, "id": participant_id}

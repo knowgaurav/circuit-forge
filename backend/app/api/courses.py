@@ -37,6 +37,7 @@ router = APIRouter()
 # Request/Response models
 class GeneratePlanResponse(BaseModel):
     """Response for course plan generation."""
+
     course_plan: CoursePlan = Field(alias="coursePlan")
 
     model_config = {"populate_by_name": True}
@@ -44,6 +45,7 @@ class GeneratePlanResponse(BaseModel):
 
 class EnrollRequest(BaseModel):
     """Request to enroll in a course."""
+
     participant_id: str = Field(alias="participantId")
 
     model_config = {"populate_by_name": True}
@@ -51,11 +53,13 @@ class EnrollRequest(BaseModel):
 
 class EnrollResponse(BaseModel):
     """Response for course enrollment."""
+
     enrollment: CourseEnrollment
 
 
 class LevelContentResponse(BaseModel):
     """Response for level content."""
+
     content: LevelContent | None
     is_generating: bool = Field(alias="isGenerating")
 
@@ -64,6 +68,7 @@ class LevelContentResponse(BaseModel):
 
 class GenerateLevelContentRequest(BaseModel):
     """Request to generate level content with user API key."""
+
     llm_config: LLMConfig = Field(alias="llmConfig")
 
     model_config = {"populate_by_name": True}
@@ -71,6 +76,7 @@ class GenerateLevelContentRequest(BaseModel):
 
 class ValidateRequest(BaseModel):
     """Request to validate a circuit."""
+
     circuit_state: dict[str, Any] = Field(alias="circuitState")
     enrollment_id: str | None = Field(default=None, alias="enrollmentId")
 
@@ -79,6 +85,7 @@ class ValidateRequest(BaseModel):
 
 class CompleteRequest(BaseModel):
     """Request to complete a level."""
+
     enrollment_id: str = Field(alias="enrollmentId")
     circuit_snapshot: dict[str, Any] | None = Field(
         default=None, alias="circuitSnapshot"
@@ -89,6 +96,7 @@ class CompleteRequest(BaseModel):
 
 class CompleteResponse(BaseModel):
     """Response for level completion."""
+
     success: bool
     next_level: int | None = Field(alias="nextLevel")
 
@@ -97,6 +105,7 @@ class CompleteResponse(BaseModel):
 
 class MyCourseItem(BaseModel):
     """A course in the user's course list."""
+
     enrollment: CourseEnrollment
     course_plan: CoursePlan = Field(alias="coursePlan")
     completed_levels: int = Field(alias="completedLevels")
@@ -118,7 +127,13 @@ def handle_exception(e: Exception) -> None:
     if isinstance(e, AuthenticationError):
         raise HTTPException(
             status_code=401,
-            detail={"error": {"code": "AUTHENTICATION_ERROR", "message": e.message, "provider": e.provider}},
+            detail={
+                "error": {
+                    "code": "AUTHENTICATION_ERROR",
+                    "message": e.message,
+                    "provider": e.provider,
+                }
+            },
         )
     elif isinstance(e, RateLimitError):
         headers = {}
@@ -126,23 +141,43 @@ def handle_exception(e: Exception) -> None:
             headers["Retry-After"] = str(e.retry_after)
         raise HTTPException(
             status_code=429,
-            detail={"error": {"code": "RATE_LIMITED", "message": e.message, "provider": e.provider}},
+            detail={
+                "error": {
+                    "code": "RATE_LIMITED",
+                    "message": e.message,
+                    "provider": e.provider,
+                }
+            },
             headers=headers if headers else None,
         )
     elif isinstance(e, QuotaExceededError):
         raise HTTPException(
             status_code=402,
-            detail={"error": {"code": "QUOTA_EXCEEDED", "message": e.message, "provider": e.provider}},
+            detail={
+                "error": {
+                    "code": "QUOTA_EXCEEDED",
+                    "message": e.message,
+                    "provider": e.provider,
+                }
+            },
         )
     elif isinstance(e, ProviderUnavailableError):
         raise HTTPException(
             status_code=503,
-            detail={"error": {"code": "PROVIDER_UNAVAILABLE", "message": e.message, "provider": e.provider}},
+            detail={
+                "error": {
+                    "code": "PROVIDER_UNAVAILABLE",
+                    "message": e.message,
+                    "provider": e.provider,
+                }
+            },
         )
     elif isinstance(e, LLMError):
         raise HTTPException(
             status_code=400,
-            detail={"error": {"code": e.code, "message": e.message, "provider": e.provider}},
+            detail={
+                "error": {"code": e.code, "message": e.message, "provider": e.provider}
+            },
         )
     # Handle app exceptions
     elif isinstance(e, NotFoundException):
@@ -170,7 +205,12 @@ def handle_exception(e: Exception) -> None:
         logger.exception(f"Unexpected error: {e}")
         raise HTTPException(
             status_code=500,
-            detail={"error": {"code": "INTERNAL_ERROR", "message": "An unexpected error occurred"}},
+            detail={
+                "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An unexpected error occurred",
+                }
+            },
         )
 
 
@@ -188,7 +228,7 @@ async def generate_plan(
     course_service: CourseService = Depends(get_course_service),
 ) -> GeneratePlanResponse:
     """Generate a course plan for the given topic using user's API key.
-    
+
     The API key is used only for this request and is never stored.
     """
     try:
@@ -215,7 +255,7 @@ async def test_connection(
     course_service: CourseService = Depends(get_course_service),
 ) -> TestConnectionResponse:
     """Test API key validity with a minimal request.
-    
+
     The API key is used only for this test and is never stored.
     """
     try:
@@ -237,8 +277,10 @@ async def test_connection(
 
 # --- Local LLM Endpoints ---
 
+
 class TestLocalConnectionRequest(BaseModel):
     """Request to test local LLM connection."""
+
     base_url: str = Field(alias="baseUrl")
     token: str
     model: str
@@ -248,6 +290,7 @@ class TestLocalConnectionRequest(BaseModel):
 
 class FetchLocalModelsRequest(BaseModel):
     """Request to fetch models from local LLM."""
+
     base_url: str = Field(alias="baseUrl")
     token: str
 
@@ -256,15 +299,18 @@ class FetchLocalModelsRequest(BaseModel):
 
 class FetchLocalModelsResponse(BaseModel):
     """Response for fetching local models."""
+
     success: bool
     models: list[str] | None = None
     message: str | None = None
 
 
 @router.post("/courses/test-local-connection", response_model=TestConnectionResponse)
-async def test_local_connection(request: TestLocalConnectionRequest) -> TestConnectionResponse:
+async def test_local_connection(
+    request: TestLocalConnectionRequest,
+) -> TestConnectionResponse:
     """Test connection to local LLM via tunnel.
-    
+
     Uses the bridge token for authentication.
     """
     try:
@@ -285,9 +331,11 @@ async def test_local_connection(request: TestLocalConnectionRequest) -> TestConn
 
 
 @router.post("/courses/local-models", response_model=FetchLocalModelsResponse)
-async def fetch_local_models(request: FetchLocalModelsRequest) -> FetchLocalModelsResponse:
+async def fetch_local_models(
+    request: FetchLocalModelsRequest,
+) -> FetchLocalModelsResponse:
     """Fetch available models from local LLM server.
-    
+
     Uses the bridge token for authentication.
     """
     try:
@@ -350,7 +398,9 @@ async def enroll_in_course(
         raise
 
 
-@router.post("/courses/{course_id}/levels/{level_num}", response_model=LevelContentResponse)
+@router.post(
+    "/courses/{course_id}/levels/{level_num}", response_model=LevelContentResponse
+)
 async def generate_level_content(
     course_id: str,
     level_num: int,
@@ -358,7 +408,7 @@ async def generate_level_content(
     course_service: CourseService = Depends(get_course_service),
 ) -> LevelContentResponse:
     """Generate content for a specific level using user's API key.
-    
+
     The API key is used only for this request and is never stored.
     """
     try:
@@ -386,10 +436,11 @@ async def generate_level_content(
             bridge_token=request.llm_config.bridge_token,
         )
 
-        is_generating = (
-            content is not None and
-            content.generation_state.value in ["generating", "queued_priority", "queued_background"]
-        )
+        is_generating = content is not None and content.generation_state.value in [
+            "generating",
+            "queued_priority",
+            "queued_background",
+        ]
 
         return LevelContentResponse(
             content=content,
@@ -400,7 +451,9 @@ async def generate_level_content(
         raise
 
 
-@router.post("/courses/{course_id}/levels/{level_num}/validate", response_model=ValidationResult)
+@router.post(
+    "/courses/{course_id}/levels/{level_num}/validate", response_model=ValidationResult
+)
 async def validate_circuit(
     course_id: str,
     level_num: int,
@@ -420,7 +473,9 @@ async def validate_circuit(
         raise
 
 
-@router.post("/courses/{course_id}/levels/{level_num}/complete", response_model=CompleteResponse)
+@router.post(
+    "/courses/{course_id}/levels/{level_num}/complete", response_model=CompleteResponse
+)
 async def complete_level(
     course_id: str,
     level_num: int,

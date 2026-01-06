@@ -1,7 +1,6 @@
 """Custom exception hierarchy for CircuitForge."""
 
 
-
 class AppException(Exception):
     """Base exception for all application errors."""
 
@@ -20,9 +19,7 @@ class ValidationException(AppException):
     code = "VALIDATION_ERROR"
     status_code = 400
 
-    def __init__(
-        self, message: str | None = None, code: str | None = None
-    ) -> None:
+    def __init__(self, message: str | None = None, code: str | None = None) -> None:
         if code:
             self.code = code
         super().__init__(message)

@@ -40,6 +40,7 @@ async def root():
         "health": "/health",
     }
 
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,

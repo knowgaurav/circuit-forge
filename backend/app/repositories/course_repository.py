@@ -65,10 +65,12 @@ class LevelContentRepository(BaseRepository[LevelContent]):
         level_number: int,
     ) -> LevelContent | None:
         """Get level content by course plan ID and level number."""
-        return await self.find_one({
-            "coursePlanId": course_plan_id,
-            "levelNumber": level_number,
-        })
+        return await self.find_one(
+            {
+                "coursePlanId": course_plan_id,
+                "levelNumber": level_number,
+            }
+        )
 
     async def get_all_for_course(self, course_plan_id: str) -> list[LevelContent]:
         """Get all level contents for a course."""
@@ -135,10 +137,12 @@ class CourseEnrollmentRepository(BaseRepository[CourseEnrollment]):
         course_plan_id: str,
     ) -> CourseEnrollment | None:
         """Get enrollment for a participant in a specific course."""
-        return await self.find_one({
-            "participantId": participant_id,
-            "coursePlanId": course_plan_id,
-        })
+        return await self.find_one(
+            {
+                "participantId": participant_id,
+                "coursePlanId": course_plan_id,
+            }
+        )
 
     async def get_by_participant(
         self,
@@ -185,10 +189,12 @@ class LevelProgressRepository(BaseRepository[LevelProgress]):
         level_number: int,
     ) -> LevelProgress | None:
         """Get progress for a specific level."""
-        return await self.find_one({
-            "enrollmentId": enrollment_id,
-            "levelNumber": level_number,
-        })
+        return await self.find_one(
+            {
+                "enrollmentId": enrollment_id,
+                "levelNumber": level_number,
+            }
+        )
 
     async def get_all_for_enrollment(
         self,

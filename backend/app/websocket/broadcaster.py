@@ -51,7 +51,7 @@ class RoomManager:
     async def disconnect(self, participant_id: str) -> str | None:
         """
         Remove a connection from its room.
-        
+
         Returns the session code if found.
         """
         async with self._lock:
@@ -105,9 +105,7 @@ class RoomManager:
         """Send a message to the teacher of a session."""
         return await self.send_to_participant(teacher_id, message)
 
-    async def _send_safe(
-        self, websocket: WebSocket, message: dict[str, Any]
-    ) -> bool:
+    async def _send_safe(self, websocket: WebSocket, message: dict[str, Any]) -> bool:
         """Safely send a message, handling connection errors."""
         try:
             await websocket.send_json(message)
@@ -117,10 +115,7 @@ class RoomManager:
 
     def get_room_participants(self, session_code: str) -> list[str]:
         """Get list of participant IDs in a room."""
-        return [
-            conn.participant_id
-            for conn in self._rooms.get(session_code, set())
-        ]
+        return [conn.participant_id for conn in self._rooms.get(session_code, set())]
 
     def get_room_count(self, session_code: str) -> int:
         """Get number of connections in a room."""

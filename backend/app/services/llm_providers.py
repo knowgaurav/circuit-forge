@@ -14,8 +14,10 @@ logger = logging.getLogger(__name__)
 
 # --- Error Classes ---
 
+
 class LLMError(Exception):
     """Base exception for LLM-related errors."""
+
     def __init__(self, code: str, message: str, provider: str):
         self.code = code
         self.message = message
@@ -25,44 +27,57 @@ class LLMError(Exception):
 
 class AuthenticationError(LLMError):
     """Invalid or expired API key."""
+
     def __init__(self, provider: str, message: str = "Invalid or expired API key"):
         super().__init__("AUTHENTICATION_ERROR", message, provider)
 
 
 class RateLimitError(LLMError):
     """Rate limit exceeded."""
+
     def __init__(self, provider: str, retry_after: int | None = None):
-        super().__init__("RATE_LIMITED", "Rate limit exceeded. Please wait and try again.", provider)
+        super().__init__(
+            "RATE_LIMITED", "Rate limit exceeded. Please wait and try again.", provider
+        )
         self.retry_after = retry_after
 
 
 class QuotaExceededError(LLMError):
     """API quota/billing issue."""
+
     def __init__(self, provider: str):
-        super().__init__("QUOTA_EXCEEDED", "API quota exceeded. Check your billing.", provider)
+        super().__init__(
+            "QUOTA_EXCEEDED", "API quota exceeded. Check your billing.", provider
+        )
 
 
 class ModelUnavailableError(LLMError):
     """Model not available for this API key."""
+
     def __init__(self, provider: str, model: str, alternatives: list[str]):
         self.alternatives = alternatives
         super().__init__(
             "MODEL_UNAVAILABLE",
             f"Model {model} is not available. Try: {', '.join(alternatives)}",
-            provider
+            provider,
         )
 
 
 class ProviderUnavailableError(LLMError):
     """Provider API is unavailable."""
+
     def __init__(self, provider: str):
-        super().__init__("PROVIDER_UNAVAILABLE", f"{provider} API is currently unavailable", provider)
+        super().__init__(
+            "PROVIDER_UNAVAILABLE", f"{provider} API is currently unavailable", provider
+        )
 
 
 # --- Request/Response Models ---
 
+
 class LLMRequest(BaseModel):
     """Common request format for all providers."""
+
     messages: list[dict[str, Any]]
     tools: list[dict[str, Any]] = Field(default_factory=list)
     model: str
@@ -72,6 +87,7 @@ class LLMRequest(BaseModel):
 
 class LLMResponse(BaseModel):
     """Normalized response from any provider."""
+
     content: dict[str, Any] | None = None
     tool_calls: list[dict[str, Any]] = Field(default_factory=list)
     token_usage: int = 0
@@ -80,6 +96,7 @@ class LLMResponse(BaseModel):
 
 
 # --- Provider Strategy Interface ---
+
 
 class LLMProviderStrategy(ABC):
     """Abstract base for LLM provider implementations."""
@@ -109,6 +126,7 @@ class LLMProviderStrategy(ABC):
 
 # --- OpenAI-Compatible Strategy ---
 
+
 class OpenAICompatibleStrategy(LLMProviderStrategy):
     """Strategy for OpenAI and OpenAI-compatible APIs (OHMYGPT, MEGALLM, AGENTROUTER, OPENROUTER)."""
 
@@ -122,7 +140,10 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
         if not api_key or len(api_key) < 10:
             return False, f"API key is too short for {self.provider_id}"
         if self.key_prefix and not api_key.startswith(self.key_prefix):
-            return False, f"API key for {self.provider_id} should start with '{self.key_prefix}'"
+            return (
+                False,
+                f"API key for {self.provider_id} should start with '{self.key_prefix}'",
+            )
         return True, ""
 
     async def call(self, api_key: str, request: LLMRequest) -> LLMResponse:
@@ -142,7 +163,7 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
             "messages": request.messages,
             "temperature": request.temperature,
         }
-        
+
         # Use max_completion_tokens for newer OpenAI models, max_tokens for others
         if self.provider_id == "openai":
             payload["max_completion_tokens"] = request.max_tokens
@@ -158,7 +179,9 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
                 has_tools = bool(request.tools)
                 masked_key = self._mask_key(api_key)
                 logger.info(f"Making request to {self.provider_id}: {self.base_url}")
-                logger.info(f"  Model: {request.model}, Tools: {has_tools}, API Key: {masked_key}")
+                logger.info(
+                    f"  Model: {request.model}, Tools: {has_tools}, API Key: {masked_key}"
+                )
                 response = await client.post(
                     self.base_url,
                     headers=headers,
@@ -167,22 +190,33 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
                 logger.info(f"Response status: {response.status_code}")
 
                 if response.status_code == 401:
-                    logger.error(f"Authentication failed for {self.provider_id}: {response.text}")
+                    logger.error(
+                        f"Authentication failed for {self.provider_id}: {response.text}"
+                    )
                     raise AuthenticationError(self.provider_id)
                 elif response.status_code == 429:
                     retry_after = response.headers.get("retry-after")
                     error_body = response.text
-                    logger.warning(f"Rate limit hit for {self.provider_id}: {error_body}")
-                    raise RateLimitError(self.provider_id, int(retry_after) if retry_after else None)
+                    logger.warning(
+                        f"Rate limit hit for {self.provider_id}: {error_body}"
+                    )
+                    raise RateLimitError(
+                        self.provider_id, int(retry_after) if retry_after else None
+                    )
                 elif response.status_code == 402:
                     raise QuotaExceededError(self.provider_id)
                 elif response.status_code == 403:
                     logger.error(f"Forbidden for {self.provider_id}: {response.text}")
-                    raise AuthenticationError(self.provider_id, "Access forbidden - check your API key permissions")
+                    raise AuthenticationError(
+                        self.provider_id,
+                        "Access forbidden - check your API key permissions",
+                    )
                 elif response.status_code >= 500:
                     raise ProviderUnavailableError(self.provider_id)
                 elif response.status_code >= 400:
-                    logger.error(f"Error {response.status_code} from {self.provider_id}: {response.text}")
+                    logger.error(
+                        f"Error {response.status_code} from {self.provider_id}: {response.text}"
+                    )
 
                 response.raise_for_status()
                 result = response.json()
@@ -198,18 +232,22 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
                 # Parse content as JSON if possible
                 content = None
                 raw_content = message.get("content", "")
-                logger.info(f"Raw response from {self.provider_id} (first 500 chars): {raw_content[:500] if raw_content else 'EMPTY'}")
+                logger.info(
+                    f"Raw response from {self.provider_id} (first 500 chars): {raw_content[:500] if raw_content else 'EMPTY'}"
+                )
                 if raw_content:
                     try:
                         content = json.loads(raw_content)
                     except json.JSONDecodeError:
                         # Try to extract JSON from response
-                        json_match = re.search(r'\{[\s\S]*\}', raw_content)
+                        json_match = re.search(r"\{[\s\S]*\}", raw_content)
                         if json_match:
                             try:
                                 content = json.loads(json_match.group())
                             except json.JSONDecodeError:
-                                logger.warning(f"Failed to parse JSON from response: {json_match.group()[:200]}")
+                                logger.warning(
+                                    f"Failed to parse JSON from response: {json_match.group()[:200]}"
+                                )
                         else:
                             logger.warning(f"No JSON found in response")
 
@@ -235,6 +273,7 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
 
 # --- Anthropic Strategy ---
 
+
 class AnthropicStrategy(LLMProviderStrategy):
     """Strategy for Anthropic Claude API."""
 
@@ -249,20 +288,28 @@ class AnthropicStrategy(LLMProviderStrategy):
             return False, "Anthropic API key should start with 'sk-ant-'"
         return True, ""
 
-    def _convert_tools_to_anthropic(self, tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _convert_tools_to_anthropic(
+        self, tools: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Convert OpenAI tool format to Anthropic tool_use format."""
         anthropic_tools = []
         for tool in tools:
             if tool.get("type") == "function":
                 func = tool["function"]
-                anthropic_tools.append({
-                    "name": func["name"],
-                    "description": func.get("description", ""),
-                    "input_schema": func.get("parameters", {"type": "object", "properties": {}}),
-                })
+                anthropic_tools.append(
+                    {
+                        "name": func["name"],
+                        "description": func.get("description", ""),
+                        "input_schema": func.get(
+                            "parameters", {"type": "object", "properties": {}}
+                        ),
+                    }
+                )
         return anthropic_tools
 
-    def _convert_messages_to_anthropic(self, messages: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+    def _convert_messages_to_anthropic(
+        self, messages: list[dict[str, Any]]
+    ) -> tuple[str, list[dict[str, Any]]]:
         """Convert OpenAI messages to Anthropic format. Returns (system_prompt, messages)."""
         system_prompt = ""
         anthropic_messages = []
@@ -280,25 +327,35 @@ class AnthropicStrategy(LLMProviderStrategy):
                     # Convert tool calls to Anthropic format
                     tool_use_blocks = []
                     for tc in msg["tool_calls"]:
-                        tool_use_blocks.append({
-                            "type": "tool_use",
-                            "id": tc["id"],
-                            "name": tc["function"]["name"],
-                            "input": json.loads(tc["function"]["arguments"]) if isinstance(tc["function"]["arguments"], str) else tc["function"]["arguments"],
-                        })
-                    anthropic_messages.append({"role": "assistant", "content": tool_use_blocks})
+                        tool_use_blocks.append(
+                            {
+                                "type": "tool_use",
+                                "id": tc["id"],
+                                "name": tc["function"]["name"],
+                                "input": json.loads(tc["function"]["arguments"])
+                                if isinstance(tc["function"]["arguments"], str)
+                                else tc["function"]["arguments"],
+                            }
+                        )
+                    anthropic_messages.append(
+                        {"role": "assistant", "content": tool_use_blocks}
+                    )
                 else:
                     anthropic_messages.append({"role": "assistant", "content": content})
             elif role == "tool":
                 # Tool results in Anthropic format
-                anthropic_messages.append({
-                    "role": "user",
-                    "content": [{
-                        "type": "tool_result",
-                        "tool_use_id": msg.get("tool_call_id"),
-                        "content": msg.get("content", ""),
-                    }]
-                })
+                anthropic_messages.append(
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": msg.get("tool_call_id"),
+                                "content": msg.get("content", ""),
+                            }
+                        ],
+                    }
+                )
 
         return system_prompt, anthropic_messages
 
@@ -356,7 +413,7 @@ class AnthropicStrategy(LLMProviderStrategy):
                         try:
                             content = json.loads(raw_content)
                         except json.JSONDecodeError:
-                            json_match = re.search(r'\{[\s\S]*\}', raw_content)
+                            json_match = re.search(r"\{[\s\S]*\}", raw_content)
                             if json_match:
                                 try:
                                     content = json.loads(json_match.group())
@@ -364,17 +421,21 @@ class AnthropicStrategy(LLMProviderStrategy):
                                     pass
                     elif block.get("type") == "tool_use":
                         # Convert to OpenAI tool_call format for consistency
-                        tool_calls.append({
-                            "id": block.get("id"),
-                            "type": "function",
-                            "function": {
-                                "name": block.get("name"),
-                                "arguments": json.dumps(block.get("input", {})),
+                        tool_calls.append(
+                            {
+                                "id": block.get("id"),
+                                "type": "function",
+                                "function": {
+                                    "name": block.get("name"),
+                                    "arguments": json.dumps(block.get("input", {})),
+                                },
                             }
-                        })
+                        )
 
                 usage = result.get("usage", {})
-                token_usage = usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+                token_usage = usage.get("input_tokens", 0) + usage.get(
+                    "output_tokens", 0
+                )
 
                 return LLMResponse(
                     content=content,
@@ -398,6 +459,7 @@ class AnthropicStrategy(LLMProviderStrategy):
 
 # --- Google Strategy ---
 
+
 class GoogleStrategy(LLMProviderStrategy):
     """Strategy for Google Gemini API."""
 
@@ -409,24 +471,36 @@ class GoogleStrategy(LLMProviderStrategy):
         if not api_key or len(api_key) < 30:
             return False, "API key is too short for Google"
         # Google API keys are typically 39 characters
-        if not re.match(r'^[A-Za-z0-9_-]+$', api_key):
+        if not re.match(r"^[A-Za-z0-9_-]+$", api_key):
             return False, "Google API key contains invalid characters"
         return True, ""
 
-    def _convert_tools_to_google(self, tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _convert_tools_to_google(
+        self, tools: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Convert OpenAI tool format to Google function declarations."""
         function_declarations = []
         for tool in tools:
             if tool.get("type") == "function":
                 func = tool["function"]
-                function_declarations.append({
-                    "name": func["name"],
-                    "description": func.get("description", ""),
-                    "parameters": func.get("parameters", {"type": "object", "properties": {}}),
-                })
-        return [{"functionDeclarations": function_declarations}] if function_declarations else []
+                function_declarations.append(
+                    {
+                        "name": func["name"],
+                        "description": func.get("description", ""),
+                        "parameters": func.get(
+                            "parameters", {"type": "object", "properties": {}}
+                        ),
+                    }
+                )
+        return (
+            [{"functionDeclarations": function_declarations}]
+            if function_declarations
+            else []
+        )
 
-    def _convert_messages_to_google(self, messages: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+    def _convert_messages_to_google(
+        self, messages: list[dict[str, Any]]
+    ) -> tuple[str, list[dict[str, Any]]]:
         """Convert OpenAI messages to Google format. Returns (system_instruction, contents)."""
         system_instruction = ""
         contents = []
@@ -444,26 +518,34 @@ class GoogleStrategy(LLMProviderStrategy):
                     # Convert tool calls to Google format
                     parts = []
                     for tc in msg["tool_calls"]:
-                        parts.append({
-                            "functionCall": {
-                                "name": tc["function"]["name"],
-                                "args": json.loads(tc["function"]["arguments"]) if isinstance(tc["function"]["arguments"], str) else tc["function"]["arguments"],
+                        parts.append(
+                            {
+                                "functionCall": {
+                                    "name": tc["function"]["name"],
+                                    "args": json.loads(tc["function"]["arguments"])
+                                    if isinstance(tc["function"]["arguments"], str)
+                                    else tc["function"]["arguments"],
+                                }
                             }
-                        })
+                        )
                     contents.append({"role": "model", "parts": parts})
                 else:
                     contents.append({"role": "model", "parts": [{"text": content}]})
             elif role == "tool":
                 # Tool results in Google format
-                contents.append({
-                    "role": "user",
-                    "parts": [{
-                        "functionResponse": {
-                            "name": msg.get("name", "function"),
-                            "response": {"result": msg.get("content", "")},
-                        }
-                    }]
-                })
+                contents.append(
+                    {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "functionResponse": {
+                                    "name": msg.get("name", "function"),
+                                    "response": {"result": msg.get("content", "")},
+                                }
+                            }
+                        ],
+                    }
+                )
 
         return system_instruction, contents
 
@@ -475,7 +557,9 @@ class GoogleStrategy(LLMProviderStrategy):
             "Content-Type": "application/json",
         }
 
-        system_instruction, contents = self._convert_messages_to_google(request.messages)
+        system_instruction, contents = self._convert_messages_to_google(
+            request.messages
+        )
 
         payload: dict[str, Any] = {
             "contents": contents,
@@ -523,7 +607,7 @@ class GoogleStrategy(LLMProviderStrategy):
                             try:
                                 content = json.loads(raw_content)
                             except json.JSONDecodeError:
-                                json_match = re.search(r'\{[\s\S]*\}', raw_content)
+                                json_match = re.search(r"\{[\s\S]*\}", raw_content)
                                 if json_match:
                                     try:
                                         content = json.loads(json_match.group())
@@ -531,14 +615,16 @@ class GoogleStrategy(LLMProviderStrategy):
                                         pass
                         elif "functionCall" in part:
                             fc = part["functionCall"]
-                            tool_calls.append({
-                                "id": f"call_{fc['name']}",
-                                "type": "function",
-                                "function": {
-                                    "name": fc["name"],
-                                    "arguments": json.dumps(fc.get("args", {})),
+                            tool_calls.append(
+                                {
+                                    "id": f"call_{fc['name']}",
+                                    "type": "function",
+                                    "function": {
+                                        "name": fc["name"],
+                                        "arguments": json.dumps(fc.get("args", {})),
+                                    },
                                 }
-                            })
+                            )
 
                 # Google doesn't provide detailed token usage in the same way
                 usage = result.get("usageMetadata", {})
@@ -570,6 +656,7 @@ class GoogleStrategy(LLMProviderStrategy):
 
 # --- Local LLM Strategy ---
 
+
 class LocalLLMStrategy(LLMProviderStrategy):
     """Strategy for local LLMs via Cloudflare tunnel (Ollama, LM Studio, vLLM, etc.)."""
 
@@ -588,9 +675,13 @@ class LocalLLMStrategy(LLMProviderStrategy):
     ) -> LLMResponse:
         """Make API call to local LLM via tunnel."""
         if not base_url:
-            raise AuthenticationError(self.provider_id, "Base URL is required for local LLM")
+            raise AuthenticationError(
+                self.provider_id, "Base URL is required for local LLM"
+            )
         if not bridge_token:
-            raise AuthenticationError(self.provider_id, "Bridge token is required for local LLM")
+            raise AuthenticationError(
+                self.provider_id, "Bridge token is required for local LLM"
+            )
 
         headers = {
             "Content-Type": "application/json",
@@ -700,7 +791,7 @@ class LocalLLMStrategy(LLMProviderStrategy):
             try:
                 content = json.loads(raw_content)
             except json.JSONDecodeError:
-                json_match = re.search(r'\{[\s\S]*\}', raw_content)
+                json_match = re.search(r"\{[\s\S]*\}", raw_content)
                 if json_match:
                     try:
                         content = json.loads(json_match.group())
@@ -724,23 +815,25 @@ class LocalLLMStrategy(LLMProviderStrategy):
         tool_calls = []
         if message.get("tool_calls"):
             for tc in message["tool_calls"]:
-                tool_calls.append({
-                    "id": tc.get("id", f"call_{len(tool_calls)}"),
-                    "type": "function",
-                    "function": {
-                        "name": tc["function"]["name"],
-                        "arguments": json.dumps(tc["function"]["arguments"])
-                        if isinstance(tc["function"]["arguments"], dict)
-                        else tc["function"]["arguments"],
-                    },
-                })
+                tool_calls.append(
+                    {
+                        "id": tc.get("id", f"call_{len(tool_calls)}"),
+                        "type": "function",
+                        "function": {
+                            "name": tc["function"]["name"],
+                            "arguments": json.dumps(tc["function"]["arguments"])
+                            if isinstance(tc["function"]["arguments"], dict)
+                            else tc["function"]["arguments"],
+                        },
+                    }
+                )
 
         content = None
         if raw_content:
             try:
                 content = json.loads(raw_content)
             except json.JSONDecodeError:
-                json_match = re.search(r'\{[\s\S]*\}', raw_content)
+                json_match = re.search(r"\{[\s\S]*\}", raw_content)
                 if json_match:
                     try:
                         content = json.loads(json_match.group())

@@ -184,7 +184,9 @@ class ToolHandler:
             return {
                 "success": False,
                 "error": f"Unknown component type: {comp_type}",
-                "hint": f"Did you mean: {', '.join(suggestions)}?" if suggestions else "No similar components found.",
+                "hint": f"Did you mean: {', '.join(suggestions)}?"
+                if suggestions
+                else "No similar components found.",
             }
 
         return {
@@ -196,10 +198,7 @@ class ToolHandler:
                 "description": component.description,
                 "width": component.width,
                 "height": component.height,
-                "pins": [
-                    {"name": p.name, "type": p.type}
-                    for p in component.pins
-                ],
+                "pins": [{"name": p.name, "type": p.type} for p in component.pins],
                 "connection_rules": {
                     pin_name: {
                         "can_connect_to": rule.can_connect_to,
@@ -219,11 +218,11 @@ class ToolHandler:
 
         components = blueprint.get("components", [])
         wires = blueprint.get("wires", [])
-        
+
         if not components:
             errors.append("Blueprint has no components")
             return {"success": False, "errors": errors, "warnings": warnings}
-        
+
         if not wires:
             errors.append("Blueprint has no wires - components must be connected")
             return {"success": False, "errors": errors, "warnings": warnings}
@@ -244,7 +243,9 @@ class ToolHandler:
             if not comp_def:
                 similar = self.registry.search_components(comp_type)
                 suggestions = [s.type for s in similar[:3]]
-                hint = f" Did you mean: {', '.join(suggestions)}?" if suggestions else ""
+                hint = (
+                    f" Did you mean: {', '.join(suggestions)}?" if suggestions else ""
+                )
                 errors.append(f"Unknown component type: {comp_type}.{hint}")
                 continue
 
@@ -272,10 +273,14 @@ class ToolHandler:
             to_parts = to_str.split(":")
 
             if len(from_parts) != 2:
-                errors.append(f"Invalid wire source format: {from_str} (expected 'LABEL:PIN')")
+                errors.append(
+                    f"Invalid wire source format: {from_str} (expected 'LABEL:PIN')"
+                )
                 continue
             if len(to_parts) != 2:
-                errors.append(f"Invalid wire target format: {to_str} (expected 'LABEL:PIN')")
+                errors.append(
+                    f"Invalid wire target format: {to_str} (expected 'LABEL:PIN')"
+                )
                 continue
 
             from_label, from_pin = from_parts
@@ -326,7 +331,9 @@ class ToolHandler:
 
             # Check output-to-output connections
             if from_def and to_def:
-                from_pin_def = next((p for p in from_def.pins if p.name == from_pin), None)
+                from_pin_def = next(
+                    (p for p in from_def.pins if p.name == from_pin), None
+                )
                 to_pin_def = next((p for p in to_def.pins if p.name == to_pin), None)
 
                 if from_pin_def and to_pin_def:
@@ -341,22 +348,40 @@ class ToolHandler:
 
         # Check for floating inputs (input pins with no connection)
         # This is CRITICAL - all input pins must be connected for a complete circuit
-        input_types = {"SWITCH_TOGGLE", "SWITCH_PUSH", "CLOCK", "CONST_HIGH", "CONST_LOW", 
-                       "DIP_SWITCH_4", "NUMERIC_INPUT", "VCC_5V", "VCC_3V3"}
-        output_types = {"LED_RED", "LED_GREEN", "LED_YELLOW", "LED_BLUE", "DISPLAY_7SEG", 
-                        "BUZZER", "MOTOR_DC", "PROBE", "GROUND"}
-        
+        input_types = {
+            "SWITCH_TOGGLE",
+            "SWITCH_PUSH",
+            "CLOCK",
+            "CONST_HIGH",
+            "CONST_LOW",
+            "DIP_SWITCH_4",
+            "NUMERIC_INPUT",
+            "VCC_5V",
+            "VCC_3V3",
+        }
+        output_types = {
+            "LED_RED",
+            "LED_GREEN",
+            "LED_YELLOW",
+            "LED_BLUE",
+            "DISPLAY_7SEG",
+            "BUZZER",
+            "MOTOR_DC",
+            "PROBE",
+            "GROUND",
+        }
+
         for label, comp_info in labels.items():
             comp_def = comp_info.get("definition")
             comp_type = comp_info.get("type", "")
-            
+
             if not comp_def:
                 continue
-                
+
             # Skip input devices (they don't have input pins that need connecting)
             if comp_type in input_types:
                 continue
-            
+
             # Check each input pin has a connection
             for pin in comp_def.pins:
                 if pin.type == "input":

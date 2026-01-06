@@ -56,7 +56,7 @@ class CircuitService:
     async def get_circuit_state(self, session_code: str) -> CircuitState:
         """
         Reconstruct circuit state from events.
-        
+
         Uses snapshots for efficiency when available.
         """
         # Try to get latest snapshot
@@ -144,7 +144,7 @@ class CircuitService:
     ) -> tuple[list[CircuitEvent], CircuitState]:
         """
         Delete a component and all connected wires (cascade delete).
-        
+
         Returns list of events (component delete + wire deletes).
         """
         state = await self.get_circuit_state(session_code)
@@ -157,7 +157,8 @@ class CircuitService:
 
         # Find and delete connected wires first
         connected_wires = [
-            w for w in state.wires
+            w
+            for w in state.wires
             if w.from_component_id == component_id or w.to_component_id == component_id
         ]
 
@@ -201,7 +202,7 @@ class CircuitService:
     ) -> tuple[CircuitEvent, CircuitState]:
         """
         Add a wire connection between components.
-        
+
         Validates that wire connects output pin to input pin.
         """
         state = await self.get_circuit_state(session_code)
@@ -315,7 +316,7 @@ class CircuitService:
     ) -> tuple[CircuitEvent, CircuitState] | None:
         """
         Undo the last action by this user.
-        
+
         Returns the inverse event and new state, or None if nothing to undo.
         """
         undo_stack = self._undo_stacks[session_code][user_id]
@@ -345,7 +346,7 @@ class CircuitService:
     ) -> tuple[CircuitEvent, CircuitState] | None:
         """
         Redo the last undone action by this user.
-        
+
         Returns the re-applied event and new state, or None if nothing to redo.
         """
         redo_stack = self._redo_stacks[session_code][user_id]
@@ -468,9 +469,7 @@ class CircuitService:
                 code="INVALID_WIRE",
             )
 
-        to_pin = next(
-            (p for p in to_component.pins if p.id == wire.to_pin_id), None
-        )
+        to_pin = next((p for p in to_component.pins if p.id == wire.to_pin_id), None)
         if to_pin is None:
             raise ValidationException(
                 message=f"Target pin '{wire.to_pin_id}' not found",
@@ -495,17 +494,13 @@ class CircuitService:
         current = await self._event_repo.get_latest_version(session_code)
         return current + 1
 
-    async def _maybe_create_snapshot(
-        self, session_code: str, version: int
-    ) -> None:
+    async def _maybe_create_snapshot(self, session_code: str, version: int) -> None:
         """Create a snapshot if we've reached the snapshot interval."""
         if version % SNAPSHOT_INTERVAL == 0:
             state = await self.get_circuit_state(session_code)
             await self._event_repo.save_snapshot(session_code, version, state)
 
-    def _push_undo(
-        self, session_code: str, user_id: str, event: CircuitEvent
-    ) -> None:
+    def _push_undo(self, session_code: str, user_id: str, event: CircuitEvent) -> None:
         """Push an event to the undo stack."""
         self._undo_stacks[session_code][user_id].append(event)
         # Limit stack size
@@ -532,9 +527,7 @@ class CircuitService:
                 version=version,
                 userId=user_id,
                 timestamp=datetime.utcnow(),
-                payload=ComponentDeletedPayload(
-                    componentId=event.payload.component.id
-                ),
+                payload=ComponentDeletedPayload(componentId=event.payload.component.id),
             )
 
         elif isinstance(event, ComponentDeletedEvent):
@@ -577,7 +570,9 @@ class CircuitService:
                         e.get("payload", {}).get("componentId")
                         == event.payload.component_id
                     ):
-                        prev_position = Position.model_validate(e["payload"]["position"])
+                        prev_position = Position.model_validate(
+                            e["payload"]["position"]
+                        )
 
             if prev_position:
                 return ComponentMovedEvent(

@@ -36,8 +36,12 @@ session_id_strategy = st.text(
 # Strategy for generating valid positions
 position_strategy = st.builds(
     Position,
-    x=st.floats(min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False),
-    y=st.floats(min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False),
+    x=st.floats(
+        min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False
+    ),
+    y=st.floats(
+        min_value=-10000, max_value=10000, allow_nan=False, allow_infinity=False
+    ),
 )
 
 # Strategy for generating valid component types
@@ -72,7 +76,7 @@ def test_schema_version_inclusion(
     """
     **Feature: circuit-forge, Property 10: Schema Version Inclusion**
     **Validates: Requirements 14.4**
-    
+
     For any serialized circuit state JSON, the output SHALL contain a
     schemaVersion field with a valid semantic version string.
     """
@@ -86,17 +90,21 @@ def test_schema_version_inclusion(
         annotations=[],
         updatedAt=datetime.utcnow(),
     )
-    
+
     # Serialize to JSON
     json_data = circuit_state.model_dump(mode="json", by_alias=True)
-    
+
     # Verify schemaVersion field exists
-    assert "schemaVersion" in json_data, "schemaVersion field must be present in serialized JSON"
-    
+    assert "schemaVersion" in json_data, (
+        "schemaVersion field must be present in serialized JSON"
+    )
+
     # Verify schemaVersion is a valid semver string
     schema_version = json_data["schemaVersion"]
     assert isinstance(schema_version, str), "schemaVersion must be a string"
-    assert SEMVER_PATTERN.match(schema_version), f"schemaVersion '{schema_version}' must match semver format (X.Y.Z)"
+    assert SEMVER_PATTERN.match(schema_version), (
+        f"schemaVersion '{schema_version}' must match semver format (X.Y.Z)"
+    )
 
 
 @given(session_id=session_id_strategy)
@@ -107,10 +115,10 @@ def test_empty_circuit_has_schema_version(session_id: str) -> None:
     """
     # Create empty circuit state using factory method
     circuit_state = CircuitState.create_empty(session_id)
-    
+
     # Serialize to JSON
     json_data = circuit_state.model_dump(mode="json", by_alias=True)
-    
+
     # Verify schemaVersion field exists and is valid
     assert "schemaVersion" in json_data
     assert SEMVER_PATTERN.match(json_data["schemaVersion"])
@@ -136,11 +144,11 @@ def test_custom_schema_version_preserved(session_id: str, custom_version: str) -
         annotations=[],
         updatedAt=datetime.utcnow(),
     )
-    
+
     # Serialize and deserialize
     json_data = circuit_state.model_dump(mode="json", by_alias=True)
     deserialized = CircuitState.model_validate(json_data)
-    
+
     # Verify schema version is preserved
     assert deserialized.schema_version == custom_version
     assert json_data["schemaVersion"] == custom_version

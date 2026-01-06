@@ -43,9 +43,11 @@ class EventRepository:
 
     async def get_latest_version(self, session_code: str) -> int:
         """Get the latest event version for a session."""
-        cursor = self._events.find(
-            {"sessionCode": session_code}
-        ).sort("version", -1).limit(1)
+        cursor = (
+            self._events.find({"sessionCode": session_code})
+            .sort("version", -1)
+            .limit(1)
+        )
 
         async for doc in cursor:
             return doc.get("version", 0)
@@ -55,9 +57,11 @@ class EventRepository:
         self, session_code: str, user_id: str, limit: int = 50
     ) -> list[dict[str, Any]]:
         """Get recent events by a specific user (for undo/redo)."""
-        cursor = self._events.find(
-            {"sessionCode": session_code, "userId": user_id}
-        ).sort("version", -1).limit(limit)
+        cursor = (
+            self._events.find({"sessionCode": session_code, "userId": user_id})
+            .sort("version", -1)
+            .limit(limit)
+        )
 
         events = []
         async for doc in cursor:
@@ -83,13 +87,13 @@ class EventRepository:
         }
         await self._snapshots.insert_one(doc)
 
-    async def get_latest_snapshot(
-        self, session_code: str
-    ) -> dict[str, Any] | None:
+    async def get_latest_snapshot(self, session_code: str) -> dict[str, Any] | None:
         """Get the most recent snapshot for a session."""
-        cursor = self._snapshots.find(
-            {"sessionCode": session_code}
-        ).sort("version", -1).limit(1)
+        cursor = (
+            self._snapshots.find({"sessionCode": session_code})
+            .sort("version", -1)
+            .limit(1)
+        )
 
         async for doc in cursor:
             doc.pop("_id", None)
@@ -100,9 +104,13 @@ class EventRepository:
         self, session_code: str, version: int
     ) -> dict[str, Any] | None:
         """Get the snapshot at or before a specific version."""
-        cursor = self._snapshots.find(
-            {"sessionCode": session_code, "version": {"$lte": version}}
-        ).sort("version", -1).limit(1)
+        cursor = (
+            self._snapshots.find(
+                {"sessionCode": session_code, "version": {"$lte": version}}
+            )
+            .sort("version", -1)
+            .limit(1)
+        )
 
         async for doc in cursor:
             doc.pop("_id", None)

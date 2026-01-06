@@ -255,14 +255,24 @@ class LevelProgress(BaseModel):
 class LLMConfig(BaseModel):
     """LLM configuration for API requests."""
 
-    provider: str = Field(description="LLM provider ID (e.g., 'openai', 'anthropic', 'local')")
-    api_key: str = Field(default="", alias="apiKey", description="User's API key (not required for local)")
+    provider: str = Field(
+        description="LLM provider ID (e.g., 'openai', 'anthropic', 'local')"
+    )
+    api_key: str = Field(
+        default="",
+        alias="apiKey",
+        description="User's API key (not required for local)",
+    )
     model: str = Field(description="Model to use")
     temperature: float = Field(default=0.7, ge=0, le=2)
     max_tokens: int = Field(default=4000, alias="maxTokens", ge=100, le=32000)
     # Local LLM specific fields
-    base_url: str | None = Field(default=None, alias="baseUrl", description="Tunnel URL for local LLM")
-    bridge_token: str | None = Field(default=None, alias="bridgeToken", description="Bridge token for local LLM")
+    base_url: str | None = Field(
+        default=None, alias="baseUrl", description="Tunnel URL for local LLM"
+    )
+    bridge_token: str | None = Field(
+        default=None, alias="bridgeToken", description="Bridge token for local LLM"
+    )
 
     model_config = {"populate_by_name": True}
 
@@ -317,7 +327,9 @@ class ValidationResult(BaseModel):
     """Result of circuit validation."""
 
     is_valid: bool = Field(alias="isValid")
-    missing_components: list[str] = Field(alias="missingComponents", default_factory=list)
+    missing_components: list[str] = Field(
+        alias="missingComponents", default_factory=list
+    )
     missing_connections: list[str] = Field(
         alias="missingConnections", default_factory=list
     )

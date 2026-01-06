@@ -19,12 +19,48 @@ __version__ = "1.0.0"
 
 # Common local LLM servers and their configurations
 LLM_SERVERS = [
-    {"name": "Ollama", "port": 11434, "models_path": "/api/tags", "key": "models", "name_field": "name"},
-    {"name": "LM Studio", "port": 1234, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "vLLM", "port": 8000, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "LocalAI", "port": 8080, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "Jan", "port": 1337, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "text-gen-webui", "port": 5000, "models_path": "/v1/models", "key": "data", "name_field": "id"},
+    {
+        "name": "Ollama",
+        "port": 11434,
+        "models_path": "/api/tags",
+        "key": "models",
+        "name_field": "name",
+    },
+    {
+        "name": "LM Studio",
+        "port": 1234,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "vLLM",
+        "port": 8000,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "LocalAI",
+        "port": 8080,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "Jan",
+        "port": 1337,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "text-gen-webui",
+        "port": 5000,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
 ]
 
 # Global state
@@ -88,7 +124,9 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
         pass  # Suppress default logging
 
 
-def check_server(port: int, models_path: str, key: str, name_field: str) -> list[str] | None:
+def check_server(
+    port: int, models_path: str, key: str, name_field: str
+) -> list[str] | None:
     """Check if an LLM server is running and return available models."""
     try:
         url = f"http://localhost:{port}{models_path}"
@@ -136,7 +174,9 @@ def print_install_instructions() -> None:
     print("Install cloudflared:")
     print("  macOS:   brew install cloudflared")
     print("  Windows: winget install Cloudflare.cloudflared")
-    print("  Linux:   See https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/")
+    print(
+        "  Linux:   See https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/"
+    )
     print()
 
 

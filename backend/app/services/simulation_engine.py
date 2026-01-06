@@ -10,6 +10,7 @@ from app.models.circuit import CircuitComponent, CircuitState, Wire
 
 class Signal(str, Enum):
     """Signal values for circuit simulation."""
+
     HIGH = "1"
     LOW = "0"
     Z = "Z"  # High impedance
@@ -19,6 +20,7 @@ class Signal(str, Enum):
 @dataclass(order=True)
 class Event:
     """Simulation event at a specific time."""
+
     time: int
     seq: int = field(default=0, compare=True)
     component_id: str = field(default="", compare=False)
@@ -29,6 +31,7 @@ class Event:
 @dataclass
 class ComponentState:
     """Runtime state for a component."""
+
     outputs: dict[str, Signal] = field(default_factory=dict)
     internal: dict[str, any] = field(default_factory=dict)
 
@@ -44,7 +47,9 @@ class SimulationEngine:
         self.wires: list[Wire] = []
         self.states: dict[str, ComponentState] = {}
         self.pin_values: dict[str, Signal] = {}  # "comp:pin" -> value
-        self.connections: dict[str, list[str]] = {}  # "from_comp:from_pin" -> ["to_comp:to_pin", ...]
+        self.connections: dict[
+            str, list[str]
+        ] = {}  # "from_comp:from_pin" -> ["to_comp:to_pin", ...]
         self.listeners: dict[str, Callable] = {}  # Callbacks for state changes
 
     def load_circuit(self, circuit: CircuitState) -> None:
@@ -82,7 +87,11 @@ class SimulationEngine:
         elif comp.type.value == "SWITCH_TOGGLE":
             state.outputs["OUT"] = Signal.HIGH if props.get("state") else Signal.LOW
         elif comp.type.value == "SWITCH_PUSH":
-            state.outputs["OUT"] = Signal.HIGH if props.get("pressed") or props.get("state") else Signal.LOW
+            state.outputs["OUT"] = (
+                Signal.HIGH
+                if props.get("pressed") or props.get("state")
+                else Signal.LOW
+            )
         elif comp.type.value == "CLOCK":
             state.outputs["CLK"] = Signal.LOW
             state.internal["phase"] = 0
@@ -96,7 +105,9 @@ class SimulationEngine:
         for pin_id, value in state.outputs.items():
             self.pin_values[f"{comp.id}:{pin_id}"] = value
 
-    def schedule(self, delay: int, component_id: str, pin_id: str, value: Signal) -> None:
+    def schedule(
+        self, delay: int, component_id: str, pin_id: str, value: Signal
+    ) -> None:
         """Schedule a signal change event."""
         event = Event(
             time=self.time + delay,
@@ -237,7 +248,11 @@ class SimulationEngine:
             return {"Y": self._xor(vals[0], vals[1]) if len(vals) == 2 else Signal.X}
         if t == "XNOR_2":
             vals = list(inputs.values())
-            return {"Y": self._not(self._xor(vals[0], vals[1])) if len(vals) == 2 else Signal.X}
+            return {
+                "Y": self._not(self._xor(vals[0], vals[1]))
+                if len(vals) == 2
+                else Signal.X
+            }
 
         # Combinational
         if t == "MUX_2TO1":
@@ -328,7 +343,10 @@ class SimulationEngine:
                 reg = ((reg << 1) | bit) & 0xFF
                 state.internal["reg"] = reg
             state.internal["prev_clk"] = clk
-            return {f"Q{i}": Signal.HIGH if (reg & (1 << i)) else Signal.LOW for i in range(8)}
+            return {
+                f"Q{i}": Signal.HIGH if (reg & (1 << i)) else Signal.LOW
+                for i in range(8)
+            }
 
         # Junction
         if t == "JUNCTION":

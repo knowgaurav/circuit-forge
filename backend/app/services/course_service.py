@@ -126,7 +126,7 @@ class CourseService:
         bridge_token: str | None = None,
     ) -> CoursePlan:
         """Generate a new course plan for the given topic using user's API key.
-        
+
         Args:
             topic: The course topic
             participant_id: Optional participant ID
@@ -138,7 +138,9 @@ class CourseService:
             base_url: Tunnel URL for local LLM
             bridge_token: Bridge token for local LLM
         """
-        logger.info(f"Generating course plan for topic: {topic} using {provider_id}/{model}")
+        logger.info(
+            f"Generating course plan for topic: {topic} using {provider_id}/{model}"
+        )
 
         # Generate plan using user's API key
         course_plan, token_usage = await llm_service.generate_course_plan(
@@ -205,7 +207,9 @@ class CourseService:
 
         # Return cached content if it's already generated successfully
         if content and content.generation_state == GenerationState.GENERATED:
-            logger.info(f"Returning cached level {level_number} content for course {course_plan_id}")
+            logger.info(
+                f"Returning cached level {level_number} content for course {course_plan_id}"
+            )
             return content
 
         # Create or update level content record
@@ -293,9 +297,7 @@ class CourseService:
                 )
                 await self.progress_repo.create(progress)
 
-        logger.info(
-            f"Enrolled participant {participant_id} in course {course_plan_id}"
-        )
+        logger.info(f"Enrolled participant {participant_id} in course {course_plan_id}")
 
         return enrollment
 
@@ -329,12 +331,14 @@ class CourseService:
                     1 for p in progress_list if p.status == LevelStatus.COMPLETED
                 )
 
-                result.append({
-                    "enrollment": enrollment.model_dump(by_alias=True),
-                    "coursePlan": course_plan.model_dump(by_alias=True),
-                    "completedLevels": completed_count,
-                    "totalLevels": len(course_plan.levels),
-                })
+                result.append(
+                    {
+                        "enrollment": enrollment.model_dump(by_alias=True),
+                        "coursePlan": course_plan.model_dump(by_alias=True),
+                        "completedLevels": completed_count,
+                        "totalLevels": len(course_plan.levels),
+                    }
+                )
 
         return result
 
@@ -418,7 +422,11 @@ class CourseService:
                 to_type = req.to_spec.split(":")[0]
 
                 from_component = next(
-                    (c for c in components if c.get("id") == wire.get("fromComponentId")),
+                    (
+                        c
+                        for c in components
+                        if c.get("id") == wire.get("fromComponentId")
+                    ),
                     None,
                 )
                 to_component = next(
@@ -426,9 +434,12 @@ class CourseService:
                     None,
                 )
 
-                if (from_component and to_component and
-                    from_component.get("type") == from_type and
-                    to_component.get("type") == to_type):
+                if (
+                    from_component
+                    and to_component
+                    and from_component.get("type") == from_type
+                    and to_component.get("type") == to_type
+                ):
                     found = True
                     break
 
@@ -442,9 +453,13 @@ class CourseService:
         else:
             feedback_parts = []
             if missing_components:
-                feedback_parts.append(f"Missing components: {', '.join(missing_components)}")
+                feedback_parts.append(
+                    f"Missing components: {', '.join(missing_components)}"
+                )
             if missing_connections:
-                feedback_parts.append(f"Missing connections: {', '.join(missing_connections)}")
+                feedback_parts.append(
+                    f"Missing connections: {', '.join(missing_connections)}"
+                )
             feedback = " ".join(feedback_parts)
 
         return ValidationResult(

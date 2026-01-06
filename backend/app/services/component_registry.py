@@ -51,13 +51,21 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         description="2-input AND gate",
         width=60,
         height=40,
-        pins=[input_pin("A", -30, -10), input_pin("B", -30, 10), output_pin("Y", 30, 0)],
+        pins=[
+            input_pin("A", -30, -10),
+            input_pin("B", -30, 10),
+            output_pin("Y", 30, 0),
+        ],
         connection_rules={
             "A": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "B": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "Y": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> AND1:A", "SW2:OUT -> AND1:B", "AND1:Y -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> AND1:A",
+            "SW2:OUT -> AND1:B",
+            "AND1:Y -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="OR_2",
@@ -66,13 +74,21 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         description="2-input OR gate",
         width=60,
         height=40,
-        pins=[input_pin("A", -30, -10), input_pin("B", -30, 10), output_pin("Y", 30, 0)],
+        pins=[
+            input_pin("A", -30, -10),
+            input_pin("B", -30, 10),
+            output_pin("Y", 30, 0),
+        ],
         connection_rules={
             "A": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "B": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "Y": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> OR1:A", "SW2:OUT -> OR1:B", "OR1:Y -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> OR1:A",
+            "SW2:OUT -> OR1:B",
+            "OR1:Y -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="NOT",
@@ -95,13 +111,21 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         description="2-input NAND gate",
         width=60,
         height=40,
-        pins=[input_pin("A", -30, -10), input_pin("B", -30, 10), output_pin("Y", 30, 0)],
+        pins=[
+            input_pin("A", -30, -10),
+            input_pin("B", -30, 10),
+            output_pin("Y", 30, 0),
+        ],
         connection_rules={
             "A": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "B": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "Y": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> NAND1:A", "SW2:OUT -> NAND1:B", "NAND1:Y -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> NAND1:A",
+            "SW2:OUT -> NAND1:B",
+            "NAND1:Y -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="NOR_2",
@@ -110,13 +134,21 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         description="2-input NOR gate",
         width=60,
         height=40,
-        pins=[input_pin("A", -30, -10), input_pin("B", -30, 10), output_pin("Y", 30, 0)],
+        pins=[
+            input_pin("A", -30, -10),
+            input_pin("B", -30, 10),
+            output_pin("Y", 30, 0),
+        ],
         connection_rules={
             "A": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "B": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "Y": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> NOR1:A", "SW2:OUT -> NOR1:B", "NOR1:Y -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> NOR1:A",
+            "SW2:OUT -> NOR1:B",
+            "NOR1:Y -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="XOR_2",
@@ -125,13 +157,21 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         description="2-input XOR gate",
         width=60,
         height=40,
-        pins=[input_pin("A", -30, -10), input_pin("B", -30, 10), output_pin("Y", 30, 0)],
+        pins=[
+            input_pin("A", -30, -10),
+            input_pin("B", -30, 10),
+            output_pin("Y", 30, 0),
+        ],
         connection_rules={
             "A": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "B": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "Y": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> XOR1:A", "SW2:OUT -> XOR1:B", "XOR1:Y -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> XOR1:A",
+            "SW2:OUT -> XOR1:B",
+            "XOR1:Y -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="BUFFER",
@@ -147,7 +187,6 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         },
         example_connections=["SW1:OUT -> BUF1:A", "BUF1:Y -> LED1:IN"],
     ),
-
     # Input Devices
     ComponentDefinition(
         type="SWITCH_TOGGLE",
@@ -256,7 +295,6 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         },
         example_connections=["NUM1:Q0 -> 7SEG1:A", "NUM1:Q1 -> 7SEG1:B"],
     ),
-
     # Output Devices
     ComponentDefinition(
         type="LED_RED",
@@ -337,7 +375,6 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         },
         example_connections=["DEC1:Y0 -> 7SEG1:A", "DEC1:Y1 -> 7SEG1:B"],
     ),
-
     # Flip-Flops
     ComponentDefinition(
         type="D_FLIPFLOP",
@@ -358,7 +395,11 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "Q": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "Q'": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> DFF1:D", "CLK1:CLK -> DFF1:CLK", "DFF1:Q -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> DFF1:D",
+            "CLK1:CLK -> DFF1:CLK",
+            "DFF1:Q -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="SR_LATCH",
@@ -379,7 +420,11 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "Q": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "Q'": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["BTN1:OUT -> SR1:S", "BTN2:OUT -> SR1:R", "SR1:Q -> LED1:IN"],
+        example_connections=[
+            "BTN1:OUT -> SR1:S",
+            "BTN2:OUT -> SR1:R",
+            "SR1:Q -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="JK_FLIPFLOP",
@@ -402,9 +447,12 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "Q": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "Q'": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> JKFF1:J", "CLK1:CLK -> JKFF1:CLK", "SW2:OUT -> JKFF1:K"],
+        example_connections=[
+            "SW1:OUT -> JKFF1:J",
+            "CLK1:CLK -> JKFF1:CLK",
+            "SW2:OUT -> JKFF1:K",
+        ],
     ),
-
     # Combinational
     ComponentDefinition(
         type="MUX_2TO1",
@@ -425,7 +473,12 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "S": ConnectionRule(can_connect_to=["output"], max_connections=1),
             "Y": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> MUX1:A", "SW2:OUT -> MUX1:B", "SW3:OUT -> MUX1:S", "MUX1:Y -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> MUX1:A",
+            "SW2:OUT -> MUX1:B",
+            "SW3:OUT -> MUX1:S",
+            "MUX1:Y -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="DECODER_2TO4",
@@ -450,7 +503,11 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "Y2": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "Y3": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> DEC1:A0", "SW2:OUT -> DEC1:A1", "DEC1:Y0 -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> DEC1:A0",
+            "SW2:OUT -> DEC1:A1",
+            "DEC1:Y0 -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="ADDER_4BIT",
@@ -489,7 +546,11 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "S3": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "Cout": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["DIP1:Q0 -> ADDER1:A0", "DIP2:Q0 -> ADDER1:B0", "ADDER1:S0 -> LED1:IN"],
+        example_connections=[
+            "DIP1:Q0 -> ADDER1:A0",
+            "DIP2:Q0 -> ADDER1:B0",
+            "ADDER1:S0 -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="COMPARATOR_4BIT",
@@ -524,7 +585,11 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "A=B": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "A<B": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["DIP1:Q0 -> COMP1:A0", "DIP2:Q0 -> COMP1:B0", "COMP1:A>B -> LED1:IN"],
+        example_connections=[
+            "DIP1:Q0 -> COMP1:A0",
+            "DIP2:Q0 -> COMP1:B0",
+            "COMP1:A>B -> LED1:IN",
+        ],
     ),
     ComponentDefinition(
         type="BCD_TO_7SEG",
@@ -561,7 +626,6 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         },
         example_connections=["CNT1:Q0 -> DEC1:D0", "DEC1:A -> DISP1:A"],
     ),
-
     # Sequential
     ComponentDefinition(
         type="COUNTER_4BIT",
@@ -617,9 +681,12 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "Q6": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "Q7": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> SR1:SI", "CLK1:CLK -> SR1:CLK", "SR1:Q0 -> LED1:IN"],
+        example_connections=[
+            "SW1:OUT -> SR1:SI",
+            "CLK1:CLK -> SR1:CLK",
+            "SR1:Q0 -> LED1:IN",
+        ],
     ),
-
     # Motors
     ComponentDefinition(
         type="MOTOR_DC",
@@ -638,7 +705,6 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         },
         example_connections=["SW1:OUT -> MOT1:FWD", "SW2:OUT -> MOT1:REV"],
     ),
-
     # Power
     ComponentDefinition(
         type="VCC_5V",
@@ -679,7 +745,6 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         },
         example_connections=["R1:OUT -> GND1:GND"],
     ),
-
     # Passive Components
     ComponentDefinition(
         type="RESISTOR",
@@ -723,7 +788,6 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
         },
         example_connections=["VCC1:VCC -> D1:A", "D1:K -> LED1:IN"],
     ),
-
     # Connectors
     ComponentDefinition(
         type="JUNCTION",
@@ -742,7 +806,11 @@ COMPONENT_DEFINITIONS: list[ComponentDefinition] = [
             "OUT1": ConnectionRule(can_connect_to=["input"], max_connections=-1),
             "OUT2": ConnectionRule(can_connect_to=["input"], max_connections=-1),
         },
-        example_connections=["SW1:OUT -> J1:IN", "J1:OUT1 -> LED1:IN", "J1:OUT2 -> LED2:IN"],
+        example_connections=[
+            "SW1:OUT -> J1:IN",
+            "J1:OUT1 -> LED1:IN",
+            "J1:OUT2 -> LED2:IN",
+        ],
     ),
     ComponentDefinition(
         type="PROBE",

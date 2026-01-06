@@ -30,7 +30,7 @@ class PermissionService:
     ) -> bool:
         """
         Check if a participant can edit the circuit.
-        
+
         Raises AuthorizationException if not permitted.
         """
         participant = await self._participant_repo.find_by_id(
@@ -51,7 +51,7 @@ class PermissionService:
     ) -> EditRequest:
         """
         Create an edit access request from a student.
-        
+
         Returns the created EditRequest.
         """
         participant = await self._participant_repo.find_by_id(
@@ -96,7 +96,8 @@ class PermissionService:
         """Get all pending edit requests for a session."""
         session_requests = self._edit_requests.get(session_code, {})
         return [
-            req for req in session_requests.values()
+            req
+            for req in session_requests.values()
             if req.status == EditRequestStatus.PENDING
         ]
 
@@ -108,12 +109,12 @@ class PermissionService:
     ) -> bool:
         """
         Approve an edit request from a student.
-        
+
         Args:
             session_code: Session code
             teacher_id: ID of the teacher approving
             student_id: ID of the student being approved
-            
+
         Returns:
             True if approved successfully
         """
@@ -151,12 +152,12 @@ class PermissionService:
     ) -> bool:
         """
         Deny an edit request from a student.
-        
+
         Args:
             session_code: Session code
             teacher_id: ID of the teacher denying
             student_id: ID of the student being denied
-            
+
         Returns:
             True if denied successfully
         """
@@ -191,12 +192,12 @@ class PermissionService:
     ) -> bool:
         """
         Revoke edit permission from a student.
-        
+
         Args:
             session_code: Session code
             teacher_id: ID of the teacher revoking
             student_id: ID of the student losing permission
-            
+
         Returns:
             True if revoked successfully
         """

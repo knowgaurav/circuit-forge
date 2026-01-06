@@ -39,16 +39,12 @@ class Participant(BaseModel):
 
     id: str
     session_code: str = Field(alias="sessionCode")
-    display_name: str = Field(
-        min_length=3, max_length=20, alias="displayName"
-    )
+    display_name: str = Field(min_length=3, max_length=20, alias="displayName")
     role: Role
     can_edit: bool = Field(alias="canEdit")
     color: str
     is_active: bool = Field(default=True, alias="isActive")
-    last_seen_at: datetime = Field(
-        default_factory=datetime.utcnow, alias="lastSeenAt"
-    )
+    last_seen_at: datetime = Field(default_factory=datetime.utcnow, alias="lastSeenAt")
 
     model_config = {"populate_by_name": True}
 
@@ -57,7 +53,9 @@ class Participant(BaseModel):
     def validate_display_name(cls, v: str) -> str:
         """Validate display name contains only alphanumeric and spaces."""
         if not all(c.isalnum() or c == " " for c in v):
-            raise ValueError("Display name must contain only alphanumeric characters and spaces")
+            raise ValueError(
+                "Display name must contain only alphanumeric characters and spaces"
+            )
         return v
 
 
@@ -66,9 +64,7 @@ class EditRequest(BaseModel):
 
     participant_id: str = Field(alias="participantId")
     display_name: str = Field(alias="displayName")
-    requested_at: datetime = Field(
-        default_factory=datetime.utcnow, alias="requestedAt"
-    )
+    requested_at: datetime = Field(default_factory=datetime.utcnow, alias="requestedAt")
     status: EditRequestStatus = EditRequestStatus.PENDING
 
     model_config = {"populate_by_name": True}

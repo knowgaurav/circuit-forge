@@ -41,7 +41,7 @@ class SessionService:
     async def create_session(self) -> tuple[Session, str]:
         """
         Create a new collaborative session.
-        
+
         Returns:
             Tuple of (Session, participant_id for the creator)
         """
@@ -86,12 +86,12 @@ class SessionService:
     ) -> Participant:
         """
         Join an existing session.
-        
+
         Args:
             code: Session code
             display_name: User's display name
             participant_id: Optional existing participant ID for rejoin
-            
+
         Returns:
             Participant object
         """
@@ -126,7 +126,10 @@ class SessionService:
 
         # Debug logging
         import logging
-        logging.info(f"Join session: new_id={new_id}, creator_id={session.creator_participant_id}, is_creator={is_creator}, can_edit={can_edit}")
+
+        logging.info(
+            f"Join session: new_id={new_id}, creator_id={session.creator_participant_id}, is_creator={is_creator}, can_edit={can_edit}"
+        )
 
         # Assign color
         color = await self._assign_color(code)
@@ -161,25 +164,17 @@ class SessionService:
         """Get all active participants in a session."""
         return await self._participant_repo.find_active_by_session(code)
 
-    async def mark_participant_inactive(
-        self, code: str, participant_id: str
-    ) -> bool:
+    async def mark_participant_inactive(self, code: str, participant_id: str) -> bool:
         """Mark a participant as inactive (disconnected)."""
         return await self._participant_repo.update_active_status(
             code, participant_id, False
         )
 
-    async def remove_participant(
-        self, code: str, participant_id: str
-    ) -> bool:
+    async def remove_participant(self, code: str, participant_id: str) -> bool:
         """Permanently remove a participant from a session (kick)."""
-        return await self._participant_repo.delete_participant(
-            code, participant_id
-        )
+        return await self._participant_repo.delete_participant(code, participant_id)
 
-    async def mark_participant_active(
-        self, code: str, participant_id: str
-    ) -> bool:
+    async def mark_participant_active(self, code: str, participant_id: str) -> bool:
         """Mark a participant as active (reconnected)."""
         result = await self._participant_repo.update_active_status(
             code, participant_id, True
@@ -197,7 +192,7 @@ class SessionService:
     async def cleanup_inactive_sessions(self) -> int:
         """
         Delete sessions that have been inactive for more than 24 hours.
-        
+
         Returns:
             Number of sessions deleted
         """

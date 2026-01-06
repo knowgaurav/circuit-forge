@@ -64,9 +64,12 @@ Output must be valid JSON matching this schema:
 }}"""
 
 
-LEVEL_CONTENT_SYSTEM_PROMPT = """You are an expert electronics educator creating detailed lesson content.
+LEVEL_CONTENT_SYSTEM_PROMPT = (
+    """You are an expert electronics educator creating detailed lesson content.
 You will generate content for a specific level in a circuit design course.
-""" + TOON_FORMAT_HINT + """
+"""
+    + TOON_FORMAT_HINT
+    + """
 CRITICAL WORKFLOW - YOU MUST FOLLOW THESE STEPS:
 1. Call get_available_components to see all available components
 2. Call get_component_schema for EACH component type you plan to use
@@ -134,6 +137,7 @@ Output must be valid JSON matching this schema:
     }}
   }}
 }}"""
+)
 
 
 # Component reference for fallback mode
@@ -258,7 +262,9 @@ class LLMService:
             try:
                 # For local provider, pass base_url and bridge_token
                 if is_local:
-                    response = await provider.call(api_key, request, base_url=base_url, bridge_token=bridge_token)
+                    response = await provider.call(
+                        api_key, request, base_url=base_url, bridge_token=bridge_token
+                    )
                 else:
                     response = await provider.call(api_key, request)
             except (RateLimitError, QuotaExceededError, ProviderUnavailableError):
@@ -266,27 +272,45 @@ class LLMService:
             except AuthenticationError as e:
                 # Some providers return auth errors when tool calling isn't supported
                 # Try fallback mode first before failing
-                logger.warning(f"Auth error during tool call (may be unsupported tools): {e}, trying fallback mode")
+                logger.warning(
+                    f"Auth error during tool call (may be unsupported tools): {e}, trying fallback mode"
+                )
                 return await self._call_fallback(
-                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-                    base_url=base_url, bridge_token=bridge_token,
+                    provider,
+                    api_key,
+                    system_prompt,
+                    user_prompt,
+                    model,
+                    temperature,
+                    max_tokens,
+                    base_url=base_url,
+                    bridge_token=bridge_token,
                 )
             except Exception as e:
                 logger.warning(f"Tool calling failed: {e}, trying fallback mode")
                 return await self._call_fallback(
-                    provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-                    base_url=base_url, bridge_token=bridge_token,
+                    provider,
+                    api_key,
+                    system_prompt,
+                    user_prompt,
+                    model,
+                    temperature,
+                    max_tokens,
+                    base_url=base_url,
+                    bridge_token=bridge_token,
                 )
 
             total_tokens += response.token_usage
 
             if response.tool_calls:
                 # Add assistant message with tool calls
-                messages.append({
-                    "role": "assistant",
-                    "content": response.raw_content,
-                    "tool_calls": response.tool_calls,
-                })
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": response.raw_content,
+                        "tool_calls": response.tool_calls,
+                    }
+                )
 
                 # Execute each tool call
                 for tool_call in response.tool_calls:
@@ -299,25 +323,35 @@ class LLMService:
                     logger.info(f"Executing tool: {tool_name}")
 
                     # Execute tool (returns TOON-encoded string for token efficiency)
-                    tool_result = self.tool_handler.handle_tool_call(tool_name, tool_args)
+                    tool_result = self.tool_handler.handle_tool_call(
+                        tool_name, tool_args
+                    )
 
                     # Add tool result to messages (already TOON-encoded string)
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call["id"],
-                        "name": tool_name,
-                        "content": tool_result if isinstance(tool_result, str) else json.dumps(tool_result),
-                    })
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tool_call["id"],
+                            "name": tool_name,
+                            "content": tool_result
+                            if isinstance(tool_result, str)
+                            else json.dumps(tool_result),
+                        }
+                    )
 
                     tool_calls_count += 1
 
                     if tool_calls_count >= self.MAX_TOOL_CALLS:
-                        logger.warning(f"Reached max tool calls ({self.MAX_TOOL_CALLS})")
+                        logger.warning(
+                            f"Reached max tool calls ({self.MAX_TOOL_CALLS})"
+                        )
                         break
             else:
                 # LLM finished - check if we got valid content
                 if response.content is not None:
-                    logger.info(f"Tool calling complete: {tool_calls_count} tool calls, {total_tokens} tokens")
+                    logger.info(
+                        f"Tool calling complete: {tool_calls_count} tool calls, {total_tokens} tokens"
+                    )
                     return {
                         "content": response.content,
                         "token_usage": total_tokens,
@@ -325,17 +359,35 @@ class LLMService:
                     }
                 else:
                     # Model returned empty/non-JSON content, try fallback
-                    logger.warning(f"Model returned no parseable JSON content, trying fallback mode")
+                    logger.warning(
+                        f"Model returned no parseable JSON content, trying fallback mode"
+                    )
                     return await self._call_fallback(
-                        provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-                        base_url=base_url, bridge_token=bridge_token,
+                        provider,
+                        api_key,
+                        system_prompt,
+                        user_prompt,
+                        model,
+                        temperature,
+                        max_tokens,
+                        base_url=base_url,
+                        bridge_token=bridge_token,
                     )
 
         # If we exhausted tool calls without getting content, try fallback
-        logger.warning(f"Exceeded max tool calls without valid content, trying fallback mode")
+        logger.warning(
+            f"Exceeded max tool calls without valid content, trying fallback mode"
+        )
         return await self._call_fallback(
-            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-            base_url=base_url, bridge_token=bridge_token,
+            provider,
+            api_key,
+            system_prompt,
+            user_prompt,
+            model,
+            temperature,
+            max_tokens,
+            base_url=base_url,
+            bridge_token=bridge_token,
         )
 
     async def _call_fallback(
@@ -352,7 +404,9 @@ class LLMService:
     ) -> dict[str, Any]:
         """Fallback to non-tool mode with component info embedded in prompt."""
         # Get component info to embed in prompt (use JSON, not TOON, for parsing)
-        components_info = self.tool_handler.handle_tool_call("get_available_components", {}, use_toon=False)
+        components_info = self.tool_handler.handle_tool_call(
+            "get_available_components", {}, use_toon=False
+        )
 
         # Build component reference for the prompt
         component_ref = "=== AVAILABLE COMPONENTS ===\n"
@@ -364,10 +418,10 @@ class LLMService:
         # Modify system prompt to include component info
         enhanced_prompt = system_prompt.replace(
             "IMPORTANT WORKFLOW:",
-            f"{component_ref}\n{COMPONENT_PIN_REFERENCE}\nIMPORTANT:"
+            f"{component_ref}\n{COMPONENT_PIN_REFERENCE}\nIMPORTANT:",
         ).replace(
             "IMPORTANT: Before creating the course plan, you MUST call the get_available_components tool",
-            f"{component_ref}\nIMPORTANT: Use only the components listed above"
+            f"{component_ref}\nIMPORTANT: Use only the components listed above",
         )
 
         logger.info("Using fallback mode with embedded component info")
@@ -394,24 +448,28 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
         # For local provider, pass base_url and bridge_token
         is_local = provider.provider_id == "local"
         if is_local:
-            response = await provider.call(api_key, request, base_url=base_url, bridge_token=bridge_token)
+            response = await provider.call(
+                api_key, request, base_url=base_url, bridge_token=bridge_token
+            )
         else:
             response = await provider.call(api_key, request)
-        
+
         # If content is still None, try to parse raw_content more aggressively
         if response.content is None and response.raw_content:
-            logger.warning("Fallback: Attempting aggressive JSON extraction from raw content")
+            logger.warning(
+                "Fallback: Attempting aggressive JSON extraction from raw content"
+            )
             raw = response.raw_content
             # Remove markdown code blocks if present
-            raw = re.sub(r'```json\s*', '', raw)
-            raw = re.sub(r'```\s*', '', raw)
+            raw = re.sub(r"```json\s*", "", raw)
+            raw = re.sub(r"```\s*", "", raw)
             # Try to find JSON object
             try:
                 # Find the first { and last }
-                start = raw.find('{')
-                end = raw.rfind('}')
+                start = raw.find("{")
+                end = raw.rfind("}")
                 if start != -1 and end != -1 and end > start:
-                    json_str = raw[start:end+1]
+                    json_str = raw[start : end + 1]
                     response = LLMResponse(
                         content=json.loads(json_str),
                         tool_calls=[],
@@ -430,9 +488,13 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
 
         # Post-generation validation and auto-fix for level content
         content = response.content or {}
-        if "practical" in content and "circuitBlueprint" in content.get("practical", {}):
+        if "practical" in content and "circuitBlueprint" in content.get(
+            "practical", {}
+        ):
             blueprint = content["practical"]["circuitBlueprint"]
-            validation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": blueprint}, use_toon=False)
+            validation = self.tool_handler.handle_tool_call(
+                "validate_blueprint", {"blueprint": blueprint}, use_toon=False
+            )
 
             if not validation.get("success"):
                 errors = validation.get("errors", [])
@@ -442,23 +504,29 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
                 fixed_blueprint = self._auto_fix_blueprint(blueprint, errors)
 
                 # Validate again
-                revalidation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": fixed_blueprint}, use_toon=False)
+                revalidation = self.tool_handler.handle_tool_call(
+                    "validate_blueprint", {"blueprint": fixed_blueprint}, use_toon=False
+                )
 
                 if revalidation.get("success"):
                     logger.info("Blueprint auto-fixed successfully")
                     content["practical"]["circuitBlueprint"] = fixed_blueprint
                     result["content"] = content
                 else:
-                    logger.error(f"Blueprint auto-fix failed: {revalidation.get('errors', [])}")
+                    logger.error(
+                        f"Blueprint auto-fix failed: {revalidation.get('errors', [])}"
+                    )
                     result["validation_errors"] = revalidation.get("errors", [])
 
         return result
 
-    def _auto_fix_blueprint(self, blueprint: dict[str, Any], errors: list[str]) -> dict[str, Any]:
+    def _auto_fix_blueprint(
+        self, blueprint: dict[str, Any], errors: list[str]
+    ) -> dict[str, Any]:
         """Attempt to automatically fix common blueprint errors."""
         fixed = {
             "components": list(blueprint.get("components", [])),
-            "wires": list(blueprint.get("wires", []))
+            "wires": list(blueprint.get("wires", [])),
         }
 
         # Track wires to remove
@@ -470,12 +538,16 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
 
             for error in errors:
                 if "Invalid pin" in error and (from_str in error or to_str in error):
-                    logger.info(f"Removing wire with invalid pin: {from_str} -> {to_str}")
+                    logger.info(
+                        f"Removing wire with invalid pin: {from_str} -> {to_str}"
+                    )
                     wires_to_remove.append(i)
                     break
 
                 if "multiple drivers" in error and to_str in error:
-                    logger.info(f"Removing wire causing multiple drivers: {from_str} -> {to_str}")
+                    logger.info(
+                        f"Removing wire causing multiple drivers: {from_str} -> {to_str}"
+                    )
                     wires_to_remove.append(i)
                     break
 
@@ -490,32 +562,42 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
                 # Extract component label and pin from error message
                 # Format: "Floating input: LABEL (TYPE) pin 'PIN' has no connection..."
                 import re as regex
-                match = regex.search(r"Floating input: (\w+) \([^)]+\) pin '(\w+)'", error)
+
+                match = regex.search(
+                    r"Floating input: (\w+) \([^)]+\) pin '(\w+)'", error
+                )
                 if match:
                     label, pin = match.groups()
                     floating_inputs.append((label, pin))
-        
+
         # Add CONST_LOW for each floating input
-        const_count = sum(1 for c in fixed["components"] if c.get("type") == "CONST_LOW")
+        const_count = sum(
+            1 for c in fixed["components"] if c.get("type") == "CONST_LOW"
+        )
         for i, (label, pin) in enumerate(floating_inputs):
             const_label = f"GND{const_count + i + 1}"
             # Find the component position to place CONST_LOW nearby
-            comp = next((c for c in fixed["components"] if c.get("label") == label), None)
+            comp = next(
+                (c for c in fixed["components"] if c.get("label") == label), None
+            )
             if comp:
                 pos = comp.get("position", {"x": 100, "y": 100})
                 # Add CONST_LOW component
-                fixed["components"].append({
-                    "type": "CONST_LOW",
-                    "label": const_label,
-                    "position": {"x": pos["x"] - 80, "y": pos["y"]},
-                    "properties": {}
-                })
+                fixed["components"].append(
+                    {
+                        "type": "CONST_LOW",
+                        "label": const_label,
+                        "position": {"x": pos["x"] - 80, "y": pos["y"]},
+                        "properties": {},
+                    }
+                )
                 # Add wire from CONST_LOW to floating input
-                fixed["wires"].append({
-                    "from": f"{const_label}:OUT",
-                    "to": f"{label}:{pin}"
-                })
-                logger.info(f"Auto-fixed floating input {label}:{pin} with {const_label}")
+                fixed["wires"].append(
+                    {"from": f"{const_label}:OUT", "to": f"{label}:{pin}"}
+                )
+                logger.info(
+                    f"Auto-fixed floating input {label}:{pin} with {const_label}"
+                )
 
         return fixed
 
@@ -554,8 +636,15 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
         user_prompt = f"Create a comprehensive course plan for: {topic}"
 
         result = await self._call_with_tools(
-            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-            base_url=base_url, bridge_token=bridge_token,
+            provider,
+            api_key,
+            system_prompt,
+            user_prompt,
+            model,
+            temperature,
+            max_tokens,
+            base_url=base_url,
+            bridge_token=bridge_token,
         )
 
         content = result["content"]
@@ -563,10 +652,14 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
 
         # Validate response content
         if not content:
-            raise ValueError("LLM returned empty response. Please try again or use a different model.")
-        
+            raise ValueError(
+                "LLM returned empty response. Please try again or use a different model."
+            )
+
         if "levels" not in content or not content["levels"]:
-            raise ValueError(f"LLM response missing 'levels' field. Got: {list(content.keys()) if content else 'None'}")
+            raise ValueError(
+                f"LLM response missing 'levels' field. Got: {list(content.keys()) if content else 'None'}"
+            )
 
         # Parse and validate the response
         levels = [
@@ -645,12 +738,21 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
             level_description=level_outline.description,
             previous_levels="; ".join(previous_levels) if previous_levels else "None",
         )
-        user_prompt = f"Generate detailed content for Level {level_number}: {level_outline.title}"
+        user_prompt = (
+            f"Generate detailed content for Level {level_number}: {level_outline.title}"
+        )
 
         provider = self._get_provider(provider_id)
         result = await self._call_with_tools(
-            provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-            base_url=base_url, bridge_token=bridge_token,
+            provider,
+            api_key,
+            system_prompt,
+            user_prompt,
+            model,
+            temperature,
+            max_tokens,
+            base_url=base_url,
+            bridge_token=bridge_token,
         )
 
         content = result["content"]
