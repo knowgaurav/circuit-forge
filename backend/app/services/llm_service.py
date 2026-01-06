@@ -1,10 +1,11 @@
 """LLM Service for generating course content using multiple providers."""
 
 import json
-import logging
 import re
+import time
 from typing import Any
 
+from app.core.logger import enrich_context, get_logger
 from app.models.circuit import ComponentType
 from app.models.course import (
     CircuitBlueprint,
@@ -28,7 +29,7 @@ from app.services.llm_tools import TOOL_DEFINITIONS, get_tool_handler
 from app.services.prompt_guard import get_prompt_guard
 from app.services.toon_encoder import get_toon_format_hint
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 # Available components for the LLM to use
@@ -561,6 +562,14 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
         Returns:
             Tuple of (CoursePlan, token_usage)
         """
+        llm_start = time.perf_counter()
+        enrich_context(
+            operation="generate_course_plan",
+            course_topic=topic,
+            llm_provider=provider_id,
+            llm_model=model,
+        )
+
         # Process input through prompt guard
         prompt_guard = get_prompt_guard()
         guard_result = prompt_guard.process_input(topic)
@@ -625,6 +634,15 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
             levels=levels,
         )
 
+        llm_duration = (time.perf_counter() - llm_start) * 1000
+        enrich_context(
+            llm_latency_ms=round(llm_duration, 2),
+            llm_tokens_used=token_usage,
+            llm_tool_calls_count=result.get("tool_calls_count", 0),
+            course_levels_count=len(levels),
+            course_difficulty=content["difficulty"],
+        )
+
         return course_plan, token_usage
 
     async def generate_level_content(
@@ -655,6 +673,16 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
         Returns:
             Tuple of (TheorySection, PracticalSection, token_usage)
         """
+        llm_start = time.perf_counter()
+        enrich_context(
+            operation="generate_level_content",
+            course_topic=course_plan.topic,
+            level_number=level_number,
+            total_levels=len(course_plan.levels),
+            llm_provider=provider_id,
+            llm_model=model,
+        )
+
         # Get prompt guard for output validation
         prompt_guard = get_prompt_guard()
 
@@ -731,6 +759,14 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
             validationCriteria=practical_data["validationCriteria"],
             commonMistakes=practical_data.get("commonMistakes", []),
             circuitBlueprint=circuit_blueprint,
+        )
+
+        llm_duration = (time.perf_counter() - llm_start) * 1000
+        enrich_context(
+            llm_latency_ms=round(llm_duration, 2),
+            llm_tokens_used=token_usage,
+            llm_tool_calls_count=result.get("tool_calls_count", 0),
+            level_has_blueprint=circuit_blueprint is not None,
         )
 
         return theory, practical, token_usage

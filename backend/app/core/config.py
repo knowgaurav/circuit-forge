@@ -39,5 +39,10 @@ class Settings(BaseSettings):
     openai_max_tokens: int = 4000
     openai_temperature: float = 0.7
 
+    # Axiom Logging Configuration
+    axiom_token: str | None = None
+    axiom_org_id: str | None = None
+    axiom_dataset: str = "circuitforge-logs"
+
 
 settings = Settings()

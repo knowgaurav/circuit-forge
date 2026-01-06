@@ -1,10 +1,10 @@
 """Course Service for managing course generation and progress."""
 
-import logging
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.core.logger import enrich_context, get_logger
 from app.models.course import (
     CourseEnrollment,
     CoursePlan,
@@ -24,7 +24,7 @@ from app.repositories.course_repository import (
 )
 from app.services.llm_service import llm_service
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 # Predefined topic suggestions
@@ -138,6 +138,7 @@ class CourseService:
             base_url: Tunnel URL for local LLM
             bridge_token: Bridge token for local LLM
         """
+        enrich_context(operation="create_course", course_topic=topic)
         logger.info(f"Generating course plan for topic: {topic} using {provider_id}/{model}")
 
         # Generate plan using user's API key
@@ -157,6 +158,11 @@ class CourseService:
         plan_id = await self.course_plan_repo.create(course_plan)
         course_plan.id = plan_id
 
+        enrich_context(
+            course_id=str(plan_id),
+            course_levels_count=len(course_plan.levels),
+            course_difficulty=course_plan.difficulty.value,
+        )
         logger.info(
             f"Created course plan {plan_id} with {len(course_plan.levels)} levels, "
             f"used {token_usage} tokens"

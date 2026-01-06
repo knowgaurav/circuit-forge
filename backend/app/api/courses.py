@@ -1,12 +1,12 @@
 """Course API endpoints for LLM Course Generator."""
 
-import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.core.database import db_manager
+from app.core.logger import enrich_context, get_logger
 from app.exceptions.base import AppException, NotFoundException, ValidationException
 from app.models.course import (
     CourseEnrollment,
@@ -29,7 +29,7 @@ from app.services.llm_providers import (
     RateLimitError,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 router = APIRouter()
 

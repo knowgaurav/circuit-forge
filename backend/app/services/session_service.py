@@ -8,12 +8,15 @@ from uuid import uuid4
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.config import settings
+from app.core.logger import enrich_context, get_logger
 from app.exceptions.base import NotFoundException, ValidationException
 from app.models.circuit import CircuitState
 from app.models.session import Participant, Role, Session
 from app.repositories.event_repository import EventRepository
 from app.repositories.participant_repository import ParticipantRepository
 from app.repositories.session_repository import SessionRepository
+
+logger = get_logger()
 
 # Cursor colors for participants (8 distinct colors)
 CURSOR_COLORS = [
@@ -64,6 +67,9 @@ class SessionService:
         # Initialize empty circuit state snapshot
         initial_state = CircuitState.create_empty(code)
         await self._event_repo.save_snapshot(code, 0, initial_state)
+
+        enrich_context(operation="create_session", session_code=code)
+        logger.info(f"Created new session: {code}")
 
         return session, creator_id
 
@@ -124,9 +130,13 @@ class SessionService:
         role = Role.TEACHER if is_creator else Role.STUDENT
         can_edit = is_creator  # Teacher (creator) can edit by default
 
-        # Debug logging
-        import logging
-        logging.info(f"Join session: new_id={new_id}, creator_id={session.creator_participant_id}, is_creator={is_creator}, can_edit={can_edit}")
+        enrich_context(
+            operation="join_session",
+            session_code=code,
+            participant_role=role.value,
+            is_creator=is_creator,
+        )
+        logger.info(f"Join session: new_id={new_id}, creator_id={session.creator_participant_id}, is_creator={is_creator}, can_edit={can_edit}")
 
         # Assign color
         color = await self._assign_color(code)
