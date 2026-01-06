@@ -39,7 +39,9 @@ class OutputValidator:
             for pattern, name in self.ANOMALY_PATTERNS
         ]
 
-    def validate(self, output: dict[str, Any] | None, raw_content: str | None = None) -> OutputValidationResult:
+    def validate(
+        self, output: dict[str, Any] | None, raw_content: str | None = None
+    ) -> OutputValidationResult:
         """Validate LLM output for potential information leakage."""
         leaked_content: list[str] = []
         anomalies: list[str] = []
@@ -84,7 +86,13 @@ class OutputValidator:
         anomalies = list(base_result.anomalies)
 
         # Check required fields exist
-        required_fields = ["title", "description", "difficulty", "estimatedHours", "levels"]
+        required_fields = [
+            "title",
+            "description",
+            "difficulty",
+            "estimatedHours",
+            "levels",
+        ]
         for field in required_fields:
             if field not in output:
                 anomalies.append(f"missing_field_{field}")
@@ -146,7 +154,9 @@ class OutputValidator:
             anomalies=anomalies,
         )
 
-    def _output_to_text(self, output: dict[str, Any] | None, raw_content: str | None) -> str:
+    def _output_to_text(
+        self, output: dict[str, Any] | None, raw_content: str | None
+    ) -> str:
         """Convert output to searchable text."""
         parts = []
 

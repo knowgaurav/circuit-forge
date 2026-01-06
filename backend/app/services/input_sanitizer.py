@@ -118,7 +118,9 @@ class InputSanitizer:
 
         for pattern in dangerous_tags:
             if re.search(pattern, text, re.IGNORECASE):
-                text = re.sub(pattern, lambda m: f"[{m.group(0)}]", text, flags=re.IGNORECASE)
+                text = re.sub(
+                    pattern, lambda m: f"[{m.group(0)}]", text, flags=re.IGNORECASE
+                )
                 escaped = True
 
         return text, escaped

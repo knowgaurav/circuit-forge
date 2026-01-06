@@ -13,26 +13,47 @@ MAX_TOPIC_LENGTH = 500
 # Patterns that indicate prompt injection attempts
 BLOCKED_PATTERNS = [
     # Direct instruction override attempts
-    (r"ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?)", "instruction_override"),
+    (
+        r"ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?)",
+        "instruction_override",
+    ),
     (r"ignore\s+above", "instruction_override"),
-    (r"disregard\s+(all\s+)?(previous|above|prior|your)\s+(instructions?|prompts?|rules?)", "instruction_override"),
+    (
+        r"disregard\s+(all\s+)?(previous|above|prior|your)\s+(instructions?|prompts?|rules?)",
+        "instruction_override",
+    ),
     (r"disregard\s+your\s+\w+\s+prompt", "instruction_override"),
-    (r"forget\s+(all\s+)?(previous|above|prior|your|everything)", "instruction_override"),
-    (r"override\s+(all\s+)?(previous|above|prior|your)\s+(instructions?|prompts?|rules?)", "instruction_override"),
-    (r"do\s+not\s+follow\s+(the\s+)?(previous|above|prior|system)\s+(instructions?|prompts?|rules?)", "instruction_override"),
-
+    (
+        r"forget\s+(all\s+)?(previous|above|prior|your|everything)",
+        "instruction_override",
+    ),
+    (
+        r"override\s+(all\s+)?(previous|above|prior|your)\s+(instructions?|prompts?|rules?)",
+        "instruction_override",
+    ),
+    (
+        r"do\s+not\s+follow\s+(the\s+)?(previous|above|prior|system)\s+(instructions?|prompts?|rules?)",
+        "instruction_override",
+    ),
     # System prompt extraction
-    (r"(show|reveal|display|print|output)\s+(me\s+)?(your|the)\s+(system\s+)?(prompt|instructions?|rules?)", "prompt_extraction"),
-    (r"tell\s+me\s+(your|the)\s+(system\s+)?(prompt|instructions?|rules?)", "prompt_extraction"),
-    (r"what\s+(are|is)\s+your\s+(system\s+)?(prompt|instructions?|rules?)", "prompt_extraction"),
+    (
+        r"(show|reveal|display|print|output)\s+(me\s+)?(your|the)\s+(system\s+)?(prompt|instructions?|rules?)",
+        "prompt_extraction",
+    ),
+    (
+        r"tell\s+me\s+(your|the)\s+(system\s+)?(prompt|instructions?|rules?)",
+        "prompt_extraction",
+    ),
+    (
+        r"what\s+(are|is)\s+your\s+(system\s+)?(prompt|instructions?|rules?)",
+        "prompt_extraction",
+    ),
     (r"repeat\s+(your|the)\s+(system\s+)?(prompt|instructions?)", "prompt_extraction"),
-
     # Role manipulation
     (r"you\s+are\s+now\s+(a|an)\s+", "role_manipulation"),
     (r"pretend\s+(you\s+are|to\s+be)\s+", "role_manipulation"),
     (r"act\s+as\s+(if\s+you\s+are\s+)?(a|an)\s+", "role_manipulation"),
     (r"roleplay\s+as\s+", "role_manipulation"),
-
     # Jailbreak patterns
     (r"\bDAN\b", "jailbreak"),
     (r"developer\s+mode", "jailbreak"),
@@ -40,7 +61,6 @@ BLOCKED_PATTERNS = [
     (r"\[INST\]", "jailbreak"),
     (r"<\|im_start\|>", "jailbreak"),
     (r"<\|system\|>", "jailbreak"),
-
     # Code injection
     (r";\s*DROP\s+TABLE", "sql_injection"),
     (r"<script", "xss"),
@@ -87,7 +107,9 @@ class InputValidator:
                 isValid=False,
                 threatLevel=ThreatLevel.BLOCKED,
                 blockedPatterns=["input_too_long"],
-                warnings=[f"Input exceeds maximum length of {MAX_TOPIC_LENGTH} characters"],
+                warnings=[
+                    f"Input exceeds maximum length of {MAX_TOPIC_LENGTH} characters"
+                ],
             )
 
         # Check for empty input
@@ -119,7 +141,9 @@ class InputValidator:
             if pattern.search(input_text):
                 blocked_patterns.append(name)
                 threat_level = ThreatLevel.BLOCKED
-                logger.warning(f"Blocked pattern detected: {name} in input: {input_text[:100]}...")
+                logger.warning(
+                    f"Blocked pattern detected: {name} in input: {input_text[:100]}..."
+                )
 
         # If already blocked, return early
         if threat_level == ThreatLevel.BLOCKED:

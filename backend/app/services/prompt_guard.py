@@ -63,8 +63,8 @@ class PromptGuard:
             sanitizedInput=sanitization_result.sanitized,
             threatLevel=validation_result.threat_level,
             blockedReason=None,
-            warnings=validation_result.warnings +
-                     [f"Sanitized: {m}" for m in sanitization_result.modifications],
+            warnings=validation_result.warnings
+            + [f"Sanitized: {m}" for m in sanitization_result.modifications],
         )
 
     def wrap_user_input(self, sanitized_topic: str) -> str:
