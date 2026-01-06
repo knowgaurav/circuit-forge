@@ -15,11 +15,11 @@ import {
 } from '@/components/ui';
 import { Canvas, SimulationOverlay } from '@/components/circuit';
 import { ComponentPalette } from '@/components/circuit/ComponentPalette';
-import { createComponentInstance, ComponentDefinition } from '@/constants/components';
+import type { ComponentDefinition } from '@/constants/components';
 import { useCircuitStore, useUIStore, Tool } from '@/stores';
 import { exportAsPng, exportAsJson, importFromJson } from '@/services/export';
 import type { SimulationResult } from '@/services/simulation';
-import type { Position, Annotation, CircuitState } from '@/types';
+import type { Position, Annotation, CircuitState, CircuitComponent } from '@/types';
 
 const PLAYGROUND_AUTOSAVE_KEY = 'circuitforge_playground_autosave';
 const SAVED_CIRCUITS_KEY = 'circuitforge_saved_circuits';
@@ -203,16 +203,6 @@ export default function PlaygroundPage() {
 
     const handleAnnotationCreate = (annotation: Annotation) => {
         circuitStore.addAnnotation(annotation);
-    };
-
-    const handleComponentDrop = (position: Position) => {
-        if (!draggingComponent) return;
-        const existingLabels = circuitStore.components.map(c => c.label).filter(Boolean);
-        const component = createComponentInstance(draggingComponent.type, position, existingLabels);
-        if (component) {
-            circuitStore.addComponent(component);
-        }
-        setDraggingComponent(null);
     };
 
     const handleWireCreate = (fromComponentId: string, fromPinId: string, toComponentId: string, toPinId: string) => {
@@ -575,7 +565,9 @@ export default function PlaygroundPage() {
                         isSimulationRunning={isSimulationRunning}
                         onComponentMove={handleComponentMove}
                         onAnnotationCreate={handleAnnotationCreate}
-                        onComponentDrop={handleComponentDrop}
+                        onComponentAdd={(component) => {
+                            circuitStore.addComponent(component as CircuitComponent);
+                        }}
                         onWireCreate={handleWireCreate}
                         onSwitchToggle={(componentId) => {
                             circuitStore.toggleSwitchState(componentId);
