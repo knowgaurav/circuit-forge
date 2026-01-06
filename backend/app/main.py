@@ -9,15 +9,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import components, courses, health, sessions
 from app.core.config import settings
 from app.core.database import db_manager
+from app.core.logger import get_logger
+from app.middleware import WideEventMiddleware
+
+logger = get_logger()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager."""
     # Startup
+    logger.info("Starting CircuitForge API", extra={"version": "0.1.0"})
     await db_manager.connect()
     yield
     # Shutdown
+    logger.info("Shutting down CircuitForge API")
     await db_manager.disconnect()
 
 
@@ -40,6 +46,9 @@ async def root():
         "health": "/health",
     }
 
+# Wide event logging middleware (must be added first to wrap all requests)
+app.add_middleware(WideEventMiddleware)
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -47,6 +56,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Trace-ID", "X-Request-ID"],
 )
 
 # Include routers
