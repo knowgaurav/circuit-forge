@@ -2,9 +2,10 @@
 LLM Tool Functions - OpenAI-compatible tool definitions and handlers.
 """
 
-from typing import Any
+from typing import Any, Literal, overload
 
 from app.services.component_registry import ComponentRegistry, get_component_registry
+from app.services.toon_encoder import encode_for_llm
 
 # OpenAI-compatible tool definitions
 TOOL_DEFINITIONS = [
@@ -110,8 +111,29 @@ class ToolHandler:
         self.registry = registry or get_component_registry()
         self._circuit_states: dict[str, dict[str, Any]] = {}
 
-    def handle_tool_call(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
-        """Route tool calls to appropriate handlers."""
+    @overload
+    def handle_tool_call(
+        self, name: str, arguments: dict[str, Any], use_toon: Literal[True] = ...
+    ) -> str: ...
+
+    @overload
+    def handle_tool_call(
+        self, name: str, arguments: dict[str, Any], use_toon: Literal[False]
+    ) -> dict[str, Any]: ...
+
+    def handle_tool_call(
+        self, name: str, arguments: dict[str, Any], use_toon: bool = True
+    ) -> dict[str, Any] | str:
+        """Route tool calls to appropriate handlers.
+
+        Args:
+            name: Tool function name
+            arguments: Tool arguments
+            use_toon: If True, encode response as TOON for token efficiency
+
+        Returns:
+            Tool response as dict (JSON) or str (TOON)
+        """
         handlers = {
             "get_available_components": self._handle_get_components,
             "get_component_schema": self._handle_get_schema,
@@ -120,11 +142,14 @@ class ToolHandler:
         }
         handler = handlers.get(name)
         if not handler:
-            return {"success": False, "error": f"Unknown tool: {name}"}
+            result = {"success": False, "error": f"Unknown tool: {name}"}
+            return encode_for_llm(result) if use_toon else result
         try:
-            return handler(arguments)
+            result = handler(arguments)
+            return encode_for_llm(result) if use_toon else result
         except Exception as e:
-            return {"success": False, "error": str(e)}
+            result = {"success": False, "error": str(e)}
+            return encode_for_llm(result) if use_toon else result
 
     def set_circuit_state(self, session_id: str, state: dict[str, Any]) -> None:
         """Store circuit state for a session."""

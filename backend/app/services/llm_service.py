@@ -25,6 +25,7 @@ from app.services.llm_providers import (
     RateLimitError,
 )
 from app.services.llm_tools import TOOL_DEFINITIONS, get_tool_handler
+from app.services.toon_encoder import get_toon_format_hint
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +34,11 @@ logger = logging.getLogger(__name__)
 AVAILABLE_COMPONENTS = [ct.value for ct in ComponentType]
 
 
-COURSE_PLAN_SYSTEM_PROMPT = """You are an expert electronics educator creating circuit design courses.
-You will generate a structured course plan for building electronic circuits.
+TOON_FORMAT_HINT = get_toon_format_hint()
 
+COURSE_PLAN_SYSTEM_PROMPT = f"""You are an expert electronics educator creating circuit design courses.
+You will generate a structured course plan for building electronic circuits.
+{TOON_FORMAT_HINT}
 IMPORTANT: Before creating the course plan, you MUST call the get_available_components tool to see what components are available in CircuitForge.
 
 Rules:
@@ -63,7 +66,7 @@ Output must be valid JSON matching this schema:
 
 LEVEL_CONTENT_SYSTEM_PROMPT = """You are an expert electronics educator creating detailed lesson content.
 You will generate content for a specific level in a circuit design course.
-
+""" + TOON_FORMAT_HINT + """
 CRITICAL WORKFLOW - YOU MUST FOLLOW THESE STEPS:
 1. Call get_available_components to see all available components
 2. Call get_component_schema for EACH component type you plan to use
@@ -295,15 +298,15 @@ class LLMService:
 
                     logger.info(f"Executing tool: {tool_name}")
 
-                    # Execute tool
+                    # Execute tool (returns TOON-encoded string for token efficiency)
                     tool_result = self.tool_handler.handle_tool_call(tool_name, tool_args)
 
-                    # Add tool result to messages
+                    # Add tool result to messages (already TOON-encoded string)
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call["id"],
                         "name": tool_name,
-                        "content": json.dumps(tool_result),
+                        "content": tool_result if isinstance(tool_result, str) else json.dumps(tool_result),
                     })
 
                     tool_calls_count += 1
@@ -348,8 +351,8 @@ class LLMService:
         bridge_token: str | None = None,
     ) -> dict[str, Any]:
         """Fallback to non-tool mode with component info embedded in prompt."""
-        # Get component info to embed in prompt
-        components_info = self.tool_handler.handle_tool_call("get_available_components", {})
+        # Get component info to embed in prompt (use JSON, not TOON, for parsing)
+        components_info = self.tool_handler.handle_tool_call("get_available_components", {}, use_toon=False)
 
         # Build component reference for the prompt
         component_ref = "=== AVAILABLE COMPONENTS ===\n"
@@ -429,7 +432,7 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
         content = response.content or {}
         if "practical" in content and "circuitBlueprint" in content.get("practical", {}):
             blueprint = content["practical"]["circuitBlueprint"]
-            validation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": blueprint})
+            validation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": blueprint}, use_toon=False)
 
             if not validation.get("success"):
                 errors = validation.get("errors", [])
@@ -439,7 +442,7 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
                 fixed_blueprint = self._auto_fix_blueprint(blueprint, errors)
 
                 # Validate again
-                revalidation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": fixed_blueprint})
+                revalidation = self.tool_handler.handle_tool_call("validate_blueprint", {"blueprint": fixed_blueprint}, use_toon=False)
 
                 if revalidation.get("success"):
                     logger.info("Blueprint auto-fixed successfully")
