@@ -36,11 +36,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: '2-input AND gate',
         width: 60,
         height: 40,
-        pins: [
-            inputPin('A', -30, -10),
-            inputPin('B', -30, 10),
-            outputPin('Y', 30, 0),
-        ],
+        pins: [inputPin('A', -30, -10), inputPin('B', -30, 10), outputPin('Y', 30, 0)],
     },
     {
         type: 'OR_2',
@@ -49,11 +45,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: '2-input OR gate',
         width: 60,
         height: 40,
-        pins: [
-            inputPin('A', -30, -10),
-            inputPin('B', -30, 10),
-            outputPin('Y', 30, 0),
-        ],
+        pins: [inputPin('A', -30, -10), inputPin('B', -30, 10), outputPin('Y', 30, 0)],
     },
     {
         type: 'NOT',
@@ -62,10 +54,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Inverter',
         width: 50,
         height: 30,
-        pins: [
-            inputPin('A', -25, 0),
-            outputPin('Y', 25, 0),
-        ],
+        pins: [inputPin('A', -25, 0), outputPin('Y', 25, 0)],
     },
     {
         type: 'NAND_2',
@@ -74,11 +63,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: '2-input NAND gate',
         width: 60,
         height: 40,
-        pins: [
-            inputPin('A', -30, -10),
-            inputPin('B', -30, 10),
-            outputPin('Y', 30, 0),
-        ],
+        pins: [inputPin('A', -30, -10), inputPin('B', -30, 10), outputPin('Y', 30, 0)],
     },
     {
         type: 'NOR_2',
@@ -87,11 +72,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: '2-input NOR gate',
         width: 60,
         height: 40,
-        pins: [
-            inputPin('A', -30, -10),
-            inputPin('B', -30, 10),
-            outputPin('Y', 30, 0),
-        ],
+        pins: [inputPin('A', -30, -10), inputPin('B', -30, 10), outputPin('Y', 30, 0)],
     },
     {
         type: 'XOR_2',
@@ -100,11 +81,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: '2-input XOR gate',
         width: 60,
         height: 40,
-        pins: [
-            inputPin('A', -30, -10),
-            inputPin('B', -30, 10),
-            outputPin('Y', 30, 0),
-        ],
+        pins: [inputPin('A', -30, -10), inputPin('B', -30, 10), outputPin('Y', 30, 0)],
     },
     {
         type: 'BUFFER',
@@ -113,10 +90,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Buffer gate',
         width: 50,
         height: 30,
-        pins: [
-            inputPin('A', -25, 0),
-            outputPin('Y', 25, 0),
-        ],
+        pins: [inputPin('A', -25, 0), outputPin('Y', 25, 0)],
     },
 
     // Input Devices
@@ -127,9 +101,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'On/Off toggle switch',
         width: 40,
         height: 40,
-        pins: [
-            outputPin('OUT', 20, 0),
-        ],
+        pins: [outputPin('OUT', 20, 0)],
     },
     {
         type: 'SWITCH_PUSH',
@@ -138,9 +110,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Momentary push button',
         width: 40,
         height: 40,
-        pins: [
-            outputPin('OUT', 20, 0),
-        ],
+        pins: [outputPin('OUT', 20, 0)],
     },
     {
         type: 'CLOCK',
@@ -149,9 +119,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Clock signal generator',
         width: 50,
         height: 40,
-        pins: [
-            outputPin('CLK', 25, 0),
-        ],
+        pins: [outputPin('CLK', 25, 0)],
     },
     {
         type: 'CONST_HIGH',
@@ -160,9 +128,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Constant HIGH signal',
         width: 30,
         height: 30,
-        pins: [
-            outputPin('OUT', 15, 0),
-        ],
+        pins: [outputPin('OUT', 15, 0)],
     },
     {
         type: 'CONST_LOW',
@@ -171,9 +137,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Constant LOW signal',
         width: 30,
         height: 30,
-        pins: [
-            outputPin('OUT', 15, 0),
-        ],
+        pins: [outputPin('OUT', 15, 0)],
     },
     {
         type: 'DIP_SWITCH_4',
@@ -212,9 +176,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Red light-emitting diode',
         width: 30,
         height: 30,
-        pins: [
-            inputPin('IN', -15, 0),
-        ],
+        pins: [inputPin('IN', -15, 0)],
     },
     {
         type: 'LED_GREEN',
@@ -223,9 +185,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Green light-emitting diode',
         width: 30,
         height: 30,
-        pins: [
-            inputPin('IN', -15, 0),
-        ],
+        pins: [inputPin('IN', -15, 0)],
     },
     {
         type: 'LED_BLUE',
@@ -234,9 +194,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Blue light-emitting diode',
         width: 30,
         height: 30,
-        pins: [
-            inputPin('IN', -15, 0),
-        ],
+        pins: [inputPin('IN', -15, 0)],
     },
     {
         type: 'LED_YELLOW',
@@ -245,9 +203,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Yellow light-emitting diode',
         width: 30,
         height: 30,
-        pins: [
-            inputPin('IN', -15, 0),
-        ],
+        pins: [inputPin('IN', -15, 0)],
     },
     {
         type: 'DISPLAY_7SEG',
@@ -279,7 +235,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
             inputPin('D', -30, -15),
             inputPin('CLK', -30, 15),
             outputPin('Q', 30, -15),
-            outputPin('Q\'', 30, 15),
+            outputPin("Q'", 30, 15),
         ],
     },
     {
@@ -293,7 +249,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
             inputPin('S', -30, -15),
             inputPin('R', -30, 15),
             outputPin('Q', 30, -15),
-            outputPin('Q\'', 30, 15),
+            outputPin("Q'", 30, 15),
         ],
     },
     {
@@ -308,7 +264,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
             inputPin('CLK', -30, 0),
             inputPin('K', -30, 20),
             outputPin('Q', 30, -15),
-            outputPin('Q\'', 30, 15),
+            outputPin("Q'", 30, 15),
         ],
     },
 
@@ -454,10 +410,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'DC motor with direction control',
         width: 50,
         height: 50,
-        pins: [
-            inputPin('FWD', -25, -10),
-            inputPin('REV', -25, 10),
-        ],
+        pins: [inputPin('FWD', -25, -10), inputPin('REV', -25, 10)],
     },
 
     // Power
@@ -468,9 +421,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: '+5V power supply',
         width: 30,
         height: 30,
-        pins: [
-            outputPin('VCC', 0, 15),
-        ],
+        pins: [outputPin('VCC', 0, 15)],
     },
     {
         type: 'VCC_3V3',
@@ -479,9 +430,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: '+3.3V power supply',
         width: 30,
         height: 30,
-        pins: [
-            outputPin('VCC', 0, 15),
-        ],
+        pins: [outputPin('VCC', 0, 15)],
     },
     {
         type: 'GROUND',
@@ -490,9 +439,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Ground connection',
         width: 30,
         height: 30,
-        pins: [
-            inputPin('GND', 0, -15),
-        ],
+        pins: [inputPin('GND', 0, -15)],
     },
 
     // Passive Components
@@ -503,10 +450,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Resistor for current limiting',
         width: 60,
         height: 20,
-        pins: [
-            inputPin('IN', -30, 0),
-            outputPin('OUT', 30, 0),
-        ],
+        pins: [inputPin('IN', -30, 0), outputPin('OUT', 30, 0)],
     },
     {
         type: 'CAPACITOR',
@@ -515,10 +459,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Capacitor for filtering',
         width: 30,
         height: 40,
-        pins: [
-            inputPin('IN', 0, -20),
-            outputPin('OUT', 0, 20),
-        ],
+        pins: [inputPin('IN', 0, -20), outputPin('OUT', 0, 20)],
     },
     {
         type: 'DIODE',
@@ -527,10 +468,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Diode for one-way current flow',
         width: 50,
         height: 20,
-        pins: [
-            inputPin('A', -25, 0),
-            outputPin('K', 25, 0),
-        ],
+        pins: [inputPin('A', -25, 0), outputPin('K', 25, 0)],
     },
 
     // Connectors
@@ -541,11 +479,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Wire junction point',
         width: 20,
         height: 20,
-        pins: [
-            inputPin('IN', -10, 0),
-            outputPin('OUT1', 10, -5),
-            outputPin('OUT2', 10, 5),
-        ],
+        pins: [inputPin('IN', -10, 0), outputPin('OUT1', 10, -5), outputPin('OUT2', 10, 5)],
     },
     {
         type: 'PROBE',
@@ -554,9 +488,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
         description: 'Signal probe for debugging',
         width: 30,
         height: 30,
-        pins: [
-            inputPin('IN', -15, 0),
-        ],
+        pins: [inputPin('IN', -15, 0)],
     },
 ];
 
@@ -581,51 +513,51 @@ export function getComponentDefinition(type: ComponentType): ComponentDefinition
 
 // Label prefix mapping for component types
 const LABEL_PREFIXES: Record<string, string> = {
-    'AND_2': 'AND',
-    'AND_3': 'AND',
-    'AND_4': 'AND',
-    'OR_2': 'OR',
-    'OR_3': 'OR',
-    'OR_4': 'OR',
-    'NOT': 'NOT',
-    'NAND_2': 'NAND',
-    'NAND_3': 'NAND',
-    'NOR_2': 'NOR',
-    'NOR_3': 'NOR',
-    'XOR_2': 'XOR',
-    'XNOR_2': 'XNOR',
-    'BUFFER': 'BUF',
-    'SR_LATCH': 'SR',
-    'D_FLIPFLOP': 'DFF',
-    'JK_FLIPFLOP': 'JKFF',
-    'T_FLIPFLOP': 'TFF',
-    'MUX_2TO1': 'MUX',
-    'MUX_4TO1': 'MUX',
-    'DEMUX_1TO2': 'DEMUX',
-    'DECODER_2TO4': 'DEC',
-    'SWITCH_TOGGLE': 'SW',
-    'SWITCH_PUSH': 'BTN',
-    'DIP_SWITCH_4': 'DIP',
-    'NUMERIC_INPUT': 'NUM',
-    'CLOCK': 'CLK',
-    'CONST_HIGH': 'VCC',
-    'CONST_LOW': 'GND',
-    'LED_RED': 'LED',
-    'LED_GREEN': 'LED',
-    'LED_YELLOW': 'LED',
-    'LED_BLUE': 'LED',
-    'LED_RGB': 'RGB',
-    'DISPLAY_7SEG': '7SEG',
-    'BUZZER': 'BUZ',
-    'MOTOR_DC': 'MOT',
-    'VCC_5V': 'VCC',
-    'VCC_3V3': 'VCC',
-    'GROUND': 'GND',
-    'RESISTOR': 'R',
-    'CAPACITOR': 'C',
-    'DIODE': 'D',
-    'JUNCTION': 'J',
-    'PROBE': 'PRB',
+    AND_2: 'AND',
+    AND_3: 'AND',
+    AND_4: 'AND',
+    OR_2: 'OR',
+    OR_3: 'OR',
+    OR_4: 'OR',
+    NOT: 'NOT',
+    NAND_2: 'NAND',
+    NAND_3: 'NAND',
+    NOR_2: 'NOR',
+    NOR_3: 'NOR',
+    XOR_2: 'XOR',
+    XNOR_2: 'XNOR',
+    BUFFER: 'BUF',
+    SR_LATCH: 'SR',
+    D_FLIPFLOP: 'DFF',
+    JK_FLIPFLOP: 'JKFF',
+    T_FLIPFLOP: 'TFF',
+    MUX_2TO1: 'MUX',
+    MUX_4TO1: 'MUX',
+    DEMUX_1TO2: 'DEMUX',
+    DECODER_2TO4: 'DEC',
+    SWITCH_TOGGLE: 'SW',
+    SWITCH_PUSH: 'BTN',
+    DIP_SWITCH_4: 'DIP',
+    NUMERIC_INPUT: 'NUM',
+    CLOCK: 'CLK',
+    CONST_HIGH: 'VCC',
+    CONST_LOW: 'GND',
+    LED_RED: 'LED',
+    LED_GREEN: 'LED',
+    LED_YELLOW: 'LED',
+    LED_BLUE: 'LED',
+    LED_RGB: 'RGB',
+    DISPLAY_7SEG: '7SEG',
+    BUZZER: 'BUZ',
+    MOTOR_DC: 'MOT',
+    VCC_5V: 'VCC',
+    VCC_3V3: 'VCC',
+    GROUND: 'GND',
+    RESISTOR: 'R',
+    CAPACITOR: 'C',
+    DIODE: 'D',
+    JUNCTION: 'J',
+    PROBE: 'PRB',
 };
 
 // Counter for generating unique labels per type
@@ -655,7 +587,7 @@ export function generateComponentLabel(type: ComponentType, existingLabels: stri
 
 // Reset label counters (useful when starting a new session)
 export function resetLabelCounters(): void {
-    Object.keys(labelCounters).forEach(key => {
+    Object.keys(labelCounters).forEach((key) => {
         labelCounters[key] = 0;
     });
 }
@@ -665,7 +597,15 @@ export function createComponentInstance(
     type: ComponentType,
     position: Position,
     existingLabels: string[] = []
-): { id: string; type: ComponentType; label: string; position: Position; rotation: 0; properties: Record<string, unknown>; pins: Pin[] } | null {
+): {
+    id: string;
+    type: ComponentType;
+    label: string;
+    position: Position;
+    rotation: 0;
+    properties: Record<string, unknown>;
+    pins: Pin[];
+} | null {
     const def = getComponentDefinition(type);
     if (!def) return null;
 
@@ -679,11 +619,13 @@ export function createComponentInstance(
         position,
         rotation: 0,
         properties: {},
-        pins: def.pins.map((pin, index): Pin => ({
-            id: `${componentId}-pin-${index}`,
-            name: pin.name,
-            type: pin.type,
-            position: pin.position,
-        })),
+        pins: def.pins.map(
+            (pin, index): Pin => ({
+                id: `${componentId}-pin-${index}`,
+                name: pin.name,
+                type: pin.type,
+                position: pin.position,
+            })
+        ),
     };
 }

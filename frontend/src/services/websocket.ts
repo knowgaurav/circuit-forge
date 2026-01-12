@@ -227,7 +227,10 @@ export class WebSocketClient {
         if (!this.cursorThrottleTimeout) {
             this.cursorThrottleTimeout = setTimeout(() => {
                 if (this.lastCursorPosition) {
-                    this.send({ type: 'presence:cursor:move', payload: { position: this.lastCursorPosition } });
+                    this.send({
+                        type: 'presence:cursor:move',
+                        payload: { position: this.lastCursorPosition },
+                    });
                 }
                 this.cursorThrottleTimeout = null;
             }, 50);

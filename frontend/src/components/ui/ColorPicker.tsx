@@ -23,13 +23,17 @@ export interface ColorPickerProps {
 
 export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
     return (
-        <div className={clsx('flex flex-wrap gap-1', className)} role="radiogroup" aria-label="Color picker">
+        <div
+            className={clsx('flex flex-wrap gap-1', className)}
+            role="radiogroup"
+            aria-label="Color picker"
+        >
             {COLORS.map((color) => (
                 <button
                     key={color.value}
                     className={clsx(
-                        'w-6 h-6 rounded-full border-2 transition-transform hover:scale-110',
-                        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+                        'h-6 w-6 rounded-full border-2 transition-transform hover:scale-110',
+                        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
                         'flex items-center justify-center',
                         value === color.value ? 'border-gray-900' : 'border-gray-300'
                     )}
@@ -42,7 +46,7 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
                     {value === color.value && (
                         <Check
                             className={clsx(
-                                'w-3 h-3',
+                                'h-3 w-3',
                                 color.value === '#FFFFFF' || color.value === '#FFD433'
                                     ? 'text-gray-900'
                                     : 'text-white'

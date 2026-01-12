@@ -22,17 +22,19 @@ describe('TabSyncManager', () => {
     });
 
     // Arbitrary for generating valid session codes
-    const sessionCodeArb = fc.array(
-        fc.constantFrom(...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('')),
-        { minLength: 6, maxLength: 6 }
-    ).map(arr => arr.join(''));
+    const sessionCodeArb = fc
+        .array(fc.constantFrom(...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('')), {
+            minLength: 6,
+            maxLength: 6,
+        })
+        .map((arr) => arr.join(''));
 
     const participantIdArb = fc.uuid();
 
     /**
      * **Feature: session-management, Property 7: Lock Acquisition Based on State**
      * **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
-     * 
+     *
      * For any tab attempting to join a session:
      * - If no lock exists, the tab SHALL acquire the lock and become leader
      * - If a fresh lock exists (< 5 seconds old), the tab SHALL become a follower
@@ -68,7 +70,10 @@ describe('TabSyncManager', () => {
                         acquiredAt: Date.now(),
                         lastHeartbeat: Date.now(),
                     };
-                    localStorage.setItem(`circuitforge-lock-${sessionCode}`, JSON.stringify(existingLock));
+                    localStorage.setItem(
+                        `circuitforge-lock-${sessionCode}`,
+                        JSON.stringify(existingLock)
+                    );
 
                     const testManager = new TabSyncManager();
                     testManager.initialize(sessionCode, participantId);
@@ -94,7 +99,10 @@ describe('TabSyncManager', () => {
                         acquiredAt: Date.now() - 10000,
                         lastHeartbeat: Date.now() - 6000, // 6 seconds ago
                     };
-                    localStorage.setItem(`circuitforge-lock-${sessionCode}`, JSON.stringify(staleLock));
+                    localStorage.setItem(
+                        `circuitforge-lock-${sessionCode}`,
+                        JSON.stringify(staleLock)
+                    );
 
                     const testManager = new TabSyncManager();
                     testManager.initialize(sessionCode, participantId);
@@ -112,8 +120,8 @@ describe('TabSyncManager', () => {
     /**
      * **Feature: session-management, Property 8: Leader Heartbeat Maintenance**
      * **Validates: Requirements 4.5**
-     * 
-     * For any leader tab, the session lock timestamp SHALL be updated 
+     *
+     * For any leader tab, the session lock timestamp SHALL be updated
      * at least every 2 seconds while the tab remains active.
      */
     describe('Property 8: Leader Heartbeat Maintenance', () => {
@@ -146,8 +154,8 @@ describe('TabSyncManager', () => {
     /**
      * **Feature: session-management, Property 2: Single Leader Invariant**
      * **Validates: Requirements 2.2**
-     * 
-     * For any set of tabs open for the same session, exactly one tab 
+     *
+     * For any set of tabs open for the same session, exactly one tab
      * SHALL be designated as the leader at any point in time.
      */
     describe('Property 2: Single Leader Invariant', () => {
@@ -163,8 +171,9 @@ describe('TabSyncManager', () => {
                     manager2.initialize(sessionCode, participantId);
 
                     // Exactly one should be leader
-                    const leaderCount = [manager1.isLeader(), manager2.isLeader()]
-                        .filter(Boolean).length;
+                    const leaderCount = [manager1.isLeader(), manager2.isLeader()].filter(
+                        Boolean
+                    ).length;
 
                     expect(leaderCount).toBe(1);
 
@@ -179,8 +188,8 @@ describe('TabSyncManager', () => {
     /**
      * **Feature: session-management, Property 10: Deterministic Leadership Tie-Breaking**
      * **Validates: Requirements 4.7**
-     * 
-     * For any set of tabs attempting to acquire leadership simultaneously, 
+     *
+     * For any set of tabs attempting to acquire leadership simultaneously,
      * the tab with the lowest tab ID SHALL win leadership.
      */
     describe('Property 10: Deterministic Leadership Tie-Breaking', () => {
@@ -218,8 +227,8 @@ describe('TabSyncManager', () => {
     /**
      * **Feature: session-management, Property 3: Leader Succession**
      * **Validates: Requirements 2.3**
-     * 
-     * For any session with multiple tabs where the leader tab closes, 
+     *
+     * For any session with multiple tabs where the leader tab closes,
      * one of the remaining follower tabs SHALL become the new leader within 5 seconds.
      */
     describe('Property 3: Leader Succession', () => {

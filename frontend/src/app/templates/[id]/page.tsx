@@ -4,8 +4,20 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-    ArrowLeft, BookOpen, Wrench, Check, ChevronRight, ChevronLeft,
-    Lightbulb, Play, RotateCcw, Eye, EyeOff, ZoomIn, ZoomOut, ChevronDown
+    ArrowLeft,
+    BookOpen,
+    Wrench,
+    Check,
+    ChevronRight,
+    ChevronLeft,
+    Lightbulb,
+    Play,
+    RotateCcw,
+    Eye,
+    EyeOff,
+    ZoomIn,
+    ZoomOut,
+    ChevronDown,
 } from 'lucide-react';
 import { IconButton, Tooltip, Button, ThemeToggle } from '@/components/ui';
 import { Canvas } from '@/components/circuit';
@@ -47,11 +59,14 @@ export default function TemplateDetailPage() {
         setIsResizing(true);
     };
 
-    const handleResizeMouseMove = useCallback((e: MouseEvent) => {
-        if (!isResizing) return;
-        const newWidth = Math.max(200, Math.min(500, e.clientX));
-        setSidebarWidth(newWidth);
-    }, [isResizing]);
+    const handleResizeMouseMove = useCallback(
+        (e: MouseEvent) => {
+            if (!isResizing) return;
+            const newWidth = Math.max(200, Math.min(500, e.clientX));
+            setSidebarWidth(newWidth);
+        },
+        [isResizing]
+    );
 
     const handleResizeMouseUp = useCallback(() => {
         setIsResizing(false);
@@ -76,7 +91,7 @@ export default function TemplateDetailPage() {
     // Zoom handlers
     const handleZoomIn = useCallback(() => {
         const currentPercent = Math.round(uiStore.zoom * 100);
-        const nextPreset = ZOOM_PRESETS.find(p => p > currentPercent);
+        const nextPreset = ZOOM_PRESETS.find((p) => p > currentPercent);
         if (nextPreset) {
             uiStore.setZoom(nextPreset / 100);
         }
@@ -84,7 +99,7 @@ export default function TemplateDetailPage() {
 
     const handleZoomOut = useCallback(() => {
         const currentPercent = Math.round(uiStore.zoom * 100);
-        const prevPreset = [...ZOOM_PRESETS].reverse().find(p => p < currentPercent);
+        const prevPreset = [...ZOOM_PRESETS].reverse().find((p) => p < currentPercent);
         if (prevPreset) {
             uiStore.setZoom(prevPreset / 100);
         }
@@ -135,14 +150,14 @@ export default function TemplateDetailPage() {
         if (!template || mode !== 'implementation') return [];
         const step = template.steps[currentStepIndex];
         if (!step) return [];
-        return template.components.filter(c => step.components.includes(c.id));
+        return template.components.filter((c) => step.components.includes(c.id));
     }, [template, currentStepIndex, mode]);
 
     const stepWires = useMemo(() => {
         if (!template || mode !== 'implementation') return [];
         const step = template.steps[currentStepIndex];
         if (!step) return [];
-        return template.wires.filter(w => step.wires.includes(w.id));
+        return template.wires.filter((w) => step.wires.includes(w.id));
     }, [template, currentStepIndex, mode]);
 
     const handleNextStep = () => {
@@ -150,39 +165,39 @@ export default function TemplateDetailPage() {
 
         if (mode === 'implementation' && currentStep) {
             // Mark current step as completed
-            setCompletedSteps(prev => {
+            setCompletedSteps((prev) => {
                 const newSet = new Set(prev);
                 newSet.add(currentStep.id);
                 return newSet;
             });
 
             // Add step components and wires to circuit
-            stepComponents.forEach(comp => {
-                if (!circuitStore.components.find(c => c.id === comp.id)) {
+            stepComponents.forEach((comp) => {
+                if (!circuitStore.components.find((c) => c.id === comp.id)) {
                     circuitStore.addComponent(comp);
                 }
             });
-            stepWires.forEach(wire => {
-                if (!circuitStore.wires.find(w => w.id === wire.id)) {
+            stepWires.forEach((wire) => {
+                if (!circuitStore.wires.find((w) => w.id === wire.id)) {
                     circuitStore.addWire(wire);
                 }
             });
         }
 
-        setCurrentStepIndex(prev => prev + 1);
+        setCurrentStepIndex((prev) => prev + 1);
         setShowHint(false);
     };
 
     const handlePrevStep = () => {
         if (currentStepIndex <= 0) return;
-        setCurrentStepIndex(prev => prev - 1);
+        setCurrentStepIndex((prev) => prev - 1);
         setShowHint(false);
     };
 
     // Run simulation with current state
     const runSimulation = useCallback(() => {
         // Inject clock phase into clock components and counter state
-        const componentsWithState = circuitStore.components.map(comp => {
+        const componentsWithState = circuitStore.components.map((comp) => {
             if (comp.type === 'CLOCK') {
                 return {
                     ...comp,
@@ -234,7 +249,7 @@ export default function TemplateDetailPage() {
         if (!isSimulating) return;
 
         const interval = setInterval(() => {
-            setClockPhase(prev => prev + 1);
+            setClockPhase((prev) => prev + 1);
         }, 1000); // 1Hz clock - slower for better visibility
 
         return () => clearInterval(interval);
@@ -295,22 +310,27 @@ export default function TemplateDetailPage() {
 
     if (!template) {
         return (
-            <div className="min-h-screen flex items-center justify-center dark:bg-gray-900">
+            <div className="flex min-h-screen items-center justify-center dark:bg-gray-900">
                 <p className="dark:text-gray-300">Loading template...</p>
             </div>
         );
     }
 
     return (
-        <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+        <div className="flex h-screen flex-col bg-gray-100 dark:bg-gray-900">
             {/* Header */}
-            <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between">
+            <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex items-center gap-4">
-                    <Link href="/templates" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                        <ArrowLeft className="w-5 h-5" />
+                    <Link
+                        href="/templates"
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="font-semibold text-gray-900 dark:text-white">{template.name}</h1>
+                        <h1 className="font-semibold text-gray-900 dark:text-white">
+                            {template.name}
+                        </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {mode === 'learning' ? 'Learning Mode' : 'Implementation Mode'}
                         </p>
@@ -319,25 +339,29 @@ export default function TemplateDetailPage() {
 
                 <div className="flex items-center gap-2">
                     {/* Mode Toggle */}
-                    <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <div className="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
                         <button
                             onClick={() => router.push(`/templates/${templateId}?mode=learning`)}
-                            className={`px-3 py-1 rounded text-sm ${mode === 'learning'
-                                ? 'bg-white dark:bg-gray-600 shadow text-blue-600 dark:text-blue-400'
-                                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                                }`}
+                            className={`rounded px-3 py-1 text-sm ${
+                                mode === 'learning'
+                                    ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
+                                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                            }`}
                         >
-                            <BookOpen className="w-4 h-4 inline mr-1" />
+                            <BookOpen className="mr-1 inline h-4 w-4" />
                             Learn
                         </button>
                         <button
-                            onClick={() => router.push(`/templates/${templateId}?mode=implementation`)}
-                            className={`px-3 py-1 rounded text-sm ${mode === 'implementation'
-                                ? 'bg-white dark:bg-gray-600 shadow text-blue-600 dark:text-blue-400'
-                                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                                }`}
+                            onClick={() =>
+                                router.push(`/templates/${templateId}?mode=implementation`)
+                            }
+                            className={`rounded px-3 py-1 text-sm ${
+                                mode === 'implementation'
+                                    ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
+                                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                            }`}
                         >
-                            <Wrench className="w-4 h-4 inline mr-1" />
+                            <Wrench className="mr-1 inline h-4 w-4" />
                             Build
                         </button>
                     </div>
@@ -345,7 +369,7 @@ export default function TemplateDetailPage() {
                     {/* Simulation Controls */}
                     {!isSimulating ? (
                         <Button variant="secondary" size="sm" onClick={handleRunSimulation}>
-                            <Play className="w-4 h-4 mr-1" />
+                            <Play className="mr-1 h-4 w-4" />
                             Simulate
                         </Button>
                     ) : (
@@ -355,7 +379,7 @@ export default function TemplateDetailPage() {
                     )}
 
                     <Button variant="ghost" size="sm" onClick={handleReset}>
-                        <RotateCcw className="w-4 h-4" />
+                        <RotateCcw className="h-4 w-4" />
                     </Button>
 
                     <ThemeToggle />
@@ -363,27 +387,31 @@ export default function TemplateDetailPage() {
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden relative">
+            <div className="relative flex flex-1 overflow-hidden">
                 {/* Left Sidebar - Steps/Info */}
                 <div
-                    className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden flex-shrink-0 transition-all duration-200 relative"
+                    className="relative flex flex-shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-white transition-all duration-200 dark:border-gray-700 dark:bg-gray-800"
                     style={{ width: sidebarCollapsed ? 0 : sidebarWidth }}
                 >
                     {!sidebarCollapsed && (
                         <>
                             {/* Resize handle */}
                             <div
-                                className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 bg-gray-200 dark:bg-gray-700 opacity-0 hover:opacity-100 transition-opacity z-10"
+                                className="absolute right-0 top-0 z-10 h-full w-1 cursor-col-resize bg-gray-200 opacity-0 transition-opacity hover:bg-blue-400 hover:opacity-100 dark:bg-gray-700"
                                 onMouseDown={handleResizeMouseDown}
                             />
                             {/* Progress (Implementation Mode) */}
                             {mode === 'implementation' && (
-                                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400">{progress}%</span>
+                                <div className="border-b border-gray-200 p-4 dark:border-gray-700">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Progress
+                                        </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            {progress}%
+                                        </span>
                                     </div>
-                                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                                         <div
                                             className="h-full bg-green-500 transition-all"
                                             style={{ width: `${progress}%` }}
@@ -394,16 +422,18 @@ export default function TemplateDetailPage() {
 
                             {/* Steps List */}
                             <div className="flex-1 overflow-y-auto p-5">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                                <div className="mb-4 flex items-center gap-2">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
                                         {mode === 'learning' ? (
-                                            <BookOpen className="w-4 h-4 text-white" />
+                                            <BookOpen className="h-4 w-4 text-white" />
                                         ) : (
-                                            <Wrench className="w-4 h-4 text-white" />
+                                            <Wrench className="h-4 w-4 text-white" />
                                         )}
                                     </div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white">
-                                        {mode === 'learning' ? 'Circuit Overview' : 'Implementation Steps'}
+                                        {mode === 'learning'
+                                            ? 'Circuit Overview'
+                                            : 'Implementation Steps'}
                                     </h3>
                                 </div>
 
@@ -411,26 +441,32 @@ export default function TemplateDetailPage() {
                                     /* Learning Mode - Show overview and theory */
                                     <div className="space-y-5">
                                         {/* Description Card */}
-                                        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-100 dark:border-gray-600">
-                                            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{template.overview}</p>
+                                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700/50">
+                                            <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                                                {template.overview}
+                                            </p>
                                         </div>
 
                                         {/* Theory Section */}
                                         {template.theory && (
-                                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800 overflow-hidden">
+                                            <div className="overflow-hidden rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
                                                 <button
                                                     onClick={() => setShowTheory(!showTheory)}
-                                                    className="w-full flex items-center justify-between gap-2 p-4 text-sm font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100/50 dark:hover:bg-blue-800/30 transition-colors"
+                                                    className="flex w-full items-center justify-between gap-2 p-4 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100/50 dark:text-blue-300 dark:hover:bg-blue-800/30"
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <BookOpen className="w-4 h-4" />
+                                                        <BookOpen className="h-4 w-4" />
                                                         <span>Theory & Concepts</span>
                                                     </div>
-                                                    {showTheory ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    {showTheory ? (
+                                                        <EyeOff className="h-4 w-4" />
+                                                    ) : (
+                                                        <Eye className="h-4 w-4" />
+                                                    )}
                                                 </button>
                                                 {showTheory && (
                                                     <div className="px-4 pb-4">
-                                                        <pre className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono leading-relaxed border border-blue-100 dark:border-blue-800">
+                                                        <pre className="whitespace-pre-wrap rounded-lg border border-blue-100 bg-white/60 p-3 font-mono text-xs leading-relaxed text-gray-700 dark:border-blue-800 dark:bg-gray-800/60 dark:text-gray-300">
                                                             {template.theory}
                                                         </pre>
                                                     </div>
@@ -440,12 +476,14 @@ export default function TemplateDetailPage() {
 
                                         {/* Components Section */}
                                         <div>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className="w-5 h-5 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                            <div className="mb-3 flex items-center gap-2">
+                                                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-900/30">
+                                                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
                                                 </div>
-                                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Components Used</h4>
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+                                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                                    Components Used
+                                                </h4>
+                                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400 dark:bg-gray-700 dark:text-gray-500">
                                                     {template.components.length}
                                                 </span>
                                             </div>
@@ -453,12 +491,12 @@ export default function TemplateDetailPage() {
                                                 {template.components.map((comp, index) => (
                                                     <div
                                                         key={comp.id}
-                                                        className="flex items-center gap-3 p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600 hover:border-gray-200 dark:hover:border-gray-500 transition-colors"
+                                                        className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 p-2.5 transition-colors hover:border-gray-200 dark:border-gray-600 dark:bg-gray-700/50 dark:hover:border-gray-500"
                                                     >
-                                                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-medium">
+                                                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-blue-400 to-blue-600 text-xs font-medium text-white">
                                                             {index + 1}
                                                         </div>
-                                                        <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                             {comp.type.replace(/_/g, ' ')}
                                                         </span>
                                                     </div>
@@ -473,34 +511,36 @@ export default function TemplateDetailPage() {
                                             <button
                                                 key={step.id}
                                                 onClick={() => setCurrentStepIndex(index)}
-                                                className={`w-full text-left p-3 rounded-lg border transition-colors ${index === currentStepIndex
-                                                    ? 'border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/30'
-                                                    : completedSteps.has(step.id)
-                                                        ? 'border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/30'
-                                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                                                    }`}
+                                                className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                                                    index === currentStepIndex
+                                                        ? 'border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/30'
+                                                        : completedSteps.has(step.id)
+                                                          ? 'border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-900/30'
+                                                          : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+                                                }`}
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <div
-                                                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${completedSteps.has(step.id)
-                                                            ? 'bg-green-500 text-white'
-                                                            : index === currentStepIndex
-                                                                ? 'bg-blue-500 text-white'
-                                                                : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
-                                                            }`}
+                                                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                                                            completedSteps.has(step.id)
+                                                                ? 'bg-green-500 text-white'
+                                                                : index === currentStepIndex
+                                                                  ? 'bg-blue-500 text-white'
+                                                                  : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                                                        }`}
                                                     >
                                                         {completedSteps.has(step.id) ? (
-                                                            <Check className="w-3 h-3" />
+                                                            <Check className="h-3 w-3" />
                                                         ) : (
                                                             index + 1
                                                         )}
                                                     </div>
-                                                    <span className="font-medium text-sm text-gray-900 dark:text-white">
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
                                                         {step.title}
                                                     </span>
                                                 </div>
                                                 {index === currentStepIndex && (
-                                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 ml-8">
+                                                    <p className="ml-8 mt-2 text-sm text-gray-600 dark:text-gray-400">
                                                         {step.description}
                                                     </p>
                                                 )}
@@ -512,18 +552,18 @@ export default function TemplateDetailPage() {
 
                             {/* Step Navigation (Implementation Mode) */}
                             {mode === 'implementation' && currentStep && (
-                                <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                                <div className="space-y-3 border-t border-gray-200 p-4 dark:border-gray-700">
                                     {currentStep.hint && (
                                         <button
                                             onClick={() => setShowHint(!showHint)}
-                                            className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300"
+                                            className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
                                         >
-                                            <Lightbulb className="w-4 h-4" />
+                                            <Lightbulb className="h-4 w-4" />
                                             {showHint ? 'Hide Hint' : 'Show Hint'}
                                         </button>
                                     )}
                                     {showHint && currentStep.hint && (
-                                        <div className="p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg text-sm text-amber-800 dark:text-amber-300">
+                                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                                             {currentStep.hint}
                                         </div>
                                     )}
@@ -536,7 +576,7 @@ export default function TemplateDetailPage() {
                                             disabled={currentStepIndex === 0}
                                             className="flex-1"
                                         >
-                                            <ChevronLeft className="w-4 h-4 mr-1" />
+                                            <ChevronLeft className="mr-1 h-4 w-4" />
                                             Previous
                                         </Button>
                                         {currentStepIndex < template.steps.length - 1 ? (
@@ -547,7 +587,7 @@ export default function TemplateDetailPage() {
                                                 className="flex-1"
                                             >
                                                 Next
-                                                <ChevronRight className="w-4 h-4 ml-1" />
+                                                <ChevronRight className="ml-1 h-4 w-4" />
                                             </Button>
                                         ) : (
                                             <Button
@@ -555,7 +595,7 @@ export default function TemplateDetailPage() {
                                                 size="sm"
                                                 onClick={() => {
                                                     if (currentStep) {
-                                                        setCompletedSteps(prev => {
+                                                        setCompletedSteps((prev) => {
                                                             const newSet = new Set(prev);
                                                             newSet.add(currentStep.id);
                                                             return newSet;
@@ -564,7 +604,7 @@ export default function TemplateDetailPage() {
                                                 }}
                                                 className="flex-1"
                                             >
-                                                <Check className="w-4 h-4 mr-1" />
+                                                <Check className="mr-1 h-4 w-4" />
                                                 Complete
                                             </Button>
                                         )}
@@ -578,17 +618,17 @@ export default function TemplateDetailPage() {
                 {/* Sidebar collapse toggle */}
                 <button
                     onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    className="absolute top-1/2 -translate-y-1/2 z-20 bg-blue-500 hover:bg-blue-600 text-white border-0 rounded-r-md px-2 py-4 shadow-lg transition-colors"
+                    className="absolute top-1/2 z-20 -translate-y-1/2 rounded-r-md border-0 bg-blue-500 px-2 py-4 text-white shadow-lg transition-colors hover:bg-blue-600"
                     style={{ left: sidebarCollapsed ? 0 : sidebarWidth }}
                     title={sidebarCollapsed ? 'Show Panel' : 'Hide Panel'}
                 >
-                    <span className="text-white text-sm font-bold">
+                    <span className="text-sm font-bold text-white">
                         {sidebarCollapsed ? '»' : '«'}
                     </span>
                 </button>
 
                 {/* Canvas */}
-                <div className="flex-1 min-w-0 relative">
+                <div className="relative min-w-0 flex-1">
                     <Canvas
                         simulationResult={simulationResult}
                         isSimulationRunning={isSimulating}
@@ -599,10 +639,10 @@ export default function TemplateDetailPage() {
                     />
 
                     {/* Zoom Controls - Bottom Right */}
-                    <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1 z-10">
+                    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                         <Tooltip content="Zoom Out (Ctrl+-)" position="top">
                             <IconButton
-                                icon={<ZoomOut className="w-4 h-4" />}
+                                icon={<ZoomOut className="h-4 w-4" />}
                                 onClick={handleZoomOut}
                                 size="sm"
                                 disabled={uiStore.zoom <= 0.25}
@@ -614,10 +654,10 @@ export default function TemplateDetailPage() {
                         <div className="relative">
                             <button
                                 onClick={() => setShowZoomDropdown(!showZoomDropdown)}
-                                className="flex items-center gap-1 px-2 py-1 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded min-w-[70px] justify-center"
+                                className="flex min-w-[70px] items-center justify-center gap-1 rounded px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
                             >
                                 {Math.round(uiStore.zoom * 100)}%
-                                <ChevronDown className="w-3 h-3" />
+                                <ChevronDown className="h-3 w-3" />
                             </button>
 
                             {showZoomDropdown && (
@@ -626,15 +666,16 @@ export default function TemplateDetailPage() {
                                         className="fixed inset-0 z-10"
                                         onClick={() => setShowZoomDropdown(false)}
                                     />
-                                    <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20 min-w-[80px]">
+                                    <div className="absolute bottom-full left-1/2 z-20 mb-1 min-w-[80px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                                         {ZOOM_PRESETS.map((percent) => (
                                             <button
                                                 key={percent}
                                                 onClick={() => handleZoomPreset(percent)}
-                                                className={`w-full px-3 py-1.5 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 ${Math.round(uiStore.zoom * 100) === percent
-                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium'
-                                                    : 'text-gray-700 dark:text-gray-200'
-                                                    }`}
+                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                                    Math.round(uiStore.zoom * 100) === percent
+                                                        ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                        : 'text-gray-700 dark:text-gray-200'
+                                                }`}
                                             >
                                                 {percent}%
                                             </button>
@@ -646,7 +687,7 @@ export default function TemplateDetailPage() {
 
                         <Tooltip content="Zoom In (Ctrl++)" position="top">
                             <IconButton
-                                icon={<ZoomIn className="w-4 h-4" />}
+                                icon={<ZoomIn className="h-4 w-4" />}
                                 onClick={handleZoomIn}
                                 size="sm"
                                 disabled={uiStore.zoom >= 4}
@@ -659,23 +700,27 @@ export default function TemplateDetailPage() {
 
             {/* Completion Modal */}
             {progress === 100 && mode === 'implementation' && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md text-center">
-                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="max-w-md rounded-lg bg-white p-6 text-center dark:bg-gray-800">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
+                            <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
                         </div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                        <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
                             Congratulations!
                         </h2>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                        <p className="mb-6 text-gray-600 dark:text-gray-400">
                             You have successfully completed the {template.name} circuit!
                         </p>
                         <div className="flex gap-3">
                             <Button variant="secondary" onClick={handleReset} className="flex-1">
                                 Try Again
                             </Button>
-                            <Button variant="primary" onClick={handleRunSimulation} className="flex-1">
-                                <Play className="w-4 h-4 mr-1" />
+                            <Button
+                                variant="primary"
+                                onClick={handleRunSimulation}
+                                className="flex-1"
+                            >
+                                <Play className="mr-1 h-4 w-4" />
                                 Run Simulation
                             </Button>
                         </div>

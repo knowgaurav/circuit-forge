@@ -1,29 +1,24 @@
 /**
  * Tests for LLM Provider configuration
- * 
+ *
  * **Feature: user-llm-api-keys, Property 5: All Providers Have Documentation URLs**
  * **Validates: Requirements 7.3**
- * 
+ *
  * **Feature: user-llm-api-keys, Property 1: Provider Selection Displays Correct Models with Default**
  * **Validates: Requirements 1.2, 3.5**
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-    LLM_PROVIDERS,
-    getProvider,
-    getDefaultModel,
-    validateKeyFormat,
-} from './llmProviders';
+import { LLM_PROVIDERS, getProvider, getDefaultModel, validateKeyFormat } from './llmProviders';
 
 describe('LLM Providers Configuration', () => {
     /**
      * **Property 5: All Providers Have Documentation URLs**
-     * For any provider in the supported providers configuration, 
+     * For any provider in the supported providers configuration,
      * the provider SHALL have a non-empty docsUrl field.
      */
     describe('Property 5: All Providers Have Documentation URLs', () => {
-        it.each(LLM_PROVIDERS.map(p => [p.id, p]))(
+        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
             'provider %s should have a documentation URL',
             (_, provider) => {
                 expect(provider.docsUrl).toBeDefined();
@@ -35,21 +30,21 @@ describe('LLM Providers Configuration', () => {
 
     /**
      * **Property 1: Provider Selection Displays Correct Models with Default**
-     * For any provider ID, selecting that provider SHALL display a non-empty 
+     * For any provider ID, selecting that provider SHALL display a non-empty
      * list of models where exactly one model is marked as default.
      */
     describe('Property 1: Provider Selection Displays Correct Models with Default', () => {
-        it.each(LLM_PROVIDERS.map(p => [p.id, p]))(
+        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
             'provider %s should have at least one model',
             (_, provider) => {
                 expect(provider.models.length).toBeGreaterThan(0);
             }
         );
 
-        it.each(LLM_PROVIDERS.map(p => [p.id, p]))(
+        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
             'provider %s should have exactly one default model or first model as fallback',
             (providerId, provider) => {
-                const defaultModels = provider.models.filter(m => m.isDefault);
+                const defaultModels = provider.models.filter((m) => m.isDefault);
                 // Either exactly one default, or we use the first model
                 expect(defaultModels.length).toBeLessThanOrEqual(1);
 
@@ -60,7 +55,7 @@ describe('LLM Providers Configuration', () => {
             }
         );
 
-        it.each(LLM_PROVIDERS.map(p => [p.id, p]))(
+        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
             'provider %s models should have required fields',
             (_, provider) => {
                 for (const model of provider.models) {
@@ -145,7 +140,7 @@ describe('LLM Providers Configuration', () => {
     });
 
     describe('Provider Configuration', () => {
-        it.each(LLM_PROVIDERS.map(p => [p.id, p]))(
+        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
             'provider %s should have all required fields',
             (_, provider) => {
                 expect(provider.id).toBeDefined();

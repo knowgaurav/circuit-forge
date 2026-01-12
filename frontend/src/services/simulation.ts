@@ -23,55 +23,79 @@ export interface SimulationResult {
 
 // Logic gate types
 const LOGIC_GATES = new Set<ComponentType>([
-    'AND_2', 'AND_3', 'AND_4',
-    'OR_2', 'OR_3', 'OR_4',
-    'NOT', 'BUFFER',
-    'NAND_2', 'NAND_3',
-    'NOR_2', 'NOR_3',
-    'XOR_2', 'XNOR_2',
+    'AND_2',
+    'AND_3',
+    'AND_4',
+    'OR_2',
+    'OR_3',
+    'OR_4',
+    'NOT',
+    'BUFFER',
+    'NAND_2',
+    'NAND_3',
+    'NOR_2',
+    'NOR_3',
+    'XOR_2',
+    'XNOR_2',
 ] as ComponentType[]);
 
 // Combinational logic (multiplexers, etc.)
 const COMBINATIONAL_LOGIC = new Set<ComponentType>([
-    'MUX_2TO1', 'MUX_4TO1',
-    'DEMUX_1TO2', 'DECODER_2TO4',
-    'ADDER_4BIT', 'COMPARATOR_4BIT', 'BCD_TO_7SEG',
+    'MUX_2TO1',
+    'MUX_4TO1',
+    'DEMUX_1TO2',
+    'DECODER_2TO4',
+    'ADDER_4BIT',
+    'COMPARATOR_4BIT',
+    'BCD_TO_7SEG',
 ] as ComponentType[]);
 
 // Sequential logic (flip-flops, latches, counters)
 const SEQUENTIAL_LOGIC = new Set<ComponentType>([
-    'D_FLIPFLOP', 'SR_LATCH', 'JK_FLIPFLOP', 'T_FLIPFLOP',
-    'COUNTER_4BIT', 'SHIFT_REGISTER_8BIT',
+    'D_FLIPFLOP',
+    'SR_LATCH',
+    'JK_FLIPFLOP',
+    'T_FLIPFLOP',
+    'COUNTER_4BIT',
+    'SHIFT_REGISTER_8BIT',
     'TRAFFIC_LIGHT_CTRL',
 ] as ComponentType[]);
 
 // Input devices that produce signals
 const INPUT_DEVICES = new Set<ComponentType>([
-    'SWITCH_TOGGLE', 'SWITCH_PUSH',
-    'CONST_HIGH', 'CONST_LOW',
-    'CLOCK', 'DIP_SWITCH_4',
+    'SWITCH_TOGGLE',
+    'SWITCH_PUSH',
+    'CONST_HIGH',
+    'CONST_LOW',
+    'CLOCK',
+    'DIP_SWITCH_4',
     'NUMERIC_INPUT',
-    'VCC_5V', 'VCC_3V3', // Power sources act as HIGH
+    'VCC_5V',
+    'VCC_3V3', // Power sources act as HIGH
 ] as ComponentType[]);
 
 // Output devices that consume signals
 const OUTPUT_DEVICES = new Set<ComponentType>([
-    'LED_RED', 'LED_GREEN',
-    'LED_YELLOW', 'LED_BLUE',
-    'LED_RGB', 'DISPLAY_7SEG',
-    'BUZZER', 'MOTOR_DC',
+    'LED_RED',
+    'LED_GREEN',
+    'LED_YELLOW',
+    'LED_BLUE',
+    'LED_RGB',
+    'DISPLAY_7SEG',
+    'BUZZER',
+    'MOTOR_DC',
     'PROBE', // Probe just displays signal state
     'GROUND', // Ground consumes signal
 ] as ComponentType[]);
 
 // Junction/splitter components
-const JUNCTION_COMPONENTS = new Set<ComponentType>([
-    'JUNCTION',
-] as ComponentType[]);
+const JUNCTION_COMPONENTS = new Set<ComponentType>(['JUNCTION'] as ComponentType[]);
 
 // Passive components (pass signal through)
 const PASSIVE_COMPONENTS = new Set<ComponentType>([
-    'RESISTOR', 'CAPACITOR', 'DIODE',
+    'RESISTOR',
+    'CAPACITOR',
+    'DIODE',
 ] as ComponentType[]);
 
 /**
@@ -85,7 +109,7 @@ export const LogicGate = {
         if (inputs.includes('UNDEFINED') || inputs.includes('ERROR')) {
             return 'UNDEFINED';
         }
-        return inputs.every(s => s === 'HIGH') ? 'HIGH' : 'LOW';
+        return inputs.every((s) => s === 'HIGH') ? 'HIGH' : 'LOW';
     },
 
     /**
@@ -95,7 +119,7 @@ export const LogicGate = {
         if (inputs.includes('UNDEFINED') || inputs.includes('ERROR')) {
             return 'UNDEFINED';
         }
-        return inputs.some(s => s === 'HIGH') ? 'HIGH' : 'LOW';
+        return inputs.some((s) => s === 'HIGH') ? 'HIGH' : 'LOW';
     },
 
     /**
@@ -164,7 +188,11 @@ export const LogicGate = {
      * S=0, R=0 -> Q holds previous state
      * S=1, R=1 -> Invalid (both outputs LOW in this implementation)
      */
-    evaluateSRLatch(s: SignalState, r: SignalState, prevQ: SignalState): { q: SignalState; qBar: SignalState } {
+    evaluateSRLatch(
+        s: SignalState,
+        r: SignalState,
+        prevQ: SignalState
+    ): { q: SignalState; qBar: SignalState } {
         if (s === 'UNDEFINED' || r === 'UNDEFINED') {
             return { q: 'UNDEFINED', qBar: 'UNDEFINED' };
         }
@@ -186,7 +214,12 @@ export const LogicGate = {
     /**
      * D Flip-Flop: On rising edge of CLK, Q = D
      */
-    evaluateDFlipFlop(d: SignalState, clk: SignalState, prevClk: SignalState, prevQ: SignalState): { q: SignalState; qBar: SignalState } {
+    evaluateDFlipFlop(
+        d: SignalState,
+        clk: SignalState,
+        prevClk: SignalState,
+        prevQ: SignalState
+    ): { q: SignalState; qBar: SignalState } {
         if (d === 'UNDEFINED' || clk === 'UNDEFINED') {
             return { q: 'UNDEFINED', qBar: 'UNDEFINED' };
         }
@@ -206,7 +239,13 @@ export const LogicGate = {
      * J=0, K=1 -> Reset (Q=0)
      * J=1, K=1 -> Toggle
      */
-    evaluateJKFlipFlop(j: SignalState, k: SignalState, clk: SignalState, prevClk: SignalState, prevQ: SignalState): { q: SignalState; qBar: SignalState } {
+    evaluateJKFlipFlop(
+        j: SignalState,
+        k: SignalState,
+        clk: SignalState,
+        prevClk: SignalState,
+        prevQ: SignalState
+    ): { q: SignalState; qBar: SignalState } {
         if (j === 'UNDEFINED' || k === 'UNDEFINED' || clk === 'UNDEFINED') {
             return { q: 'UNDEFINED', qBar: 'UNDEFINED' };
         }
@@ -334,8 +373,8 @@ export class SimulationEngine {
     ): boolean {
         // Get evaluation order (all non-input components)
         const evalOrder = circuit.components
-            .filter(c => !INPUT_DEVICES.has(c.type))
-            .map(c => c.id);
+            .filter((c) => !INPUT_DEVICES.has(c.type))
+            .map((c) => c.id);
 
         let converged = false;
 
@@ -498,9 +537,10 @@ export class SimulationEngine {
                 const parts = pinKey.split(':');
                 const compId = parts[0] || '';
                 const pinId = parts[1] || '';
-                const comp = circuit.components.find(c => c.id === compId);
-                const compName = comp?.label || (comp ? this.formatComponentType(comp.type) : 'Unknown');
-                const pin = comp?.pins.find(p => p.id === pinId);
+                const comp = circuit.components.find((c) => c.id === compId);
+                const compName =
+                    comp?.label || (comp ? this.formatComponentType(comp.type) : 'Unknown');
+                const pin = comp?.pins.find((p) => p.id === pinId);
                 const pinName = pin?.name || pinId;
                 errors.push({
                     errorType: 'OUTPUT_CONFLICT',
@@ -593,28 +633,28 @@ export class SimulationEngine {
     private formatComponentType(type: ComponentType): string {
         // Convert component type to readable name
         const typeMap: Record<string, string> = {
-            'AND_2': '2-Input AND Gate',
-            'AND_3': '3-Input AND Gate',
-            'AND_4': '4-Input AND Gate',
-            'OR_2': '2-Input OR Gate',
-            'OR_3': '3-Input OR Gate',
-            'OR_4': '4-Input OR Gate',
-            'NOT': 'NOT Gate',
-            'BUFFER': 'Buffer',
-            'NAND_2': '2-Input NAND Gate',
-            'NAND_3': '3-Input NAND Gate',
-            'NOR_2': '2-Input NOR Gate',
-            'NOR_3': '3-Input NOR Gate',
-            'XOR_2': 'XOR Gate',
-            'XNOR_2': 'XNOR Gate',
-            'LED_RED': 'Red LED',
-            'LED_GREEN': 'Green LED',
-            'LED_YELLOW': 'Yellow LED',
-            'LED_BLUE': 'Blue LED',
-            'LED_RGB': 'RGB LED',
-            'DISPLAY_7SEG': '7-Segment Display',
-            'BUZZER': 'Buzzer',
-            'MOTOR_DC': 'DC Motor',
+            AND_2: '2-Input AND Gate',
+            AND_3: '3-Input AND Gate',
+            AND_4: '4-Input AND Gate',
+            OR_2: '2-Input OR Gate',
+            OR_3: '3-Input OR Gate',
+            OR_4: '4-Input OR Gate',
+            NOT: 'NOT Gate',
+            BUFFER: 'Buffer',
+            NAND_2: '2-Input NAND Gate',
+            NAND_3: '3-Input NAND Gate',
+            NOR_2: '2-Input NOR Gate',
+            NOR_3: '3-Input NOR Gate',
+            XOR_2: 'XOR Gate',
+            XNOR_2: 'XNOR Gate',
+            LED_RED: 'Red LED',
+            LED_GREEN: 'Green LED',
+            LED_YELLOW: 'Yellow LED',
+            LED_BLUE: 'Blue LED',
+            LED_RGB: 'RGB LED',
+            DISPLAY_7SEG: '7-Segment Display',
+            BUZZER: 'Buzzer',
+            MOTOR_DC: 'DC Motor',
         };
         return typeMap[type] || type.replace(/_/g, ' ');
     }
@@ -724,7 +764,7 @@ export class SimulationEngine {
             }
         } else if (comp.type === 'NUMERIC_INPUT') {
             // Numeric input: value (0-15) -> Q0, Q1, Q2, Q3 as binary
-            const value = ((props.value as number) ?? 0) & 0xF; // Clamp to 0-15
+            const value = ((props.value as number) ?? 0) & 0xf; // Clamp to 0-15
             for (const pin of comp.pins) {
                 if (pin.type === 'output') {
                     const match = pin.name.match(/Q(\d)/i) || pin.id.match(/q(\d)/i);
@@ -867,7 +907,7 @@ export class SimulationEngine {
             // Only one output is HIGH based on the binary input
 
             // Get input pins and find A0, A1 by pin id/name
-            const inputPins = comp.pins.filter(p => p.type === 'input');
+            const inputPins = comp.pins.filter((p) => p.type === 'input');
             let a0: SignalState = 'LOW';
             let a1: SignalState = 'LOW';
 
@@ -885,20 +925,20 @@ export class SimulationEngine {
             // Convert inputs to binary value (0-3)
             const a0Val = a0 === 'HIGH' ? 1 : 0;
             const a1Val = a1 === 'HIGH' ? 1 : 0;
-            const selectValue = a0Val + (a1Val * 2); // A1 is MSB, A0 is LSB
+            const selectValue = a0Val + a1Val * 2; // A1 is MSB, A0 is LSB
 
             // Set outputs - only the selected output is HIGH
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             for (const pin of outputPins) {
                 // Extract output index from pin id/name (e.g., 'y0' -> 0)
                 const match = pin.id.match(/y(\d)/i) || pin.name.match(/Y(\d)/i);
                 if (match && match[1]) {
                     const outputIndex = parseInt(match[1], 10);
-                    compPins[pin.id] = (outputIndex === selectValue) ? 'HIGH' : 'LOW';
+                    compPins[pin.id] = outputIndex === selectValue ? 'HIGH' : 'LOW';
                 } else {
                     // Fallback: use pin order
                     const idx = outputPins.indexOf(pin);
-                    compPins[pin.id] = (idx === selectValue) ? 'HIGH' : 'LOW';
+                    compPins[pin.id] = idx === selectValue ? 'HIGH' : 'LOW';
                 }
             }
         } else if (comp.type === 'DEMUX_1TO2') {
@@ -906,7 +946,7 @@ export class SimulationEngine {
             const d = inputs[0] ?? 'LOW';
             const s = inputs[1] ?? 'LOW';
 
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             if (s === 'LOW') {
                 // Select Y0
                 if (outputPins[0]) compPins[outputPins[0].id] = d;
@@ -918,8 +958,9 @@ export class SimulationEngine {
             }
         } else if (comp.type === 'ADDER_4BIT') {
             // 4-bit Adder: A0-A3, B0-B3 -> S0-S3, Cout
-            const inputPins = comp.pins.filter(p => p.type === 'input');
-            let a = 0, b = 0;
+            const inputPins = comp.pins.filter((p) => p.type === 'input');
+            let a = 0,
+                b = 0;
             for (let i = 0; i < inputPins.length; i++) {
                 const pin = inputPins[i];
                 if (!pin) continue;
@@ -927,11 +968,11 @@ export class SimulationEngine {
                 const val = signal === 'HIGH' ? 1 : 0;
                 const aMatch = pin.name.match(/A(\d)/i) || pin.id.match(/a(\d)/i);
                 const bMatch = pin.name.match(/B(\d)/i) || pin.id.match(/b(\d)/i);
-                if (aMatch && aMatch[1]) a |= (val << parseInt(aMatch[1], 10));
-                if (bMatch && bMatch[1]) b |= (val << parseInt(bMatch[1], 10));
+                if (aMatch && aMatch[1]) a |= val << parseInt(aMatch[1], 10);
+                if (bMatch && bMatch[1]) b |= val << parseInt(bMatch[1], 10);
             }
             const sum = a + b;
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             for (const pin of outputPins) {
                 const sMatch = pin.name.match(/S(\d)/i) || pin.id.match(/s(\d)/i);
                 if (sMatch && sMatch[1]) {
@@ -943,8 +984,9 @@ export class SimulationEngine {
             }
         } else if (comp.type === 'COMPARATOR_4BIT') {
             // 4-bit Comparator: A0-A3, B0-B3 -> A>B, A=B, A<B
-            const inputPins = comp.pins.filter(p => p.type === 'input');
-            let a = 0, b = 0;
+            const inputPins = comp.pins.filter((p) => p.type === 'input');
+            let a = 0,
+                b = 0;
             for (let i = 0; i < inputPins.length; i++) {
                 const pin = inputPins[i];
                 if (!pin) continue;
@@ -952,10 +994,10 @@ export class SimulationEngine {
                 const val = signal === 'HIGH' ? 1 : 0;
                 const aMatch = pin.name.match(/A(\d)/i) || pin.id.match(/a(\d)/i);
                 const bMatch = pin.name.match(/B(\d)/i) || pin.id.match(/b(\d)/i);
-                if (aMatch && aMatch[1]) a |= (val << parseInt(aMatch[1], 10));
-                if (bMatch && bMatch[1]) b |= (val << parseInt(bMatch[1], 10));
+                if (aMatch && aMatch[1]) a |= val << parseInt(aMatch[1], 10);
+                if (bMatch && bMatch[1]) b |= val << parseInt(bMatch[1], 10);
             }
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             for (const pin of outputPins) {
                 if (pin.name === 'A>B' || pin.id.match(/a>b/i)) {
                     compPins[pin.id] = a > b ? 'HIGH' : 'LOW';
@@ -969,18 +1011,18 @@ export class SimulationEngine {
             // BCD to 7-Segment Decoder: D0-D3 -> A,B,C,D,E,F,G
             // Truth table for digits 0-9
             const segmentTable: Record<number, string> = {
-                0: 'ABCDEF',  // 0: all except G
-                1: 'BC',      // 1: right side
-                2: 'ABDEG',   // 2
-                3: 'ABCDG',   // 3
-                4: 'BCFG',    // 4
-                5: 'ACDFG',   // 5
-                6: 'ACDEFG',  // 6
-                7: 'ABC',     // 7
+                0: 'ABCDEF', // 0: all except G
+                1: 'BC', // 1: right side
+                2: 'ABDEG', // 2
+                3: 'ABCDG', // 3
+                4: 'BCFG', // 4
+                5: 'ACDFG', // 5
+                6: 'ACDEFG', // 6
+                7: 'ABC', // 7
                 8: 'ABCDEFG', // 8: all
-                9: 'ABCDFG',  // 9
+                9: 'ABCDFG', // 9
             };
-            const inputPins = comp.pins.filter(p => p.type === 'input');
+            const inputPins = comp.pins.filter((p) => p.type === 'input');
             let value = 0;
             for (let i = 0; i < inputPins.length; i++) {
                 const pin = inputPins[i];
@@ -989,13 +1031,13 @@ export class SimulationEngine {
                 const val = signal === 'HIGH' ? 1 : 0;
                 const match = pin.name.match(/D(\d)/i);
                 if (match && match[1]) {
-                    value |= (val << parseInt(match[1], 10));
+                    value |= val << parseInt(match[1], 10);
                 }
             }
             // Clamp to 0-9
             if (value > 9) value = value % 10;
             const activeSegs = segmentTable[value] || '';
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             for (const pin of outputPins) {
                 const segName = pin.name.toUpperCase();
                 compPins[pin.id] = activeSegs.includes(segName) ? 'HIGH' : 'LOW';
@@ -1022,7 +1064,7 @@ export class SimulationEngine {
             const r = inputs[1] ?? 'UNDEFINED';
             const result = LogicGate.evaluateSRLatch(s, r, prevQ);
 
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             if (outputPins[0]) compPins[outputPins[0].id] = result.q;
             if (outputPins[1]) compPins[outputPins[1].id] = result.qBar;
         } else if (comp.type === 'D_FLIPFLOP') {
@@ -1031,7 +1073,7 @@ export class SimulationEngine {
             const clk = inputs[1] ?? 'UNDEFINED';
             const result = LogicGate.evaluateDFlipFlop(d, clk, prevClk, prevQ);
 
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             if (outputPins[0]) compPins[outputPins[0].id] = result.q;
             if (outputPins[1]) compPins[outputPins[1].id] = result.qBar;
         } else if (comp.type === 'JK_FLIPFLOP') {
@@ -1041,7 +1083,7 @@ export class SimulationEngine {
             const k = inputs[2] ?? 'UNDEFINED';
             const result = LogicGate.evaluateJKFlipFlop(j, k, clk, prevClk, prevQ);
 
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             if (outputPins[0]) compPins[outputPins[0].id] = result.q;
             if (outputPins[1]) compPins[outputPins[1].id] = result.qBar;
         } else if (comp.type === 'COUNTER_4BIT') {
@@ -1051,7 +1093,7 @@ export class SimulationEngine {
 
             // Output the current count as binary on Q0-Q3
             // Find output pins by name pattern (q0, q1, q2, q3 or Q0, Q1, Q2, Q3)
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             for (const pin of outputPins) {
                 // Extract bit index from pin id/name (e.g., 'q0' -> 0, 'q1' -> 1)
                 const match = pin.id.match(/q(\d)/i) || pin.name.match(/Q(\d)/i);
@@ -1070,7 +1112,7 @@ export class SimulationEngine {
             // 8-bit shift register: D, CLK inputs -> Q0-Q7 outputs
             const shiftValue = ((props._shiftValue as number) ?? 0) % 256;
 
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             for (let i = 0; i < outputPins.length && i < 8; i++) {
                 const pin = outputPins[i];
                 if (pin) {
@@ -1083,7 +1125,7 @@ export class SimulationEngine {
             // Cycles through: Red (4 ticks) -> Yellow (2 ticks) -> Green (4 ticks) -> Yellow (2 ticks)
             const count = ((props._count as number) ?? 0) % 12; // 12-state cycle
 
-            const outputPins = comp.pins.filter(p => p.type === 'output');
+            const outputPins = comp.pins.filter((p) => p.type === 'output');
             // Outputs: R (red), Y (yellow), G (green)
             let red: SignalState = 'LOW';
             let yellow: SignalState = 'LOW';

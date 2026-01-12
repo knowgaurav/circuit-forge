@@ -12,15 +12,18 @@ import { useLLMConfigStore } from '@/stores/llmConfigStore';
 // Category colors using semantic tokens
 const categoryColors: Record<string, string> = {
     'Digital Logic': 'bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary',
-    'Computing': 'bg-accent/10 border-accent/20 hover:bg-accent/20 text-accent',
-    'Robotics': 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20 text-green-600 dark:text-green-400',
-    'Automation': 'bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400',
+    Computing: 'bg-accent/10 border-accent/20 hover:bg-accent/20 text-accent',
+    Robotics:
+        'bg-green-500/10 border-green-500/20 hover:bg-green-500/20 text-green-600 dark:text-green-400',
+    Automation:
+        'bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400',
 };
 
 const difficultyColors: Record<string, string> = {
-    'Beginner': 'text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20',
-    'Intermediate': 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border border-yellow-500/20',
-    'Advanced': 'text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20',
+    Beginner: 'text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20',
+    Intermediate:
+        'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border border-yellow-500/20',
+    Advanced: 'text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20',
 };
 
 export default function CreateCoursePage() {
@@ -74,7 +77,8 @@ export default function CreateCoursePage() {
             const { coursePlan } = await api.generateCoursePlan(topic, config);
             setGeneratedPlan(coursePlan);
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to generate course plan';
+            const errorMessage =
+                err instanceof Error ? err.message : 'Failed to generate course plan';
             setError(errorMessage);
             // Keep topic input on error for retry
         } finally {
@@ -102,67 +106,83 @@ export default function CreateCoursePage() {
     };
 
     // Group suggestions by category
-    const groupedSuggestions = suggestions.reduce<Record<string, TopicSuggestion[]>>((acc, suggestion) => {
-        const category = suggestion.category;
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category]!.push(suggestion);
-        return acc;
-    }, {});
+    const groupedSuggestions = suggestions.reduce<Record<string, TopicSuggestion[]>>(
+        (acc, suggestion) => {
+            const category = suggestion.category;
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category]!.push(suggestion);
+            return acc;
+        },
+        {}
+    );
 
     if (generatedPlan) {
         return (
             <div className="min-h-screen bg-background transition-colors duration-300">
                 <Navbar />
 
-                <div className="pt-24 pb-12 px-4">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="glass-card p-8 rounded-2xl">
-                            <h1 className="text-3xl font-bold text-foreground mb-2">
+                <div className="px-4 pb-12 pt-24">
+                    <div className="mx-auto max-w-4xl">
+                        <div className="glass-card rounded-2xl p-8">
+                            <h1 className="mb-2 text-3xl font-bold text-foreground">
                                 {generatedPlan.title}
                             </h1>
-                            <p className="text-text-secondary mb-6">{generatedPlan.description}</p>
+                            <p className="mb-6 text-text-secondary">{generatedPlan.description}</p>
 
-                            <div className="flex gap-4 mb-8">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${difficultyColors[generatedPlan.difficulty]}`}>
+                            <div className="mb-8 flex gap-4">
+                                <span
+                                    className={`rounded-full px-3 py-1 text-sm font-medium ${difficultyColors[generatedPlan.difficulty]}`}
+                                >
                                     {generatedPlan.difficulty}
                                 </span>
-                                <span className="text-text-muted flex items-center bg-surface-secondary px-3 py-1 rounded-full text-sm">
-                                    {generatedPlan.levels.length} levels • ~{generatedPlan.estimatedHours} hours
+                                <span className="flex items-center rounded-full bg-surface-secondary px-3 py-1 text-sm text-text-muted">
+                                    {generatedPlan.levels.length} levels • ~
+                                    {generatedPlan.estimatedHours} hours
                                 </span>
                             </div>
 
-                            <h2 className="text-xl font-semibold text-foreground mb-6">Course Outline</h2>
-                            <div className="space-y-4 mb-8">
+                            <h2 className="mb-6 text-xl font-semibold text-foreground">
+                                Course Outline
+                            </h2>
+                            <div className="mb-8 space-y-4">
                                 {generatedPlan.levels.map((level, index) => (
                                     <div
                                         key={level.levelNumber}
-                                        className={`p-5 rounded-xl border transition-colors ${index === 0
+                                        className={`rounded-xl border p-5 transition-colors ${
+                                            index === 0
                                                 ? 'border-primary/30 bg-primary/5'
-                                                : 'border-border bg-surface-secondary/30'
-                                            }`}
+                                                : 'bg-surface-secondary/30 border-border'
+                                        }`}
                                     >
                                         <div className="flex items-center gap-4">
-                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index === 0
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'bg-surface-secondary text-text-muted border border-border'
-                                                }`}>
+                                            <span
+                                                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                                                    index === 0
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'border border-border bg-surface-secondary text-text-muted'
+                                                }`}
+                                            >
                                                 {level.levelNumber}
                                             </span>
                                             <div className="flex-1">
-                                                <h3 className="font-semibold text-foreground">{level.title}</h3>
-                                                <p className="text-sm text-text-secondary mt-0.5">{level.description}</p>
+                                                <h3 className="font-semibold text-foreground">
+                                                    {level.title}
+                                                </h3>
+                                                <p className="mt-0.5 text-sm text-text-secondary">
+                                                    {level.description}
+                                                </p>
                                             </div>
                                             {index === 0 && (
-                                                <div className="flex items-center gap-1.5 text-primary text-sm font-medium px-2 py-1 bg-primary/10 rounded-lg">
-                                                    <Unlock className="w-4 h-4" />
+                                                <div className="bg-primary/10 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-primary">
+                                                    <Unlock className="h-4 w-4" />
                                                     Unlocked
                                                 </div>
                                             )}
                                             {index > 0 && (
                                                 <div className="text-text-muted">
-                                                    <Lock className="w-4 h-4" />
+                                                    <Lock className="h-4 w-4" />
                                                 </div>
                                             )}
                                         </div>
@@ -170,7 +190,7 @@ export default function CreateCoursePage() {
                                 ))}
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex flex-col gap-4 sm:flex-row">
                                 <Button
                                     onClick={handleStartCourse}
                                     variant="glow"
@@ -179,11 +199,7 @@ export default function CreateCoursePage() {
                                 >
                                     Start Course
                                 </Button>
-                                <Button
-                                    onClick={handleRegeneratePlan}
-                                    variant="ghost"
-                                    size="lg"
-                                >
+                                <Button onClick={handleRegeneratePlan} variant="ghost" size="lg">
                                     Regenerate
                                 </Button>
                                 <Button
@@ -212,50 +228,57 @@ export default function CreateCoursePage() {
                 onSave={handleApiKeySaved}
             />
 
-            <div className="pt-28 pb-12 px-4">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-10">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-sm font-medium mb-6 text-primary border-primary/20 bg-primary/5">
-                            <Sparkles className="w-4 h-4" />
+            <div className="px-4 pb-12 pt-28">
+                <div className="mx-auto max-w-6xl">
+                    <div className="mb-10 text-center">
+                        <div className="glass border-primary/20 bg-primary/5 mb-6 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-primary">
+                            <Sparkles className="h-4 w-4" />
                             AI-Powered Learning
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+                        <h1 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
                             Create Your Circuit Course
                         </h1>
-                        <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-                            Choose a topic or enter your own to generate a personalized learning path
+                        <p className="mx-auto max-w-2xl text-lg text-text-secondary">
+                            Choose a topic or enter your own to generate a personalized learning
+                            path
                         </p>
                     </div>
 
                     {/* Custom Topic Input */}
-                    <div className="glass-card p-8 rounded-2xl mb-12 shadow-glass-lg border-primary/10">
-                        <h2 className="text-xl font-semibold text-foreground mb-6">Enter Your Own Topic</h2>
+                    <div className="glass-card shadow-glass-lg border-primary/10 mb-12 rounded-2xl p-8">
+                        <h2 className="mb-6 text-xl font-semibold text-foreground">
+                            Enter Your Own Topic
+                        </h2>
                         {isMounted && !llmStore.isConfigured() && (
-                            <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center gap-3">
-                                <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                            <div className="mb-6 flex items-center gap-3 rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-4">
+                                <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
                                 <p className="text-sm text-yellow-600 dark:text-yellow-400">
                                     Please configure your API key first to generate courses.
                                     <button
                                         onClick={() => setShowApiKeyModal(true)}
-                                        className="ml-2 font-medium underline hover:text-yellow-700 dark:hover:text-yellow-300 transition-colors"
+                                        className="ml-2 font-medium underline transition-colors hover:text-yellow-700 dark:hover:text-yellow-300"
                                     >
                                         Configure now
                                     </button>
                                 </p>
                             </div>
                         )}
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col gap-4 sm:flex-row">
                             <Input
                                 type="text"
                                 value={customTopic}
                                 onChange={(e) => setCustomTopic(e.target.value)}
                                 placeholder="e.g., 4-bit calculator, digital clock, traffic light controller..."
-                                className="flex-1 text-lg py-3"
+                                className="flex-1 py-3 text-lg"
                                 disabled={isLoading}
                             />
                             <Button
                                 onClick={() => handleGeneratePlan(customTopic)}
-                                disabled={!customTopic.trim() || isLoading || (isMounted && !llmStore.isConfigured())}
+                                disabled={
+                                    !customTopic.trim() ||
+                                    isLoading ||
+                                    (isMounted && !llmStore.isConfigured())
+                                }
                                 variant="glow"
                                 size="lg"
                                 className="sm:w-auto"
@@ -265,50 +288,68 @@ export default function CreateCoursePage() {
                             </Button>
                         </div>
                         {error && (
-                            <p className="mt-3 text-error text-sm font-medium px-2">{error}</p>
+                            <p className="mt-3 px-2 text-sm font-medium text-error">{error}</p>
                         )}
                     </div>
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="glass-card p-12 rounded-2xl mb-12 text-center animate-fade-in-up">
-                            <div className="flex justify-center mb-6">
+                        <div className="glass-card animate-fade-in-up mb-12 rounded-2xl p-12 text-center">
+                            <div className="mb-6 flex justify-center">
                                 <Spinner size="lg" className="text-primary" />
                             </div>
-                            <h3 className="text-xl font-semibold text-foreground mb-2">Generating your course...</h3>
-                            <p className="text-text-secondary">Using AI to build a personalized curriculum. This may take up to 30 seconds.</p>
+                            <h3 className="mb-2 text-xl font-semibold text-foreground">
+                                Generating your course...
+                            </h3>
+                            <p className="text-text-secondary">
+                                Using AI to build a personalized curriculum. This may take up to 30
+                                seconds.
+                            </p>
                         </div>
                     )}
 
                     {/* Suggested Topics */}
                     {!isLoading && (
                         <div className="animate-fade-in-up animation-delay-200">
-                            <h2 className="text-2xl font-bold text-foreground mb-8 text-center">Or Choose a Suggested Topic</h2>
+                            <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
+                                Or Choose a Suggested Topic
+                            </h2>
                             {Object.entries(groupedSuggestions).map(([category, items]) => (
                                 <div key={category} className="mb-10 last:mb-0">
-                                    <h3 className="text-lg font-semibold text-text-muted mb-4 px-1">{category}</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    <h3 className="mb-4 px-1 text-lg font-semibold text-text-muted">
+                                        {category}
+                                    </h3>
+                                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                                         {items.map((suggestion) => (
                                             <div
                                                 key={suggestion.topic}
-                                                className="relative group h-full"
+                                                className="group relative h-full"
                                             >
                                                 <button
-                                                    onClick={() => (isMounted && llmStore.isConfigured()) ? handleGeneratePlan(suggestion.topic) : setShowApiKeyModal(true)}
-                                                    className={`w-full h-full p-5 rounded-xl border text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${isMounted && !llmStore.isConfigured() ? 'opacity-60 grayscale' : ''
-                                                        } ${categoryColors[category] || 'bg-surface-secondary border-border hover:border-primary/30'}`}
+                                                    onClick={() =>
+                                                        isMounted && llmStore.isConfigured()
+                                                            ? handleGeneratePlan(suggestion.topic)
+                                                            : setShowApiKeyModal(true)
+                                                    }
+                                                    className={`h-full w-full rounded-xl border p-5 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${
+                                                        isMounted && !llmStore.isConfigured()
+                                                            ? 'opacity-60 grayscale'
+                                                            : ''
+                                                    } ${categoryColors[category] || 'hover:border-primary/30 border-border bg-surface-secondary'}`}
                                                 >
-                                                    <h4 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                                                    <h4 className="mb-2 font-bold text-foreground transition-colors group-hover:text-primary">
                                                         {suggestion.title}
                                                     </h4>
-                                                    <p className="text-sm text-text-secondary mb-4 line-clamp-2">
+                                                    <p className="mb-4 line-clamp-2 text-sm text-text-secondary">
                                                         {suggestion.description}
                                                     </p>
-                                                    <div className="flex items-center gap-3 mt-auto">
-                                                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${difficultyColors[suggestion.difficulty]}`}>
+                                                    <div className="mt-auto flex items-center gap-3">
+                                                        <span
+                                                            className={`rounded-md px-2.5 py-1 text-xs font-semibold ${difficultyColors[suggestion.difficulty]}`}
+                                                        >
                                                             {suggestion.difficulty}
                                                         </span>
-                                                        <span className="text-xs text-text-muted font-medium">
+                                                        <span className="text-xs font-medium text-text-muted">
                                                             ~{suggestion.estimatedLevels} levels
                                                         </span>
                                                     </div>
@@ -317,12 +358,16 @@ export default function CreateCoursePage() {
                                                 {isMounted && !llmStore.isConfigured() && (
                                                     <button
                                                         onClick={() => setShowApiKeyModal(true)}
-                                                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-surface/80 backdrop-blur-sm rounded-xl border-2 border-dashed border-yellow-500/50"
+                                                        className="bg-surface/80 absolute inset-0 flex items-center justify-center rounded-xl border-2 border-dashed border-yellow-500/50 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100"
                                                     >
-                                                        <div className="text-center px-4 transform scale-95 group-hover:scale-100 transition-transform">
-                                                            <AlertTriangle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                                                            <p className="text-sm font-bold text-foreground">Configure API Key</p>
-                                                            <span className="text-xs text-text-secondary">Click to setup</span>
+                                                        <div className="scale-95 transform px-4 text-center transition-transform group-hover:scale-100">
+                                                            <AlertTriangle className="mx-auto mb-2 h-8 w-8 text-yellow-500" />
+                                                            <p className="text-sm font-bold text-foreground">
+                                                                Configure API Key
+                                                            </p>
+                                                            <span className="text-xs text-text-secondary">
+                                                                Click to setup
+                                                            </span>
                                                         </div>
                                                     </button>
                                                 )}

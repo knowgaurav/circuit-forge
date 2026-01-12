@@ -45,24 +45,38 @@ export function FadeIn({
         <motion.div
             initial="hidden"
             whileInView="visible"
-            viewport={{ once, margin: "-100px" }} // Trigger when 100px into view
-            variants={direction === 'none' ? {
-                hidden: { opacity: 0 },
-                visible: { opacity: 1, transition: { duration, delay } }
-            } : directions}
-            className={cn(fullWidth ? "w-full" : "", className)}
+            viewport={{ once, margin: '-100px' }} // Trigger when 100px into view
+            variants={
+                direction === 'none'
+                    ? {
+                          hidden: { opacity: 0 },
+                          visible: { opacity: 1, transition: { duration, delay } },
+                      }
+                    : directions
+            }
+            className={cn(fullWidth ? 'w-full' : '', className)}
         >
             {children}
         </motion.div>
     );
 }
 
-export function StaggerContainer({ children, className, staggerChildren = 0.1, delayChildren = 0 }: { children: React.ReactNode, className?: string, staggerChildren?: number, delayChildren?: number }) {
+export function StaggerContainer({
+    children,
+    className,
+    staggerChildren = 0.1,
+    delayChildren = 0,
+}: {
+    children: React.ReactNode;
+    className?: string;
+    staggerChildren?: number;
+    delayChildren?: number;
+}) {
     return (
         <motion.div
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: '-100px' }}
             variants={{
                 hidden: {},
                 visible: {
@@ -81,5 +95,5 @@ export function StaggerContainer({ children, className, staggerChildren = 0.1, d
 
 export const fadeInItemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };

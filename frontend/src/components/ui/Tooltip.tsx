@@ -20,7 +20,7 @@ export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
             const rect = triggerRef.current.getBoundingClientRect();
             const tooltipWidth = 200; // max-width estimate
             const tooltipHeight = 30; // estimate
-            
+
             let x = rect.left + rect.width / 2;
             let y = rect.top;
 
@@ -55,22 +55,27 @@ export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
             >
                 {children}
             </div>
-            {isVisible && typeof window !== 'undefined' && createPortal(
-                <div
-                    ref={tooltipRef}
-                    className="fixed px-2 py-1.5 text-xs text-white bg-gray-900 rounded shadow-lg whitespace-nowrap pointer-events-none"
-                    style={{
-                        zIndex: 99999,
-                        left: position === 'left' || position === 'right' ? coords.x : coords.x,
-                        top: coords.y,
-                        transform: position === 'top' || position === 'bottom' ? 'translateX(-50%)' : 'translateY(-50%)',
-                    }}
-                    role="tooltip"
-                >
-                    {content}
-                </div>,
-                document.body
-            )}
+            {isVisible &&
+                typeof window !== 'undefined' &&
+                createPortal(
+                    <div
+                        ref={tooltipRef}
+                        className="pointer-events-none fixed whitespace-nowrap rounded bg-gray-900 px-2 py-1.5 text-xs text-white shadow-lg"
+                        style={{
+                            zIndex: 99999,
+                            left: position === 'left' || position === 'right' ? coords.x : coords.x,
+                            top: coords.y,
+                            transform:
+                                position === 'top' || position === 'bottom'
+                                    ? 'translateX(-50%)'
+                                    : 'translateY(-50%)',
+                        }}
+                        role="tooltip"
+                    >
+                        {content}
+                    </div>,
+                    document.body
+                )}
         </>
     );
 }

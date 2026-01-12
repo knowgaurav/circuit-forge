@@ -10,14 +10,10 @@ import type {
     MyCourseItem,
     Participant,
     TopicSuggestion,
-    ValidationResult
+    ValidationResult,
 } from '@/types';
 import type { LLMConfig } from '@/stores/llmConfigStore';
-import {
-    extractTraceFromResponse,
-    getTracingHeaders,
-    logErrorWithTrace,
-} from '@/utils/tracing';
+import { extractTraceFromResponse, getTracingHeaders, logErrorWithTrace } from '@/utils/tracing';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -36,10 +32,7 @@ class ApiClient {
         this.sessionCode = code;
     }
 
-    private async request<T>(
-        endpoint: string,
-        options: RequestInit = {}
-    ): Promise<T> {
+    private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
         const tracingHeaders = getTracingHeaders(this.sessionCode);
 
@@ -64,9 +57,10 @@ class ApiClient {
                 } else if (errorData?.error?.message) {
                     errorMessage = errorData.error.message;
                 } else if (errorData?.detail) {
-                    errorMessage = typeof errorData.detail === 'string'
-                        ? errorData.detail
-                        : JSON.stringify(errorData.detail);
+                    errorMessage =
+                        typeof errorData.detail === 'string'
+                            ? errorData.detail
+                            : JSON.stringify(errorData.detail);
                 }
             } catch {
                 errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -125,10 +119,7 @@ class ApiClient {
         });
     }
 
-    async closeSession(
-        code: string,
-        participantId: string
-    ): Promise<{ success: boolean }> {
+    async closeSession(code: string, participantId: string): Promise<{ success: boolean }> {
         return this.request(`/sessions/${code.toUpperCase()}/close`, {
             method: 'POST',
             body: JSON.stringify({ participantId }),
@@ -152,7 +143,7 @@ class ApiClient {
             temperature: llmConfig.temperature,
             maxTokens: llmConfig.maxTokens,
         };
-        
+
         // Add local LLM specific fields
         if (llmConfig.baseUrl) {
             config.baseUrl = llmConfig.baseUrl;
@@ -160,7 +151,7 @@ class ApiClient {
         if (llmConfig.bridgeToken) {
             config.bridgeToken = llmConfig.bridgeToken;
         }
-        
+
         return this.request('/courses/generate-plan', {
             method: 'POST',
             body: JSON.stringify({
@@ -240,7 +231,7 @@ class ApiClient {
             temperature: llmConfig.temperature,
             maxTokens: llmConfig.maxTokens,
         };
-        
+
         // Add local LLM specific fields
         if (llmConfig.baseUrl) {
             config.baseUrl = llmConfig.baseUrl;
@@ -248,7 +239,7 @@ class ApiClient {
         if (llmConfig.bridgeToken) {
             config.bridgeToken = llmConfig.bridgeToken;
         }
-        
+
         return this.request(`/courses/${courseId}/levels/${levelNum}`, {
             method: 'POST',
             body: JSON.stringify({

@@ -12,7 +12,9 @@ export function ThemeToggle() {
     return (
         <Tooltip content={theme === 'light' ? 'Dark mode' : 'Light mode'} position="bottom">
             <IconButton
-                icon={theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                icon={
+                    theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />
+                }
                 onClick={toggleTheme}
                 aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
                 variant="ghost"

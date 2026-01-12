@@ -17,17 +17,17 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
                 ref={ref}
                 className={clsx(
                     'inline-flex items-center justify-center rounded-md transition-all duration-200',
-                    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    'focus:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-offset-2',
+                    'disabled:cursor-not-allowed disabled:opacity-50',
                     {
                         // Variants
-                        'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow':
+                        'hover:bg-primary/90 bg-primary text-primary-foreground shadow-sm hover:shadow':
                             variant === 'primary',
-                        'bg-surface-secondary text-foreground hover:bg-surface-elevated border border-border/50':
+                        'border-border/50 border bg-surface-secondary text-foreground hover:bg-surface-elevated':
                             variant === 'secondary',
-                        'bg-transparent text-text-secondary hover:text-foreground hover:bg-surface-secondary':
+                        'bg-transparent text-text-secondary hover:bg-surface-secondary hover:text-foreground':
                             variant === 'ghost',
-                        'bg-error text-white hover:bg-error/90 shadow-sm hover:shadow-error/20':
+                        'hover:bg-error/90 hover:shadow-error/20 bg-error text-white shadow-sm':
                             variant === 'danger',
                         // Sizes
                         'p-1.5': size === 'sm',

@@ -22,10 +22,12 @@ const icons = {
 };
 
 const styles = {
-    success: 'bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800',
+    success:
+        'bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800',
     error: 'bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800',
     info: 'bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-    warning: 'bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+    warning:
+        'bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800',
 };
 
 export function Toast({ id, type, message, duration = 5000, onClose }: ToastProps) {
@@ -46,22 +48,22 @@ export function Toast({ id, type, message, duration = 5000, onClose }: ToastProp
     return (
         <div
             className={clsx(
-                'flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg',
+                'flex items-center gap-3 rounded-lg border px-4 py-3 shadow-lg',
                 'transition-all duration-300',
                 styles[type],
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+                isVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
             )}
             role="alert"
             aria-live="polite"
         >
-            <Icon className="w-5 h-5 flex-shrink-0" />
-            <p className="text-sm flex-1">{message}</p>
+            <Icon className="h-5 w-5 flex-shrink-0" />
+            <p className="flex-1 text-sm">{message}</p>
             <button
                 onClick={() => onClose(id)}
-                className="p-1 hover:bg-black/5 rounded transition-colors"
+                className="rounded p-1 transition-colors hover:bg-black/5"
                 aria-label="Dismiss notification"
             >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
             </button>
         </div>
     );

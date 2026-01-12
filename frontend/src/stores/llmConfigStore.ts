@@ -1,9 +1,9 @@
 /**
  * LLM Configuration Store
- * 
+ *
  * **Feature: user-llm-api-keys**
  * **Validates: Requirements 2.5, 7.7, 7.8**
- * 
+ *
  * - API key stored in session storage (cleared on tab close)
  * - Provider/model preferences stored in local storage (persisted)
  */
@@ -15,7 +15,7 @@ import { getDefaultModel } from '@/constants/llmProviders';
 interface LLMConfigState {
     // Session storage (cleared on tab close) - managed separately
     apiKey: string | null;
-    
+
     // Local LLM specific (session storage)
     baseUrl: string | null;
     bridgeToken: string | null;
@@ -101,7 +101,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
         (set, get) => ({
             // API key is managed via session storage, not persisted
             apiKey: null,
-            
+
             // Local LLM specific (session storage)
             baseUrl: null,
             bridgeToken: null,
@@ -126,7 +126,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
                 const defaultModel = getDefaultModel(provider);
                 set({
                     provider,
-                    model: defaultModel?.id || ''
+                    model: defaultModel?.id || '',
                 });
             },
 
@@ -149,7 +149,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
             isConfigured: () => {
                 const state = get();
                 const isLocalProvider = state.provider === 'local';
-                
+
                 if (isLocalProvider) {
                     const baseUrl = state.baseUrl || getSessionBaseUrl();
                     const token = state.bridgeToken || getSessionBridgeToken();
@@ -163,7 +163,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
             getConfig: () => {
                 const state = get();
                 const isLocalProvider = state.provider === 'local';
-                
+
                 if (isLocalProvider) {
                     const baseUrl = state.baseUrl || getSessionBaseUrl();
                     const token = state.bridgeToken || getSessionBridgeToken();

@@ -3,15 +3,36 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
-    MousePointer2, Hand, Pencil, Eraser, Undo2, Redo2,
-    Download, Upload, Image, Spline, Trash2, ArrowLeft,
-    ZoomIn, ZoomOut, RotateCcw, Save, FolderOpen
+    MousePointer2,
+    Hand,
+    Pencil,
+    Eraser,
+    Undo2,
+    Redo2,
+    Download,
+    Upload,
+    Image,
+    Spline,
+    Trash2,
+    ArrowLeft,
+    ZoomIn,
+    ZoomOut,
+    RotateCcw,
+    Save,
+    FolderOpen,
 } from 'lucide-react';
 
 import {
-    Button, IconButton, Modal, Badge,
-    ColorPicker, Tooltip, ToastContainer, ToastItem,
-    ThemeToggle, Input
+    Button,
+    IconButton,
+    Modal,
+    Badge,
+    ColorPicker,
+    Tooltip,
+    ToastContainer,
+    ToastItem,
+    ThemeToggle,
+    Input,
 } from '@/components/ui';
 import { Canvas, SimulationOverlay } from '@/components/circuit';
 import { ComponentPalette } from '@/components/circuit/ComponentPalette';
@@ -91,11 +112,20 @@ export default function PlaygroundPage() {
             updatedAt: new Date().toISOString(),
         };
         localStorage.setItem(PLAYGROUND_AUTOSAVE_KEY, JSON.stringify(state));
-    }, [circuitStore.components, circuitStore.wires, circuitStore.annotations, circuitStore.version]);
+    }, [
+        circuitStore.components,
+        circuitStore.wires,
+        circuitStore.annotations,
+        circuitStore.version,
+    ]);
 
     // Auto-save on changes
     useEffect(() => {
-        if (circuitStore.components.length > 0 || circuitStore.wires.length > 0 || circuitStore.annotations.length > 0) {
+        if (
+            circuitStore.components.length > 0 ||
+            circuitStore.wires.length > 0 ||
+            circuitStore.annotations.length > 0
+        ) {
             autoSave();
         }
     }, [circuitStore.components, circuitStore.wires, circuitStore.annotations, autoSave]);
@@ -138,11 +168,14 @@ export default function PlaygroundPage() {
         setIsResizing(true);
     };
 
-    const handleResizeMouseMove = useCallback((e: MouseEvent) => {
-        if (!isResizing) return;
-        const newWidth = Math.max(200, Math.min(400, e.clientX - 48));
-        setLeftSidebarWidth(newWidth);
-    }, [isResizing]);
+    const handleResizeMouseMove = useCallback(
+        (e: MouseEvent) => {
+            if (!isResizing) return;
+            const newWidth = Math.max(200, Math.min(400, e.clientX - 48));
+            setLeftSidebarWidth(newWidth);
+        },
+        [isResizing]
+    );
 
     const handleResizeMouseUp = useCallback(() => {
         setIsResizing(false);
@@ -169,8 +202,12 @@ export default function PlaygroundPage() {
     };
 
     // Note: Undo/redo not implemented in playground (would need history tracking)
-    const handleUndo = () => { /* TODO: implement undo */ };
-    const handleRedo = () => { /* TODO: implement redo */ };
+    const handleUndo = () => {
+        /* TODO: implement undo */
+    };
+    const handleRedo = () => {
+        /* TODO: implement redo */
+    };
 
     const handleDeleteSelected = () => {
         if (uiStore.selectedComponentIds.length === 0) return;
@@ -182,13 +219,13 @@ export default function PlaygroundPage() {
 
     const handleZoomIn = () => {
         const currentPercent = Math.round(uiStore.zoom * 100);
-        const nextPreset = ZOOM_PRESETS.find(p => p > currentPercent);
+        const nextPreset = ZOOM_PRESETS.find((p) => p > currentPercent);
         if (nextPreset) uiStore.setZoom(nextPreset / 100);
     };
 
     const handleZoomOut = () => {
         const currentPercent = Math.round(uiStore.zoom * 100);
-        const prevPreset = [...ZOOM_PRESETS].reverse().find(p => p < currentPercent);
+        const prevPreset = [...ZOOM_PRESETS].reverse().find((p) => p < currentPercent);
         if (prevPreset) uiStore.setZoom(prevPreset / 100);
     };
 
@@ -205,7 +242,12 @@ export default function PlaygroundPage() {
         circuitStore.addAnnotation(annotation);
     };
 
-    const handleWireCreate = (fromComponentId: string, fromPinId: string, toComponentId: string, toPinId: string) => {
+    const handleWireCreate = (
+        fromComponentId: string,
+        fromPinId: string,
+        toComponentId: string,
+        toPinId: string
+    ) => {
         const wire = {
             id: `wire-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             fromComponentId,
@@ -259,7 +301,7 @@ export default function PlaygroundPage() {
     };
 
     const handleDeleteSavedCircuit = (id: string) => {
-        const updated = savedCircuits.filter(c => c.id !== id);
+        const updated = savedCircuits.filter((c) => c.id !== id);
         localStorage.setItem(SAVED_CIRCUITS_KEY, JSON.stringify(updated));
         setSavedCircuits(updated);
         addToast('info', 'Circuit deleted');
@@ -349,15 +391,20 @@ export default function PlaygroundPage() {
     }, [uiStore.selectedComponentIds]);
 
     return (
-        <div className="h-screen flex flex-col bg-background">
+        <div className="flex h-screen flex-col bg-background">
             {/* Header */}
-            <header className="bg-surface/80 backdrop-blur-md border-b border-border px-4 py-2 flex items-center justify-between relative z-50">
+            <header className="bg-surface/80 relative z-50 flex items-center justify-between border-b border-border px-4 py-2 backdrop-blur-md">
                 <div className="flex items-center gap-4">
-                    <Link href="/" className="text-text-muted hover:text-foreground transition-colors group">
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    <Link
+                        href="/"
+                        className="group text-text-muted transition-colors hover:text-foreground"
+                    >
+                        <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
                     </Link>
                     <h1 className="font-semibold text-foreground">Playground</h1>
-                    <Badge variant="info" className="bg-primary/10 text-primary border-primary/20">Free Practice</Badge>
+                    <Badge variant="info" className="bg-primary/10 border-primary/20 text-primary">
+                        Free Practice
+                    </Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -375,49 +422,65 @@ export default function PlaygroundPage() {
                         onSimulationStateChange={setIsSimulationRunning}
                     />
 
-                    <div className="w-px h-6 bg-border mx-2" />
+                    <div className="mx-2 h-6 w-px bg-border" />
 
                     {/* Save/Load */}
                     <Tooltip content="Save circuit" position="bottom">
                         <IconButton
-                            icon={<Save className="w-4 h-4" />}
+                            icon={<Save className="h-4 w-4" />}
                             onClick={() => setShowSaveModal(true)}
                             aria-label="Save circuit"
                         />
                     </Tooltip>
                     <Tooltip content="My circuits" position="bottom">
                         <IconButton
-                            icon={<FolderOpen className="w-4 h-4" />}
-                            onClick={() => { loadSavedCircuits(); setShowLoadModal(true); }}
+                            icon={<FolderOpen className="h-4 w-4" />}
+                            onClick={() => {
+                                loadSavedCircuits();
+                                setShowLoadModal(true);
+                            }}
                             aria-label="Load circuit"
                         />
                     </Tooltip>
 
-                    <div className="w-px h-6 bg-border mx-2" />
+                    <div className="mx-2 h-6 w-px bg-border" />
 
                     {/* Export/Import */}
                     <Tooltip content="Export as PNG" position="bottom">
-                        <IconButton icon={<Image className="w-4 h-4" />} onClick={handleExportPng} aria-label="Export PNG" />
+                        <IconButton
+                            icon={<Image className="h-4 w-4" />}
+                            onClick={handleExportPng}
+                            aria-label="Export PNG"
+                        />
                     </Tooltip>
                     <Tooltip content="Export as JSON" position="bottom">
-                        <IconButton icon={<Download className="w-4 h-4" />} onClick={handleExportJson} aria-label="Export JSON" />
+                        <IconButton
+                            icon={<Download className="h-4 w-4" />}
+                            onClick={handleExportJson}
+                            aria-label="Export JSON"
+                        />
                     </Tooltip>
                     <Tooltip content="Import JSON" position="bottom">
-                        <label className="cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded hover:bg-surface-secondary text-text-muted transition-colors">
-                            <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
-                            <Upload className="w-4 h-4" />
+                        <label className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-text-muted transition-colors hover:bg-surface-secondary">
+                            <input
+                                type="file"
+                                accept=".json"
+                                onChange={handleImportJson}
+                                className="hidden"
+                            />
+                            <Upload className="h-4 w-4" />
                         </label>
                     </Tooltip>
 
-                    <div className="w-px h-6 bg-border mx-2" />
+                    <div className="mx-2 h-6 w-px bg-border" />
 
                     <Tooltip content="Clear board" position="bottom">
                         <IconButton
-                            icon={<RotateCcw className="w-4 h-4" />}
+                            icon={<RotateCcw className="h-4 w-4" />}
                             onClick={() => setShowClearConfirm(true)}
                             variant="ghost"
                             aria-label="Clear board"
-                            className="hover:text-error hover:bg-error/10"
+                            className="hover:bg-error/10 hover:text-error"
                         />
                     </Tooltip>
                     <ThemeToggle />
@@ -425,12 +488,12 @@ export default function PlaygroundPage() {
             </header>
 
             {/* Main content */}
-            <div className="flex-1 flex overflow-hidden relative">
+            <div className="relative flex flex-1 overflow-hidden">
                 {/* Toolbar */}
-                <div className="w-12 bg-surface border-r border-border flex flex-col items-center py-3 gap-1 z-40">
+                <div className="z-40 flex w-12 flex-col items-center gap-1 border-r border-border bg-surface py-3">
                     <Tooltip content="Select (V)" position="right">
                         <IconButton
-                            icon={<MousePointer2 className="w-5 h-5" />}
+                            icon={<MousePointer2 className="h-5 w-5" />}
                             onClick={() => handleToolSelect('select')}
                             variant={uiStore.selectedTool === 'select' ? 'primary' : 'ghost'}
                             aria-label="Select tool"
@@ -438,7 +501,7 @@ export default function PlaygroundPage() {
                     </Tooltip>
                     <Tooltip content="Pan (Space)" position="right">
                         <IconButton
-                            icon={<Hand className="w-5 h-5" />}
+                            icon={<Hand className="h-5 w-5" />}
                             onClick={() => handleToolSelect('pan')}
                             variant={uiStore.selectedTool === 'pan' ? 'primary' : 'ghost'}
                             aria-label="Pan tool"
@@ -446,7 +509,7 @@ export default function PlaygroundPage() {
                     </Tooltip>
                     <Tooltip content="Draw (D)" position="right">
                         <IconButton
-                            icon={<Pencil className="w-5 h-5" />}
+                            icon={<Pencil className="h-5 w-5" />}
                             onClick={() => handleToolSelect('draw')}
                             variant={uiStore.selectedTool === 'draw' ? 'primary' : 'ghost'}
                             aria-label="Draw tool"
@@ -454,7 +517,7 @@ export default function PlaygroundPage() {
                     </Tooltip>
                     <Tooltip content="Erase (E)" position="right">
                         <IconButton
-                            icon={<Eraser className="w-5 h-5" />}
+                            icon={<Eraser className="h-5 w-5" />}
                             onClick={() => handleToolSelect('erase')}
                             variant={uiStore.selectedTool === 'erase' ? 'primary' : 'ghost'}
                             aria-label="Erase tool"
@@ -462,18 +525,18 @@ export default function PlaygroundPage() {
                     </Tooltip>
                     <Tooltip content="Wire (W)" position="right">
                         <IconButton
-                            icon={<Spline className="w-5 h-5" />}
+                            icon={<Spline className="h-5 w-5" />}
                             onClick={() => handleToolSelect('wire')}
                             variant={uiStore.selectedTool === 'wire' ? 'primary' : 'ghost'}
                             aria-label="Wire tool"
                         />
                     </Tooltip>
 
-                    <div className="w-6 h-px bg-border my-2" />
+                    <div className="my-2 h-px w-6 bg-border" />
 
                     {/* Drawing options */}
                     {(uiStore.selectedTool === 'draw' || uiStore.selectedTool === 'erase') && (
-                        <div className="flex flex-col items-center gap-2 mb-2">
+                        <div className="mb-2 flex flex-col items-center gap-2">
                             <ColorPicker
                                 value={uiStore.selectedColor}
                                 onChange={(color) => uiStore.setSelectedColor(color)}
@@ -483,12 +546,16 @@ export default function PlaygroundPage() {
                                     <button
                                         key={width}
                                         onClick={() => uiStore.setStrokeWidth(width as 2 | 4 | 8)}
-                                        className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${uiStore.strokeWidth === width
-                                            ? 'bg-primary/20 text-primary ring-2 ring-primary/20'
-                                            : 'text-text-muted hover:bg-surface-secondary'
-                                            }`}
+                                        className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${
+                                            uiStore.strokeWidth === width
+                                                ? 'bg-primary/20 ring-primary/20 text-primary ring-2'
+                                                : 'text-text-muted hover:bg-surface-secondary'
+                                        }`}
                                     >
-                                        <div className="rounded-full bg-current" style={{ width: width * 2, height: width * 2 }} />
+                                        <div
+                                            className="rounded-full bg-current"
+                                            style={{ width: width * 2, height: width * 2 }}
+                                        />
                                     </button>
                                 ))}
                             </div>
@@ -499,23 +566,31 @@ export default function PlaygroundPage() {
 
                     {/* Undo/Redo */}
                     <Tooltip content="Undo (Ctrl+Z)" position="right">
-                        <IconButton icon={<Undo2 className="w-5 h-5" />} onClick={handleUndo} aria-label="Undo" />
+                        <IconButton
+                            icon={<Undo2 className="h-5 w-5" />}
+                            onClick={handleUndo}
+                            aria-label="Undo"
+                        />
                     </Tooltip>
                     <Tooltip content="Redo (Ctrl+Y)" position="right">
-                        <IconButton icon={<Redo2 className="w-5 h-5" />} onClick={handleRedo} aria-label="Redo" />
+                        <IconButton
+                            icon={<Redo2 className="h-5 w-5" />}
+                            onClick={handleRedo}
+                            aria-label="Redo"
+                        />
                     </Tooltip>
 
-                    <div className="w-6 h-px bg-border my-2" />
+                    <div className="my-2 h-px w-6 bg-border" />
 
                     {/* Delete */}
                     <Tooltip content="Delete selected" position="right">
                         <IconButton
-                            icon={<Trash2 className="w-5 h-5" />}
+                            icon={<Trash2 className="h-5 w-5" />}
                             onClick={handleDeleteSelected}
                             disabled={uiStore.selectedComponentIds.length === 0}
                             variant="ghost"
                             aria-label="Delete"
-                            className="hover:text-error hover:bg-error/10"
+                            className="hover:bg-error/10 hover:text-error"
                         />
                     </Tooltip>
 
@@ -524,20 +599,21 @@ export default function PlaygroundPage() {
                         <div className="relative">
                             <button
                                 onClick={() => setShowZoomDropdown(!showZoomDropdown)}
-                                className="text-xs text-text-muted hover:text-foreground hover:bg-surface-secondary px-1 py-1 rounded flex items-center justify-center min-w-[3rem]"
+                                className="flex min-w-[3rem] items-center justify-center rounded px-1 py-1 text-xs text-text-muted hover:bg-surface-secondary hover:text-foreground"
                             >
                                 {Math.round(uiStore.zoom * 100)}%
                             </button>
                             {showZoomDropdown && (
-                                <div className="absolute bottom-full left-full ml-2 mb-1 bg-surface border border-border rounded-lg shadow-xl py-1 min-w-[80px] z-50 overflow-hidden">
+                                <div className="absolute bottom-full left-full z-50 mb-1 ml-2 min-w-[80px] overflow-hidden rounded-lg border border-border bg-surface py-1 shadow-xl">
                                     {ZOOM_PRESETS.map((preset) => (
                                         <button
                                             key={preset}
                                             onClick={() => handleZoomPreset(preset)}
-                                            className={`w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 transition-colors ${Math.round(uiStore.zoom * 100) === preset
-                                                ? 'text-primary font-medium bg-primary/5'
-                                                : 'text-text-secondary'
-                                                }`}
+                                            className={`hover:bg-primary/10 w-full px-3 py-1.5 text-left text-sm transition-colors ${
+                                                Math.round(uiStore.zoom * 100) === preset
+                                                    ? 'bg-primary/5 font-medium text-primary'
+                                                    : 'text-text-secondary'
+                                            }`}
                                         >
                                             {preset}%
                                         </button>
@@ -546,29 +622,37 @@ export default function PlaygroundPage() {
                             )}
                         </div>
                         <div className="flex flex-col gap-1">
-                            <IconButton icon={<ZoomIn className="w-4 h-4" />} onClick={handleZoomIn} size="sm" aria-label="Zoom in" />
-                            <IconButton icon={<ZoomOut className="w-4 h-4" />} onClick={handleZoomOut} size="sm" aria-label="Zoom out" />
+                            <IconButton
+                                icon={<ZoomIn className="h-4 w-4" />}
+                                onClick={handleZoomIn}
+                                size="sm"
+                                aria-label="Zoom in"
+                            />
+                            <IconButton
+                                icon={<ZoomOut className="h-4 w-4" />}
+                                onClick={handleZoomOut}
+                                size="sm"
+                                aria-label="Zoom out"
+                            />
                         </div>
                     </div>
                 </div>
 
                 {/* Left Sidebar - Component Palette */}
                 <div
-                    className="bg-surface border-r border-border flex flex-col relative z-30"
+                    className="relative z-30 flex flex-col border-r border-border bg-surface"
                     style={{ width: leftSidebarWidth }}
                 >
-                    <ComponentPalette
-                        onDragStart={setDraggingComponent}
-                    />
+                    <ComponentPalette onDragStart={setDraggingComponent} />
                     {/* Resize handle */}
                     <div
-                        className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-50"
+                        className="hover:bg-primary/50 absolute right-0 top-0 z-50 h-full w-1 cursor-col-resize transition-colors"
                         onMouseDown={handleResizeMouseDown}
                     />
                 </div>
 
                 {/* Canvas */}
-                <div className="flex-1 relative bg-canvas-bg">
+                <div className="bg-canvas-bg relative flex-1">
                     <Canvas
                         simulationResult={simulationResult}
                         isSimulationRunning={isSimulationRunning}
@@ -592,7 +676,7 @@ export default function PlaygroundPage() {
                 onClose={handleDiscardAutosave}
                 title="Restore Previous Work?"
             >
-                <p className="text-text-secondary mb-6">
+                <p className="mb-6 text-text-secondary">
                     You have unsaved work from a previous session. Would you like to restore it?
                 </p>
                 <div className="flex gap-3">
@@ -611,11 +695,16 @@ export default function PlaygroundPage() {
                 onClose={() => setShowClearConfirm(false)}
                 title="Clear Board?"
             >
-                <p className="text-text-secondary mb-6">
-                    This will remove all components, wires, and annotations. This action cannot be undone.
+                <p className="mb-6 text-text-secondary">
+                    This will remove all components, wires, and annotations. This action cannot be
+                    undone.
                 </p>
                 <div className="flex gap-3">
-                    <Button variant="secondary" onClick={() => setShowClearConfirm(false)} className="flex-1">
+                    <Button
+                        variant="secondary"
+                        onClick={() => setShowClearConfirm(false)}
+                        className="flex-1"
+                    >
                         Cancel
                     </Button>
                     <Button variant="danger" onClick={handleClearBoard} className="flex-1">
@@ -639,7 +728,11 @@ export default function PlaygroundPage() {
                         autoFocus
                     />
                     <div className="flex gap-3 pt-2">
-                        <Button variant="secondary" onClick={() => setShowSaveModal(false)} className="flex-1">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowSaveModal(false)}
+                            className="flex-1"
+                        >
                             Cancel
                         </Button>
                         <Button variant="primary" onClick={handleSaveCircuit} className="flex-1">
@@ -655,30 +748,40 @@ export default function PlaygroundPage() {
                 onClose={() => setShowLoadModal(false)}
                 title="My Circuits"
             >
-                <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="custom-scrollbar max-h-[60vh] space-y-2 overflow-y-auto pr-2">
                     {savedCircuits.length === 0 ? (
-                        <div className="text-center py-12 flex flex-col items-center">
-                            <FolderOpen className="w-12 h-12 text-text-muted opacity-20 mb-4" />
+                        <div className="flex flex-col items-center py-12 text-center">
+                            <FolderOpen className="mb-4 h-12 w-12 text-text-muted opacity-20" />
                             <p className="text-text-muted">No saved circuits yet</p>
                         </div>
                     ) : (
                         savedCircuits.map((circuit) => (
                             <div
                                 key={circuit.id}
-                                className="flex items-center justify-between p-4 bg-surface-secondary/50 border border-border/50 rounded-xl hover:bg-surface-secondary transition-colors"
+                                className="bg-surface-secondary/50 border-border/50 flex items-center justify-between rounded-xl border p-4 transition-colors hover:bg-surface-secondary"
                             >
                                 <div>
                                     <p className="font-medium text-foreground">{circuit.name}</p>
-                                    <p className="text-xs text-text-muted mt-1">
-                                        {new Date(circuit.savedAt).toLocaleDateString()} • {circuit.state.components.length} components
+                                    <p className="mt-1 text-xs text-text-muted">
+                                        {new Date(circuit.savedAt).toLocaleDateString()} •{' '}
+                                        {circuit.state.components.length} components
                                     </p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button size="sm" variant="primary" onClick={() => handleLoadCircuit(circuit)}>
+                                    <Button
+                                        size="sm"
+                                        variant="primary"
+                                        onClick={() => handleLoadCircuit(circuit)}
+                                    >
                                         Load
                                     </Button>
-                                    <Button size="sm" variant="ghost" onClick={() => handleDeleteSavedCircuit(circuit.id)} className="text-text-muted hover:text-error hover:bg-error/10">
-                                        <Trash2 className="w-4 h-4" />
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleDeleteSavedCircuit(circuit.id)}
+                                        className="hover:bg-error/10 text-text-muted hover:text-error"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>

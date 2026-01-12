@@ -1,6 +1,6 @@
 /**
  * Circuit Template Definitions
- * 
+ *
  * Templates organized by 6 categories:
  * - Digital Logic Fundamentals
  * - Computing
@@ -44,33 +44,36 @@ export type TemplateCategory =
     | 'automation'
     | 'communication';
 
-export const TEMPLATE_CATEGORIES: Record<TemplateCategory, { name: string; description: string; icon: string }> = {
+export const TEMPLATE_CATEGORIES: Record<
+    TemplateCategory,
+    { name: string; description: string; icon: string }
+> = {
     'digital-logic': {
         name: 'Digital Logic Fundamentals',
         description: 'Learn basic logic gates and combinational circuits',
         icon: '🔌',
     },
-    'computing': {
+    computing: {
         name: 'Computing',
         description: 'Build ALUs, registers, and basic CPU components',
         icon: '💻',
     },
-    'sequential': {
+    sequential: {
         name: 'Sequential Circuits',
         description: 'Counters, shift registers, and state machines',
         icon: '🔄',
     },
-    'robotics': {
+    robotics: {
         name: 'Robotics',
         description: 'Motor controllers and robot logic circuits',
         icon: '🤖',
     },
-    'automation': {
+    automation: {
         name: 'Automation',
         description: 'Traffic lights, elevators, and control systems',
         icon: '🏭',
     },
-    'communication': {
+    communication: {
         name: 'Communication',
         description: 'UART, SPI, and I2C interfaces',
         icon: '📡',
@@ -92,7 +95,7 @@ function createComp(
         position: { x, y },
         rotation: 0,
         properties: {},
-        pins: pins.map(p => ({
+        pins: pins.map((p) => ({
             id: p.id,
             name: p.name,
             type: p.type,
@@ -102,7 +105,13 @@ function createComp(
 }
 
 // Helper to create wire
-function createWire(id: string, fromComp: string, fromPin: string, toComp: string, toPin: string): Wire {
+function createWire(
+    id: string,
+    fromComp: string,
+    fromPin: string,
+    toComp: string,
+    toPin: string
+): Wire {
     return {
         id,
         fromComponentId: fromComp,
@@ -123,7 +132,8 @@ const halfAdderTemplate: Template = {
     category: 'digital-logic',
     description: 'A circuit that adds two single bits',
     difficulty: 'beginner',
-    overview: 'A half adder is a combinational circuit that performs addition of two single bits. It produces a sum (S) and a carry (C) output.',
+    overview:
+        'A half adder is a combinational circuit that performs addition of two single bits. It produces a sum (S) and a carry (C) output.',
     theory: `
 Truth Table:
 | A | B | Sum | Carry |
@@ -138,8 +148,12 @@ Equations:
 - Carry = A AND B
     `,
     components: [
-        createComp('input-a', 'SWITCH_TOGGLE', 100, 100, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-b', 'SWITCH_TOGGLE', 100, 200, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('input-a', 'SWITCH_TOGGLE', 100, 100, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-b', 'SWITCH_TOGGLE', 100, 200, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('xor-gate', 'XOR_2', 250, 120, [
             { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
@@ -150,8 +164,12 @@ Equations:
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-sum', 'LED_GREEN', 400, 120, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-carry', 'LED_RED', 400, 200, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-sum', 'LED_GREEN', 400, 120, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-carry', 'LED_RED', 400, 200, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-a', 'out', 'xor-gate', 'in1'),
@@ -203,7 +221,8 @@ const fullAdderTemplate: Template = {
     category: 'digital-logic',
     description: 'A circuit that adds three single bits (including carry-in)',
     difficulty: 'beginner',
-    overview: 'A full adder adds three bits: two significant bits and a carry-in bit. It produces a sum and carry-out.',
+    overview:
+        'A full adder adds three bits: two significant bits and a carry-in bit. It produces a sum and carry-out.',
     theory: `
 A full adder can be built from two half adders and an OR gate.
 
@@ -220,9 +239,15 @@ Truth Table:
 | 1 | 1 |  1  |  1  |  1   |
     `,
     components: [
-        createComp('input-a', 'SWITCH_TOGGLE', 100, 80, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-b', 'SWITCH_TOGGLE', 100, 160, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-cin', 'SWITCH_TOGGLE', 100, 240, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('input-a', 'SWITCH_TOGGLE', 100, 80, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-b', 'SWITCH_TOGGLE', 100, 160, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-cin', 'SWITCH_TOGGLE', 100, 240, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('xor1', 'XOR_2', 220, 100, [
             { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
@@ -248,8 +273,12 @@ Truth Table:
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-sum', 'LED_GREEN', 500, 140, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-cout', 'LED_RED', 560, 220, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-sum', 'LED_GREEN', 500, 140, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-cout', 'LED_RED', 560, 220, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-a', 'out', 'xor1', 'in1'),
@@ -314,7 +343,8 @@ const decoder2to4Template: Template = {
     category: 'digital-logic',
     description: 'A decoder that converts 2-bit binary input to 4 output lines',
     difficulty: 'beginner',
-    overview: 'A 2-to-4 decoder takes a 2-bit binary input and activates one of four output lines based on the input value.',
+    overview:
+        'A 2-to-4 decoder takes a 2-bit binary input and activates one of four output lines based on the input value.',
     theory: `
 A decoder converts binary information from n input lines to 2^n unique output lines.
 
@@ -333,8 +363,12 @@ Equations:
 - Y3 = A1 AND A0
     `,
     components: [
-        createComp('input-a0', 'SWITCH_TOGGLE', 80, 120, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-a1', 'SWITCH_TOGGLE', 80, 200, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('input-a0', 'SWITCH_TOGGLE', 80, 120, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-a1', 'SWITCH_TOGGLE', 80, 200, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('not-a0', 'NOT', 180, 100, [
             { id: 'in', name: 'A', type: 'input', x: -25, y: 0 },
             { id: 'out', name: 'Y', type: 'output', x: 25, y: 0 },
@@ -363,10 +397,18 @@ Equations:
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-y0', 'LED_GREEN', 420, 80, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-y1', 'LED_GREEN', 420, 140, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-y2', 'LED_GREEN', 420, 200, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-y3', 'LED_GREEN', 420, 260, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-y0', 'LED_GREEN', 420, 80, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-y1', 'LED_GREEN', 420, 140, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-y2', 'LED_GREEN', 420, 200, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-y3', 'LED_GREEN', 420, 260, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-a0', 'out', 'not-a0', 'in'),
@@ -426,7 +468,8 @@ const rippleCarryAdderTemplate: Template = {
     category: 'digital-logic',
     description: 'A 4-bit adder built by cascading full adders',
     difficulty: 'intermediate',
-    overview: 'A ripple carry adder chains multiple full adders together, with the carry output of each stage feeding into the next.',
+    overview:
+        'A ripple carry adder chains multiple full adders together, with the carry output of each stage feeding into the next.',
     theory: `
 4-bit Ripple Carry Adder
 ========================
@@ -451,15 +494,31 @@ This is simple but slow for large bit widths.
     `,
     components: [
         // Inputs A[3:0]
-        createComp('a0', 'SWITCH_TOGGLE', 60, 80, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('a1', 'SWITCH_TOGGLE', 60, 160, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('a2', 'SWITCH_TOGGLE', 60, 240, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('a3', 'SWITCH_TOGGLE', 60, 320, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('a0', 'SWITCH_TOGGLE', 60, 80, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('a1', 'SWITCH_TOGGLE', 60, 160, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('a2', 'SWITCH_TOGGLE', 60, 240, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('a3', 'SWITCH_TOGGLE', 60, 320, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         // Inputs B[3:0]
-        createComp('b0', 'SWITCH_TOGGLE', 60, 120, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('b1', 'SWITCH_TOGGLE', 60, 200, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('b2', 'SWITCH_TOGGLE', 60, 280, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('b3', 'SWITCH_TOGGLE', 60, 360, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('b0', 'SWITCH_TOGGLE', 60, 120, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('b1', 'SWITCH_TOGGLE', 60, 200, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('b2', 'SWITCH_TOGGLE', 60, 280, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('b3', 'SWITCH_TOGGLE', 60, 360, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         // Use 4-bit adder component
         createComp('adder', 'ADDER_4BIT', 250, 220, [
             { id: 'a0', name: 'A0', type: 'input', x: -50, y: -60 },
@@ -477,11 +536,21 @@ This is simple but slow for large bit widths.
             { id: 'cout', name: 'Cout', type: 'output', x: 50, y: 75 },
         ]),
         // Output LEDs
-        createComp('led-s0', 'LED_GREEN', 400, 100, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-s1', 'LED_GREEN', 400, 160, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-s2', 'LED_GREEN', 400, 220, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-s3', 'LED_GREEN', 400, 280, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-cout', 'LED_RED', 400, 340, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-s0', 'LED_GREEN', 400, 100, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-s1', 'LED_GREEN', 400, 160, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-s2', 'LED_GREEN', 400, 220, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-s3', 'LED_GREEN', 400, 280, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-cout', 'LED_RED', 400, 340, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'a0', 'out', 'adder', 'a0'),
@@ -544,7 +613,8 @@ const comparator4BitTemplate: Template = {
     category: 'computing',
     description: 'Compare two 4-bit numbers and determine their relationship',
     difficulty: 'intermediate',
-    overview: 'A 4-bit comparator compares two binary numbers and outputs whether A > B, A = B, or A < B.',
+    overview:
+        'A 4-bit comparator compares two binary numbers and outputs whether A > B, A = B, or A < B.',
     theory: `
 4-bit Magnitude Comparator
 ==========================
@@ -564,14 +634,30 @@ A = 0110 (6), B = 0100 (4)
 Result: A > B (A_GT_B = 1)
     `,
     components: [
-        createComp('a0', 'SWITCH_TOGGLE', 60, 80, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('a1', 'SWITCH_TOGGLE', 60, 130, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('a2', 'SWITCH_TOGGLE', 60, 180, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('a3', 'SWITCH_TOGGLE', 60, 230, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('b0', 'SWITCH_TOGGLE', 60, 300, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('b1', 'SWITCH_TOGGLE', 60, 350, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('b2', 'SWITCH_TOGGLE', 60, 400, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('b3', 'SWITCH_TOGGLE', 60, 450, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('a0', 'SWITCH_TOGGLE', 60, 80, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('a1', 'SWITCH_TOGGLE', 60, 130, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('a2', 'SWITCH_TOGGLE', 60, 180, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('a3', 'SWITCH_TOGGLE', 60, 230, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('b0', 'SWITCH_TOGGLE', 60, 300, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('b1', 'SWITCH_TOGGLE', 60, 350, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('b2', 'SWITCH_TOGGLE', 60, 400, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('b3', 'SWITCH_TOGGLE', 60, 450, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('comparator', 'COMPARATOR_4BIT', 250, 260, [
             { id: 'a0', name: 'A0', type: 'input', x: -50, y: -60 },
             { id: 'a1', name: 'A1', type: 'input', x: -50, y: -30 },
@@ -585,9 +671,15 @@ Result: A > B (A_GT_B = 1)
             { id: 'eq', name: 'A=B', type: 'output', x: 50, y: 0 },
             { id: 'lt', name: 'A<B', type: 'output', x: 50, y: 20 },
         ]),
-        createComp('led-gt', 'LED_GREEN', 400, 200, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-eq', 'LED_YELLOW', 400, 260, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-lt', 'LED_RED', 400, 320, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-gt', 'LED_GREEN', 400, 200, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-eq', 'LED_YELLOW', 400, 260, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-lt', 'LED_RED', 400, 320, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'a0', 'out', 'comparator', 'a0'),
@@ -642,7 +734,8 @@ const multiplexerDemoTemplate: Template = {
     category: 'computing',
     description: 'Learn how multiplexers select between multiple data inputs',
     difficulty: 'beginner',
-    overview: 'A multiplexer (MUX) selects one of several input signals and forwards it to the output based on select lines.',
+    overview:
+        'A multiplexer (MUX) selects one of several input signals and forwards it to the output based on select lines.',
     theory: `
 2-to-1 Multiplexer
 ==================
@@ -667,16 +760,24 @@ Applications:
 - Signal switching
     `,
     components: [
-        createComp('input-a', 'SWITCH_TOGGLE', 80, 100, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-b', 'SWITCH_TOGGLE', 80, 160, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('select', 'SWITCH_TOGGLE', 80, 240, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('input-a', 'SWITCH_TOGGLE', 80, 100, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-b', 'SWITCH_TOGGLE', 80, 160, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('select', 'SWITCH_TOGGLE', 80, 240, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('mux', 'MUX_2TO1', 250, 150, [
             { id: 'a', name: 'A', type: 'input', x: -30, y: -15 },
             { id: 'b', name: 'B', type: 'input', x: -30, y: 0 },
             { id: 's', name: 'S', type: 'input', x: -30, y: 15 },
             { id: 'y', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-out', 'LED_GREEN', 380, 150, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-out', 'LED_GREEN', 380, 150, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-a', 'out', 'mux', 'a'),
@@ -729,7 +830,8 @@ const srLatchTemplate: Template = {
     category: 'sequential',
     description: 'A basic memory element that stores one bit',
     difficulty: 'beginner',
-    overview: 'An SR latch is the simplest form of memory. It can store one bit of information using Set and Reset inputs.',
+    overview:
+        'An SR latch is the simplest form of memory. It can store one bit of information using Set and Reset inputs.',
     theory: `
 The SR latch has two inputs: Set (S) and Reset (R).
 - S=1, R=0: Sets Q to 1
@@ -741,16 +843,24 @@ Internally, an SR latch is built from cross-coupled NOR gates,
 but here we use a pre-built SR_LATCH component for simulation.
     `,
     components: [
-        createComp('input-s', 'SWITCH_TOGGLE', 100, 120, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-r', 'SWITCH_TOGGLE', 100, 180, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('input-s', 'SWITCH_TOGGLE', 100, 120, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-r', 'SWITCH_TOGGLE', 100, 180, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('sr-latch', 'SR_LATCH', 250, 150, [
             { id: 's', name: 'S', type: 'input', x: -30, y: -15 },
             { id: 'r', name: 'R', type: 'input', x: -30, y: 15 },
             { id: 'q', name: 'Q', type: 'output', x: 30, y: -15 },
             { id: 'qn', name: "Q'", type: 'output', x: 30, y: 15 },
         ]),
-        createComp('led-q', 'LED_GREEN', 400, 120, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-qn', 'LED_RED', 400, 180, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-q', 'LED_GREEN', 400, 120, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-qn', 'LED_RED', 400, 180, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-s', 'out', 'sr-latch', 's'),
@@ -792,7 +902,8 @@ const dFlipFlopTemplate: Template = {
     category: 'sequential',
     description: 'A clocked memory element that captures data on clock edge',
     difficulty: 'beginner',
-    overview: 'A D flip-flop captures the value of the D input at the rising edge of the clock and holds it until the next clock edge.',
+    overview:
+        'A D flip-flop captures the value of the D input at the rising edge of the clock and holds it until the next clock edge.',
     theory: `
 D Flip-Flop (Data Flip-Flop)
 ============================
@@ -822,16 +933,24 @@ Applications:
 - Data synchronization
     `,
     components: [
-        createComp('input-d', 'SWITCH_TOGGLE', 80, 120, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('clock', 'CLOCK', 80, 200, [{ id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 }]),
+        createComp('input-d', 'SWITCH_TOGGLE', 80, 120, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('clock', 'CLOCK', 80, 200, [
+            { id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('dff', 'D_FLIPFLOP', 250, 160, [
             { id: 'd', name: 'D', type: 'input', x: -30, y: -15 },
             { id: 'clk', name: 'CLK', type: 'input', x: -30, y: 15 },
             { id: 'q', name: 'Q', type: 'output', x: 30, y: -15 },
             { id: 'qn', name: "Q'", type: 'output', x: 30, y: 15 },
         ]),
-        createComp('led-q', 'LED_GREEN', 400, 130, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-qn', 'LED_RED', 400, 190, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-q', 'LED_GREEN', 400, 130, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-qn', 'LED_RED', 400, 190, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-d', 'out', 'dff', 'd'),
@@ -881,7 +1000,8 @@ const jkCounterTemplate: Template = {
     category: 'sequential',
     description: 'Build a 2-bit counter using JK flip-flops',
     difficulty: 'intermediate',
-    overview: 'Learn how JK flip-flops can be configured to create a binary counter that cycles through states 0, 1, 2, 3.',
+    overview:
+        'Learn how JK flip-flops can be configured to create a binary counter that cycles through states 0, 1, 2, 3.',
     theory: `
 2-bit Asynchronous Counter using JK Flip-Flops
 ==============================================
@@ -912,8 +1032,12 @@ JK Truth Table:
 | 1 | 1 | Q' (toggle)|
     `,
     components: [
-        createComp('clock', 'CLOCK', 80, 150, [{ id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 }]),
-        createComp('vcc', 'CONST_HIGH', 80, 80, [{ id: 'out', name: 'OUT', type: 'output', x: 15, y: 0 }]),
+        createComp('clock', 'CLOCK', 80, 150, [
+            { id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('vcc', 'CONST_HIGH', 80, 80, [
+            { id: 'out', name: 'OUT', type: 'output', x: 15, y: 0 },
+        ]),
         createComp('jk0', 'JK_FLIPFLOP', 220, 150, [
             { id: 'j', name: 'J', type: 'input', x: -30, y: -20 },
             { id: 'clk', name: 'CLK', type: 'input', x: -30, y: 0 },
@@ -928,8 +1052,12 @@ JK Truth Table:
             { id: 'q', name: 'Q', type: 'output', x: 30, y: -15 },
             { id: 'qn', name: "Q'", type: 'output', x: 30, y: 15 },
         ]),
-        createComp('led-q0', 'LED_GREEN', 500, 100, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-q1', 'LED_GREEN', 500, 160, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-q0', 'LED_GREEN', 500, 100, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-q1', 'LED_GREEN', 500, 160, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'vcc', 'out', 'jk0', 'j'),
@@ -983,7 +1111,8 @@ const shiftRegisterTemplate: Template = {
     category: 'sequential',
     description: 'A register that shifts data through a chain of flip-flops',
     difficulty: 'intermediate',
-    overview: 'A shift register moves data bits through a series of flip-flops on each clock pulse, useful for serial-to-parallel conversion.',
+    overview:
+        'A shift register moves data bits through a series of flip-flops on each clock pulse, useful for serial-to-parallel conversion.',
     theory: `
 4-bit Serial-In Parallel-Out (SIPO) Shift Register
 ==================================================
@@ -1012,8 +1141,12 @@ Applications:
 - Pseudo-random number generators
     `,
     components: [
-        createComp('serial-in', 'SWITCH_TOGGLE', 60, 100, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('clock', 'CLOCK', 60, 180, [{ id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 }]),
+        createComp('serial-in', 'SWITCH_TOGGLE', 60, 100, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('clock', 'CLOCK', 60, 180, [
+            { id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('shift-reg', 'SHIFT_REGISTER_8BIT', 280, 150, [
             { id: 'si', name: 'SI', type: 'input', x: -60, y: -20 },
             { id: 'clk', name: 'CLK', type: 'input', x: -60, y: 20 },
@@ -1026,10 +1159,18 @@ Applications:
             { id: 'q6', name: 'Q6', type: 'output', x: 60, y: 85 },
             { id: 'q7', name: 'Q7', type: 'output', x: 60, y: 105 },
         ]),
-        createComp('led-q0', 'LED_GREEN', 450, 80, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-q1', 'LED_GREEN', 450, 110, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-q2', 'LED_GREEN', 450, 140, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-q3', 'LED_GREEN', 450, 170, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-q0', 'LED_GREEN', 450, 80, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-q1', 'LED_GREEN', 450, 110, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-q2', 'LED_GREEN', 450, 140, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-q3', 'LED_GREEN', 450, 170, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'serial-in', 'out', 'shift-reg', 'si'),
@@ -1084,7 +1225,8 @@ const motorControllerTemplate: Template = {
     category: 'robotics',
     description: 'Control a DC motor direction using an H-bridge logic circuit',
     difficulty: 'intermediate',
-    overview: 'Learn how to control motor direction using digital logic that mimics an H-bridge configuration.',
+    overview:
+        'Learn how to control motor direction using digital logic that mimics an H-bridge configuration.',
     theory: `
 DC Motor Direction Control (H-Bridge Logic)
 ============================================
@@ -1109,8 +1251,12 @@ Real H-bridges use transistors/MOSFETs,
 but the control logic is the same.
     `,
     components: [
-        createComp('sw-fwd', 'SWITCH_TOGGLE', 80, 100, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('sw-rev', 'SWITCH_TOGGLE', 80, 180, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('sw-fwd', 'SWITCH_TOGGLE', 80, 100, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('sw-rev', 'SWITCH_TOGGLE', 80, 180, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('xor-dir', 'XOR_2', 200, 140, [
             { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
@@ -1126,8 +1272,12 @@ but the control logic is the same.
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-fwd', 'LED_GREEN', 450, 100, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-rev', 'LED_RED', 450, 180, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-fwd', 'LED_GREEN', 450, 100, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-rev', 'LED_RED', 450, 180, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
         createComp('motor', 'MOTOR_DC', 450, 260, [
             { id: 'fwd', name: 'FWD', type: 'input', x: -30, y: -10 },
             { id: 'rev', name: 'REV', type: 'input', x: -30, y: 10 },
@@ -1187,7 +1337,8 @@ const lineFollowerLogicTemplate: Template = {
     category: 'robotics',
     description: 'Basic logic for a line-following robot using two sensors',
     difficulty: 'advanced',
-    overview: 'Implement the decision logic for a line-following robot that uses two IR sensors to detect a line and control two motors.',
+    overview:
+        'Implement the decision logic for a line-following robot that uses two IR sensors to detect a line and control two motors.',
     theory: `
 Line Follower Robot Logic
 =========================
@@ -1218,8 +1369,12 @@ Logic:
 - Right Motor = Left Sensor
     `,
     components: [
-        createComp('sensor-left', 'SWITCH_TOGGLE', 80, 100, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('sensor-right', 'SWITCH_TOGGLE', 80, 180, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('sensor-left', 'SWITCH_TOGGLE', 80, 100, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('sensor-right', 'SWITCH_TOGGLE', 80, 180, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('or-both', 'OR_2', 200, 260, [
             { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
@@ -1235,9 +1390,15 @@ Logic:
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-left', 'LED_GREEN', 450, 100, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-right', 'LED_GREEN', 450, 180, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-active', 'LED_BLUE', 450, 260, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-left', 'LED_GREEN', 450, 100, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-right', 'LED_GREEN', 450, 180, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-active', 'LED_BLUE', 450, 260, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'sensor-left', 'out', 'or-both', 'in1'),
@@ -1349,7 +1510,9 @@ Key Learning Points:
     `,
     components: [
         // Clock source
-        createComp('clock', 'CLOCK', 80, 180, [{ id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 }]),
+        createComp('clock', 'CLOCK', 80, 180, [
+            { id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 },
+        ]),
         // 4-bit counter (we use Q0, Q1 for 4 states)
         createComp('counter', 'COUNTER_4BIT', 180, 180, [
             { id: 'clk', name: 'CLK', type: 'input', x: -40, y: 0 },
@@ -1374,9 +1537,15 @@ Key Learning Points:
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
         // Output LEDs
-        createComp('led-red', 'LED_RED', 550, 120, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-yellow', 'LED_YELLOW', 550, 200, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-green', 'LED_GREEN', 550, 280, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-red', 'LED_RED', 550, 120, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-yellow', 'LED_YELLOW', 550, 200, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-green', 'LED_GREEN', 550, 280, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         // Clock to counter
@@ -1407,7 +1576,8 @@ Key Learning Points:
         {
             id: 'step-2',
             title: 'Add 4-Bit Counter',
-            description: 'Add a counter that increments on each clock pulse. We use Q0 and Q1 for 4 states (0-3)',
+            description:
+                'Add a counter that increments on each clock pulse. We use Q0 and Q1 for 4 states (0-3)',
             components: ['counter'],
             wires: ['w1'],
             hint: 'The counter creates the sequence: 0 → 1 → 2 → 3 → 0...',
@@ -1415,7 +1585,8 @@ Key Learning Points:
         {
             id: 'step-3',
             title: 'Add 2-to-4 Decoder',
-            description: 'The decoder converts the 2-bit count into 4 separate outputs (one-hot encoding)',
+            description:
+                'The decoder converts the 2-bit count into 4 separate outputs (one-hot encoding)',
             components: ['decoder'],
             wires: ['w2', 'w3'],
             hint: 'Each decoder output corresponds to one state: Y0=RED, Y1=YELLOW1, Y2=GREEN, Y3=YELLOW2',
@@ -1423,7 +1594,8 @@ Key Learning Points:
         {
             id: 'step-4',
             title: 'Add OR Gate for Yellow',
-            description: 'Yellow appears in states 1 AND 3, so we OR those decoder outputs together',
+            description:
+                'Yellow appears in states 1 AND 3, so we OR those decoder outputs together',
             components: ['or-yellow'],
             wires: ['w5', 'w7', 'w8'],
             hint: 'The OR gate combines two conditions: state 1 OR state 3 = YELLOW on',
@@ -1445,7 +1617,8 @@ const elevatorControllerTemplate: Template = {
     category: 'automation',
     description: 'A 2-floor elevator controller with call buttons and floor indicators',
     difficulty: 'advanced',
-    overview: 'Build a simple elevator controller that responds to floor call buttons and tracks the current floor position.',
+    overview:
+        'Build a simple elevator controller that responds to floor call buttons and tracks the current floor position.',
     theory: `
 2-Floor Elevator Controller
 ===========================
@@ -1476,10 +1649,18 @@ Try it:
 3. Toggle to Sensor-2 ON → Door opens
     `,
     components: [
-        createComp('call-1', 'SWITCH_PUSH', 60, 80, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('call-2', 'SWITCH_PUSH', 60, 140, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('sensor-1', 'SWITCH_TOGGLE', 60, 220, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('sensor-2', 'SWITCH_TOGGLE', 60, 280, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('call-1', 'SWITCH_PUSH', 60, 80, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('call-2', 'SWITCH_PUSH', 60, 140, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('sensor-1', 'SWITCH_TOGGLE', 60, 220, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('sensor-2', 'SWITCH_TOGGLE', 60, 280, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('and-up', 'AND_2', 220, 110, [
             { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
@@ -1495,11 +1676,21 @@ Try it:
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-up', 'LED_GREEN', 360, 90, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-down', 'LED_RED', 360, 150, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-f1', 'LED_YELLOW', 360, 210, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-f2', 'LED_YELLOW', 360, 270, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-door', 'LED_BLUE', 360, 330, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-up', 'LED_GREEN', 360, 90, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-down', 'LED_RED', 360, 150, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-f1', 'LED_YELLOW', 360, 210, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-f2', 'LED_YELLOW', 360, 270, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-door', 'LED_BLUE', 360, 330, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         // Move UP: call-2 pressed AND currently at floor 1 (sensor-1 ON)
@@ -1567,7 +1758,8 @@ const alarmSystemTemplate: Template = {
     category: 'automation',
     description: 'A simple security alarm with multiple sensors and arm/disarm control',
     difficulty: 'intermediate',
-    overview: 'Build a security alarm system that monitors multiple sensors and triggers an alarm when armed and a sensor is tripped.',
+    overview:
+        'Build a security alarm system that monitors multiple sensors and triggers an alarm when armed and a sensor is tripped.',
     theory: `
 Security Alarm System
 =====================
@@ -1594,10 +1786,18 @@ Zone Indicators:
 - Useful for identifying the breach point
     `,
     components: [
-        createComp('arm-switch', 'SWITCH_TOGGLE', 60, 80, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('door-sensor', 'SWITCH_TOGGLE', 60, 160, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('window-sensor', 'SWITCH_TOGGLE', 60, 220, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('motion-sensor', 'SWITCH_TOGGLE', 60, 280, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('arm-switch', 'SWITCH_TOGGLE', 60, 80, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('door-sensor', 'SWITCH_TOGGLE', 60, 160, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('window-sensor', 'SWITCH_TOGGLE', 60, 220, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('motion-sensor', 'SWITCH_TOGGLE', 60, 280, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('or-zones', 'OR_2', 200, 190, [
             { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
@@ -1613,11 +1813,21 @@ Zone Indicators:
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-armed', 'LED_GREEN', 520, 80, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-alarm', 'LED_RED', 520, 150, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-door', 'LED_YELLOW', 520, 220, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-window', 'LED_YELLOW', 520, 280, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-motion', 'LED_YELLOW', 520, 340, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-armed', 'LED_GREEN', 520, 80, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-alarm', 'LED_RED', 520, 150, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-door', 'LED_YELLOW', 520, 220, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-window', 'LED_YELLOW', 520, 280, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-motion', 'LED_YELLOW', 520, 340, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'door-sensor', 'out', 'or-zones', 'in1'),
@@ -1686,7 +1896,8 @@ const parallelToSerialTemplate: Template = {
     category: 'communication',
     description: 'Convert 4-bit parallel data to serial output using a shift register',
     difficulty: 'intermediate',
-    overview: 'Learn how parallel data is converted to serial format for transmission over a single wire, a fundamental concept in serial communication.',
+    overview:
+        'Learn how parallel data is converted to serial format for transmission over a single wire, a fundamental concept in serial communication.',
     theory: `
 Parallel to Serial Conversion (PISO)
 ====================================
@@ -1713,11 +1924,21 @@ Applications:
 - Reducing wire count in long-distance communication
     `,
     components: [
-        createComp('d0', 'SWITCH_TOGGLE', 60, 80, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('d1', 'SWITCH_TOGGLE', 60, 130, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('d2', 'SWITCH_TOGGLE', 60, 180, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('d3', 'SWITCH_TOGGLE', 60, 230, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('clock', 'CLOCK', 60, 300, [{ id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 }]),
+        createComp('d0', 'SWITCH_TOGGLE', 60, 80, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('d1', 'SWITCH_TOGGLE', 60, 130, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('d2', 'SWITCH_TOGGLE', 60, 180, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('d3', 'SWITCH_TOGGLE', 60, 230, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('clock', 'CLOCK', 60, 300, [
+            { id: 'out', name: 'CLK', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('shift-reg', 'SHIFT_REGISTER_8BIT', 280, 180, [
             { id: 'si', name: 'SI', type: 'input', x: -60, y: -20 },
             { id: 'clk', name: 'CLK', type: 'input', x: -60, y: 20 },
@@ -1730,11 +1951,21 @@ Applications:
             { id: 'q6', name: 'Q6', type: 'output', x: 60, y: 85 },
             { id: 'q7', name: 'Q7', type: 'output', x: 60, y: 105 },
         ]),
-        createComp('led-serial', 'LED_GREEN', 450, 100, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-d0', 'LED_BLUE', 450, 160, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-d1', 'LED_BLUE', 450, 200, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-d2', 'LED_BLUE', 450, 240, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-d3', 'LED_BLUE', 450, 280, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-serial', 'LED_GREEN', 450, 100, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-d0', 'LED_BLUE', 450, 160, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-d1', 'LED_BLUE', 450, 200, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-d2', 'LED_BLUE', 450, 240, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-d3', 'LED_BLUE', 450, 280, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'd0', 'out', 'shift-reg', 'si'),
@@ -1786,7 +2017,8 @@ const encoderDecoderTemplate: Template = {
     category: 'communication',
     description: 'Learn how encoders compress data and decoders expand it',
     difficulty: 'beginner',
-    overview: 'Encoders convert multiple input lines to a binary code, while decoders do the reverse. These are fundamental to address decoding and data compression.',
+    overview:
+        'Encoders convert multiple input lines to a binary code, while decoders do the reverse. These are fundamental to address decoding and data compression.',
     theory: `
 Priority Encoder and Decoder
 ============================
@@ -1819,8 +2051,12 @@ Applications:
 - Interrupt priority handling
     `,
     components: [
-        createComp('a0', 'SWITCH_TOGGLE', 80, 120, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('a1', 'SWITCH_TOGGLE', 80, 180, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('a0', 'SWITCH_TOGGLE', 80, 120, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('a1', 'SWITCH_TOGGLE', 80, 180, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('decoder', 'DECODER_2TO4', 250, 150, [
             { id: 'a0', name: 'A0', type: 'input', x: -40, y: -15 },
             { id: 'a1', name: 'A1', type: 'input', x: -40, y: 15 },
@@ -1829,10 +2065,18 @@ Applications:
             { id: 'y2', name: 'Y2', type: 'output', x: 40, y: 10 },
             { id: 'y3', name: 'Y3', type: 'output', x: 40, y: 30 },
         ]),
-        createComp('led-y0', 'LED_GREEN', 400, 90, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-y1', 'LED_GREEN', 400, 130, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-y2', 'LED_GREEN', 400, 170, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-y3', 'LED_GREEN', 400, 210, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-y0', 'LED_GREEN', 400, 90, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-y1', 'LED_GREEN', 400, 130, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-y2', 'LED_GREEN', 400, 170, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-y3', 'LED_GREEN', 400, 210, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'a0', 'out', 'decoder', 'a0'),
@@ -1880,7 +2124,8 @@ const nandGateTemplate: Template = {
     category: 'digital-logic',
     description: 'Build NOT, AND, OR gates using only NAND gates',
     difficulty: 'beginner',
-    overview: 'NAND is a universal gate - you can build any logic circuit using only NAND gates. Learn how to create basic gates from NAND.',
+    overview:
+        'NAND is a universal gate - you can build any logic circuit using only NAND gates. Learn how to create basic gates from NAND.',
     theory: `
 NAND as Universal Gate
 ======================
@@ -1899,8 +2144,12 @@ Truth Table (NAND):
 | 1 | 1 | 0 |
     `,
     components: [
-        createComp('input-a', 'SWITCH_TOGGLE', 80, 100, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-b', 'SWITCH_TOGGLE', 80, 180, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
+        createComp('input-a', 'SWITCH_TOGGLE', 80, 100, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-b', 'SWITCH_TOGGLE', 80, 180, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
         createComp('nand1', 'NAND_2', 200, 140, [
             { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
@@ -1911,8 +2160,12 @@ Truth Table (NAND):
             { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
             { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
         ]),
-        createComp('led-nand', 'LED_GREEN', 250, 60, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
-        createComp('led-and', 'LED_BLUE', 420, 140, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('led-nand', 'LED_GREEN', 250, 60, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
+        createComp('led-and', 'LED_BLUE', 420, 140, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-a', 'out', 'nand1', 'in1'),
@@ -1923,10 +2176,34 @@ Truth Table (NAND):
         createWire('w6', 'nand2', 'out', 'led-and', 'in'),
     ],
     steps: [
-        { id: 'step-1', title: 'Add Inputs', description: 'Place two toggle switches', components: ['input-a', 'input-b'], wires: [] },
-        { id: 'step-2', title: 'Add First NAND', description: 'This performs A NAND B', components: ['nand1'], wires: ['w1', 'w2'] },
-        { id: 'step-3', title: 'Show NAND Output', description: 'Green LED shows NAND result', components: ['led-nand'], wires: ['w3'] },
-        { id: 'step-4', title: 'Create AND from NAND', description: 'NAND the NAND output with itself to get AND', components: ['nand2', 'led-and'], wires: ['w4', 'w5', 'w6'] },
+        {
+            id: 'step-1',
+            title: 'Add Inputs',
+            description: 'Place two toggle switches',
+            components: ['input-a', 'input-b'],
+            wires: [],
+        },
+        {
+            id: 'step-2',
+            title: 'Add First NAND',
+            description: 'This performs A NAND B',
+            components: ['nand1'],
+            wires: ['w1', 'w2'],
+        },
+        {
+            id: 'step-3',
+            title: 'Show NAND Output',
+            description: 'Green LED shows NAND result',
+            components: ['led-nand'],
+            wires: ['w3'],
+        },
+        {
+            id: 'step-4',
+            title: 'Create AND from NAND',
+            description: 'NAND the NAND output with itself to get AND',
+            components: ['nand2', 'led-and'],
+            wires: ['w4', 'w5', 'w6'],
+        },
     ],
 };
 
@@ -1936,7 +2213,8 @@ const xorFromBasicGatesTemplate: Template = {
     category: 'digital-logic',
     description: 'Build an XOR gate using AND, OR, and NOT gates',
     difficulty: 'intermediate',
-    overview: 'Learn how complex gates are built from simpler ones by constructing XOR from AND, OR, and NOT.',
+    overview:
+        'Learn how complex gates are built from simpler ones by constructing XOR from AND, OR, and NOT.',
     theory: `
 XOR from Basic Gates
 ====================
@@ -1953,14 +2231,38 @@ This is the "exclusive or" - true when inputs differ.
 | 1 | 1 |    0    |
     `,
     components: [
-        createComp('input-a', 'SWITCH_TOGGLE', 60, 100, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('input-b', 'SWITCH_TOGGLE', 60, 200, [{ id: 'out', name: 'Q', type: 'output', x: 30, y: 0 }]),
-        createComp('not-a', 'NOT', 160, 80, [{ id: 'in', name: 'A', type: 'input', x: -25, y: 0 }, { id: 'out', name: 'Y', type: 'output', x: 25, y: 0 }]),
-        createComp('not-b', 'NOT', 160, 220, [{ id: 'in', name: 'A', type: 'input', x: -25, y: 0 }, { id: 'out', name: 'Y', type: 'output', x: 25, y: 0 }]),
-        createComp('and1', 'AND_2', 280, 100, [{ id: 'in1', name: 'A', type: 'input', x: -30, y: -10 }, { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 }, { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 }]),
-        createComp('and2', 'AND_2', 280, 200, [{ id: 'in1', name: 'A', type: 'input', x: -30, y: -10 }, { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 }, { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 }]),
-        createComp('or1', 'OR_2', 400, 150, [{ id: 'in1', name: 'A', type: 'input', x: -30, y: -10 }, { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 }, { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 }]),
-        createComp('led-out', 'LED_GREEN', 500, 150, [{ id: 'in', name: 'D', type: 'input', x: -30, y: 0 }]),
+        createComp('input-a', 'SWITCH_TOGGLE', 60, 100, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('input-b', 'SWITCH_TOGGLE', 60, 200, [
+            { id: 'out', name: 'Q', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('not-a', 'NOT', 160, 80, [
+            { id: 'in', name: 'A', type: 'input', x: -25, y: 0 },
+            { id: 'out', name: 'Y', type: 'output', x: 25, y: 0 },
+        ]),
+        createComp('not-b', 'NOT', 160, 220, [
+            { id: 'in', name: 'A', type: 'input', x: -25, y: 0 },
+            { id: 'out', name: 'Y', type: 'output', x: 25, y: 0 },
+        ]),
+        createComp('and1', 'AND_2', 280, 100, [
+            { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
+            { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
+            { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('and2', 'AND_2', 280, 200, [
+            { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
+            { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
+            { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('or1', 'OR_2', 400, 150, [
+            { id: 'in1', name: 'A', type: 'input', x: -30, y: -10 },
+            { id: 'in2', name: 'B', type: 'input', x: -30, y: 10 },
+            { id: 'out', name: 'Y', type: 'output', x: 30, y: 0 },
+        ]),
+        createComp('led-out', 'LED_GREEN', 500, 150, [
+            { id: 'in', name: 'D', type: 'input', x: -30, y: 0 },
+        ]),
     ],
     wires: [
         createWire('w1', 'input-a', 'out', 'not-a', 'in'),
@@ -1974,10 +2276,34 @@ This is the "exclusive or" - true when inputs differ.
         createWire('w9', 'or1', 'out', 'led-out', 'in'),
     ],
     steps: [
-        { id: 'step-1', title: 'Add Inputs', description: 'Place two toggle switches for A and B', components: ['input-a', 'input-b'], wires: [] },
-        { id: 'step-2', title: 'Add Inverters', description: 'Create NOT A and NOT B', components: ['not-a', 'not-b'], wires: ['w1', 'w2'] },
-        { id: 'step-3', title: 'Add AND Gates', description: 'Create A·B\' and A\'·B', components: ['and1', 'and2'], wires: ['w3', 'w4', 'w5', 'w6'] },
-        { id: 'step-4', title: 'Add OR Gate', description: 'Combine with OR to get XOR', components: ['or1', 'led-out'], wires: ['w7', 'w8', 'w9'] },
+        {
+            id: 'step-1',
+            title: 'Add Inputs',
+            description: 'Place two toggle switches for A and B',
+            components: ['input-a', 'input-b'],
+            wires: [],
+        },
+        {
+            id: 'step-2',
+            title: 'Add Inverters',
+            description: 'Create NOT A and NOT B',
+            components: ['not-a', 'not-b'],
+            wires: ['w1', 'w2'],
+        },
+        {
+            id: 'step-3',
+            title: 'Add AND Gates',
+            description: "Create A·B' and A'·B",
+            components: ['and1', 'and2'],
+            wires: ['w3', 'w4', 'w5', 'w6'],
+        },
+        {
+            id: 'step-4',
+            title: 'Add OR Gate',
+            description: 'Combine with OR to get XOR',
+            components: ['or1', 'led-out'],
+            wires: ['w7', 'w8', 'w9'],
+        },
     ],
 };
 
@@ -2016,9 +2342,9 @@ export const TEMPLATES: Template[] = [
 ];
 
 export function getTemplateById(id: string): Template | undefined {
-    return TEMPLATES.find(t => t.id === id);
+    return TEMPLATES.find((t) => t.id === id);
 }
 
 export function getTemplatesByCategory(category: TemplateCategory): Template[] {
-    return TEMPLATES.filter(t => t.category === category);
+    return TEMPLATES.filter((t) => t.category === category);
 }

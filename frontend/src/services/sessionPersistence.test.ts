@@ -1,6 +1,6 @@
 /**
  * Property-based tests for SessionPersistence
- * 
+ *
  * **Feature: session-management, Property 6: Session Persistence Round-Trip**
  * **Validates: Requirements 3.5, 3.6, 3.7**
  */
@@ -19,24 +19,31 @@ describe('SessionPersistence', () => {
     });
 
     // Arbitrary for generating valid session codes (6 uppercase alphanumeric)
-    const sessionCodeArb = fc.array(
-        fc.constantFrom(...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('')),
-        { minLength: 6, maxLength: 6 }
-    ).map(arr => arr.join(''));
+    const sessionCodeArb = fc
+        .array(fc.constantFrom(...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('')), {
+            minLength: 6,
+            maxLength: 6,
+        })
+        .map((arr) => arr.join(''));
 
     // Arbitrary for generating valid participant IDs
     const participantIdArb = fc.uuid();
 
     // Arbitrary for generating valid display names (3-20 chars, alphanumeric + spaces)
-    const displayNameArb = fc.array(
-        fc.constantFrom(...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 '.split('')),
-        { minLength: 3, maxLength: 20 }
-    ).map(arr => arr.join('')).filter(s => s.trim().length >= 3); // Ensure not all spaces
+    const displayNameArb = fc
+        .array(
+            fc.constantFrom(
+                ...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 '.split('')
+            ),
+            { minLength: 3, maxLength: 20 }
+        )
+        .map((arr) => arr.join(''))
+        .filter((s) => s.trim().length >= 3); // Ensure not all spaces
 
     // Arbitrary for generating valid timestamps (within last 24 hours)
     const recentTimestampArb = fc.integer({
         min: Date.now() - 23 * 60 * 60 * 1000, // 23 hours ago
-        max: Date.now()
+        max: Date.now(),
     });
 
     // Arbitrary for generating valid PersistedSession objects
@@ -51,8 +58,8 @@ describe('SessionPersistence', () => {
     /**
      * **Feature: session-management, Property 6: Session Persistence Round-Trip**
      * **Validates: Requirements 3.5, 3.6, 3.7**
-     * 
-     * For any valid PersistedSession object, serializing to JSON and then 
+     *
+     * For any valid PersistedSession object, serializing to JSON and then
      * deserializing SHALL produce an equivalent PersistedSession object.
      */
     it('Property 6: serializing and deserializing produces equivalent session', () => {
@@ -172,9 +179,27 @@ describe('SessionPersistence', () => {
      */
     it('sessions with missing required fields are invalid', () => {
         const invalidSessions = [
-            { sessionCode: '', participantId: 'abc', displayName: 'Test', savedAt: Date.now(), schemaVersion: '1.0.0' },
-            { sessionCode: 'ABC123', participantId: '', displayName: 'Test', savedAt: Date.now(), schemaVersion: '1.0.0' },
-            { sessionCode: 'ABC123', participantId: 'abc', displayName: '', savedAt: Date.now(), schemaVersion: '1.0.0' },
+            {
+                sessionCode: '',
+                participantId: 'abc',
+                displayName: 'Test',
+                savedAt: Date.now(),
+                schemaVersion: '1.0.0',
+            },
+            {
+                sessionCode: 'ABC123',
+                participantId: '',
+                displayName: 'Test',
+                savedAt: Date.now(),
+                schemaVersion: '1.0.0',
+            },
+            {
+                sessionCode: 'ABC123',
+                participantId: 'abc',
+                displayName: '',
+                savedAt: Date.now(),
+                schemaVersion: '1.0.0',
+            },
         ];
 
         invalidSessions.forEach((session) => {
@@ -192,7 +217,7 @@ describe('SessionPersistence', () => {
                 participantIdArb,
                 displayNameArb,
                 recentTimestampArb,
-                fc.string().filter(s => s !== '1.0.0'),
+                fc.string().filter((s) => s !== '1.0.0'),
                 (sessionCode, participantId, displayName, savedAt, wrongVersion) => {
                     const session: PersistedSession = {
                         sessionCode,

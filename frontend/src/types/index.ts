@@ -24,27 +24,83 @@ export type PinType = 'input' | 'output';
 
 export type ComponentType =
     // Logic Gates (Basic)
-    | 'AND_2' | 'AND_3' | 'AND_4' | 'OR_2' | 'OR_3' | 'OR_4'
-    | 'NOT' | 'NAND_2' | 'NAND_3' | 'NOR_2' | 'NOR_3' | 'XOR_2' | 'XNOR_2' | 'BUFFER'
+    | 'AND_2'
+    | 'AND_3'
+    | 'AND_4'
+    | 'OR_2'
+    | 'OR_3'
+    | 'OR_4'
+    | 'NOT'
+    | 'NAND_2'
+    | 'NAND_3'
+    | 'NOR_2'
+    | 'NOR_3'
+    | 'XOR_2'
+    | 'XNOR_2'
+    | 'BUFFER'
     // Flip-Flops
-    | 'SR_LATCH' | 'D_FLIPFLOP' | 'JK_FLIPFLOP' | 'T_FLIPFLOP'
+    | 'SR_LATCH'
+    | 'D_FLIPFLOP'
+    | 'JK_FLIPFLOP'
+    | 'T_FLIPFLOP'
     // Combinational
-    | 'MUX_2TO1' | 'MUX_4TO1' | 'DEMUX_1TO2' | 'DECODER_2TO4' | 'ADDER_4BIT' | 'COMPARATOR_4BIT' | 'BCD_TO_7SEG'
+    | 'MUX_2TO1'
+    | 'MUX_4TO1'
+    | 'DEMUX_1TO2'
+    | 'DECODER_2TO4'
+    | 'ADDER_4BIT'
+    | 'COMPARATOR_4BIT'
+    | 'BCD_TO_7SEG'
     // Sequential
-    | 'COUNTER_4BIT' | 'SHIFT_REGISTER_8BIT' | 'TRAFFIC_LIGHT_CTRL'
+    | 'COUNTER_4BIT'
+    | 'SHIFT_REGISTER_8BIT'
+    | 'TRAFFIC_LIGHT_CTRL'
     // Input Devices
-    | 'SWITCH_TOGGLE' | 'SWITCH_PUSH' | 'DIP_SWITCH_4' | 'CLOCK' | 'CONST_HIGH' | 'CONST_LOW' | 'NUMERIC_INPUT'
+    | 'SWITCH_TOGGLE'
+    | 'SWITCH_PUSH'
+    | 'DIP_SWITCH_4'
+    | 'CLOCK'
+    | 'CONST_HIGH'
+    | 'CONST_LOW'
+    | 'NUMERIC_INPUT'
     // Output Devices
-    | 'LED_RED' | 'LED_GREEN' | 'LED_YELLOW' | 'LED_BLUE' | 'LED_RGB' | 'DISPLAY_7SEG' | 'DISPLAY_LCD' | 'BUZZER'
-    | 'MOTOR_DC' | 'MOTOR_SERVO' | 'MOTOR_STEPPER'
+    | 'LED_RED'
+    | 'LED_GREEN'
+    | 'LED_YELLOW'
+    | 'LED_BLUE'
+    | 'LED_RGB'
+    | 'DISPLAY_7SEG'
+    | 'DISPLAY_LCD'
+    | 'BUZZER'
+    | 'MOTOR_DC'
+    | 'MOTOR_SERVO'
+    | 'MOTOR_STEPPER'
     // Passive Components
-    | 'RESISTOR' | 'CAPACITOR' | 'INDUCTOR' | 'DIODE' | 'ZENER' | 'TRANSISTOR_NPN' | 'TRANSISTOR_PNP'
+    | 'RESISTOR'
+    | 'CAPACITOR'
+    | 'INDUCTOR'
+    | 'DIODE'
+    | 'ZENER'
+    | 'TRANSISTOR_NPN'
+    | 'TRANSISTOR_PNP'
     // Sensors
-    | 'SENSOR_LIGHT' | 'SENSOR_TEMP' | 'SENSOR_PROXIMITY' | 'SENSOR_ULTRASONIC' | 'POTENTIOMETER'
+    | 'SENSOR_LIGHT'
+    | 'SENSOR_TEMP'
+    | 'SENSOR_PROXIMITY'
+    | 'SENSOR_ULTRASONIC'
+    | 'POTENTIOMETER'
     // Power
-    | 'VCC_5V' | 'VCC_3V3' | 'GROUND' | 'BATTERY'
+    | 'VCC_5V'
+    | 'VCC_3V3'
+    | 'GROUND'
+    | 'BATTERY'
     // Connectors
-    | 'JUNCTION' | 'BUS_4BIT' | 'BUS_8BIT' | 'PIN_INPUT' | 'PIN_OUTPUT' | 'PROBE';
+    | 'JUNCTION'
+    | 'BUS_4BIT'
+    | 'BUS_8BIT'
+    | 'PIN_INPUT'
+    | 'PIN_OUTPUT'
+    | 'PROBE';
 
 // ============================================================================
 // Circuit Components
@@ -60,7 +116,7 @@ export interface Pin {
 export interface CircuitComponent {
     id: string;
     type: ComponentType;
-    label: string;  // User-editable label for identification (e.g., "AND1", "LED2")
+    label: string; // User-editable label for identification (e.g., "AND1", "LED2")
     position: Position;
     rotation: Rotation;
     properties: Record<string, unknown>;
@@ -266,7 +322,19 @@ export type ClientMessage =
     | { type: 'simulation:toggle'; payload: { componentId: string } }
     | { type: 'simulation:clock:tick'; payload: { componentId: string } }
     | { type: 'simulation:step'; payload: Record<string, never> }
-    | { type: 'simulation:state'; payload: { wireStates: Record<string, string>; pinStates: Record<string, Record<string, string>>; errors: Array<{ errorType: string; message: string; componentId?: string; pinId?: string }> } };
+    | {
+          type: 'simulation:state';
+          payload: {
+              wireStates: Record<string, string>;
+              pinStates: Record<string, Record<string, string>>;
+              errors: Array<{
+                  errorType: string;
+                  message: string;
+                  componentId?: string;
+                  pinId?: string;
+              }>;
+          };
+      };
 
 // Server -> Client
 export type ServerMessageType =
@@ -298,7 +366,10 @@ export type ServerMessageType =
 export type ServerMessage =
     | { type: 'sync:state'; payload: { circuit: CircuitState; participants: Participant[] } }
     | { type: 'circuit:component:added'; payload: { component: CircuitComponent; userId: string } }
-    | { type: 'circuit:component:moved'; payload: { componentId: string; position: Position; userId: string } }
+    | {
+          type: 'circuit:component:moved';
+          payload: { componentId: string; position: Position; userId: string };
+      }
     | { type: 'circuit:component:deleted'; payload: { componentId: string; userId: string } }
     | { type: 'circuit:wire:added'; payload: { wire: Wire; userId: string } }
     | { type: 'circuit:wire:deleted'; payload: { wireId: string; userId: string } }
@@ -306,19 +377,41 @@ export type ServerMessage =
     | { type: 'circuit:annotation:deleted'; payload: { annotationId: string; userId: string } }
     | { type: 'circuit:state:updated'; payload: { version: number } }
     | { type: 'presence:cursor:moved'; payload: { participantId: string; position: Position } }
-    | { type: 'presence:selection:changed'; payload: { participantId: string; componentIds: string[] } }
+    | {
+          type: 'presence:selection:changed';
+          payload: { participantId: string; componentIds: string[] };
+      }
     | { type: 'presence:participant:joined'; payload: { participant: Participant } }
     | { type: 'presence:participant:left'; payload: { participantId: string } }
-    | { type: 'presence:participant:kicked'; payload: { participantId: string; displayName: string } }
+    | {
+          type: 'presence:participant:kicked';
+          payload: { participantId: string; displayName: string };
+      }
     | { type: 'permission:request:sent'; payload: { participantId: string; status: string } }
-    | { type: 'permission:request:received'; payload: { participantId: string; displayName: string } }
+    | {
+          type: 'permission:request:received';
+          payload: { participantId: string; displayName: string };
+      }
     | { type: 'permission:granted'; payload: { participantId: string } }
     | { type: 'permission:denied'; payload: { participantId: string } }
     | { type: 'permission:revoked'; payload: { participantId: string } }
     | { type: 'session:kicked'; payload: { participantId: string } }
     | { type: 'simulation:started'; payload: { startedBy: string } }
     | { type: 'simulation:stopped'; payload: { stoppedBy: string } }
-    | { type: 'simulation:state:updated'; payload: { isRunning: boolean; wireStates: Record<string, string>; pinStates: Record<string, Record<string, string>>; errors: Array<{ errorType: string; message: string; componentId?: string; pinId?: string }> } }
+    | {
+          type: 'simulation:state:updated';
+          payload: {
+              isRunning: boolean;
+              wireStates: Record<string, string>;
+              pinStates: Record<string, Record<string, string>>;
+              errors: Array<{
+                  errorType: string;
+                  message: string;
+                  componentId?: string;
+                  pinId?: string;
+              }>;
+          };
+      }
     | { type: 'error'; payload: { code: string; message: string } };
 
 // ============================================================================
@@ -345,7 +438,6 @@ export interface JoinSessionRequest {
 export interface JoinSessionResponse {
     participant: Participant;
 }
-
 
 // ============================================================================
 // Session Management - Cross-Tab Synchronization Types
@@ -422,7 +514,6 @@ export interface CloseGuardOptions {
  * Tab sync connection status
  */
 export type TabSyncStatus = 'leader' | 'follower' | 'disconnected';
-
 
 // ============================================================================
 // Course Types (LLM Course Generator)
@@ -506,8 +597,8 @@ export interface BlueprintComponent {
 }
 
 export interface BlueprintWire {
-    from: string;  // e.g., "AND1:Y" (label:pinName)
-    to: string;    // e.g., "LED1:A"
+    from: string; // e.g., "AND1:Y" (label:pinName)
+    to: string; // e.g., "LED1:A"
 }
 
 export interface CircuitBlueprint {

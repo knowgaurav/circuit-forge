@@ -1,6 +1,6 @@
 /**
  * Property-based tests for WebSocketClient
- * 
+ *
  * **Feature: session-management, Property 11: Action Forwarding and Broadcasting**
  * **Validates: Requirements 5.4, 5.5**
  */
@@ -14,8 +14,8 @@ describe('WebSocketClient', () => {
     /**
      * **Feature: session-management, Property 11: Action Forwarding and Broadcasting**
      * **Validates: Requirements 5.4, 5.5**
-     * 
-     * For any edit action performed in a follower tab, the action SHALL be 
+     *
+     * For any edit action performed in a follower tab, the action SHALL be
      * forwarded to the leader tab, and the result SHALL be broadcast back to all tabs.
      */
     describe('Property 11: Action Forwarding and Broadcasting', () => {
@@ -43,7 +43,7 @@ describe('WebSocketClient', () => {
                         };
 
                         const client = new WebSocketClient({
-                            onMessage: () => { },
+                            onMessage: () => {},
                         });
 
                         // Set to follower mode with forwarder
@@ -89,7 +89,7 @@ describe('WebSocketClient', () => {
                         };
 
                         const client = new WebSocketClient({
-                            onMessage: () => { },
+                            onMessage: () => {},
                         });
 
                         // Set to leader mode (default)
@@ -114,32 +114,29 @@ describe('WebSocketClient', () => {
 
         it('forwarded actions include source tab ID', () => {
             fc.assert(
-                fc.property(
-                    fc.uuid(),
-                    (componentId) => {
-                        const forwardedActions: SyncAction[] = [];
-                        const forwarder = (action: SyncAction) => {
-                            forwardedActions.push(action);
-                        };
+                fc.property(fc.uuid(), (componentId) => {
+                    const forwardedActions: SyncAction[] = [];
+                    const forwarder = (action: SyncAction) => {
+                        forwardedActions.push(action);
+                    };
 
-                        const client = new WebSocketClient({
-                            onMessage: () => { },
-                        });
+                    const client = new WebSocketClient({
+                        onMessage: () => {},
+                    });
 
-                        client.setMode('follower');
-                        client.setActionForwarder(forwarder);
+                    client.setMode('follower');
+                    client.setActionForwarder(forwarder);
 
-                        const tabId = client.getTabId();
+                    const tabId = client.getTabId();
 
-                        client.send({
-                            type: 'circuit:component:delete',
-                            payload: { componentId },
-                        });
+                    client.send({
+                        type: 'circuit:component:delete',
+                        payload: { componentId },
+                    });
 
-                        expect(forwardedActions.length).toBe(1);
-                        expect(forwardedActions[0].sourceTabId).toBe(tabId);
-                    }
-                ),
+                    expect(forwardedActions.length).toBe(1);
+                    expect(forwardedActions[0].sourceTabId).toBe(tabId);
+                }),
                 { numRuns: 50 }
             );
         });
@@ -148,7 +145,7 @@ describe('WebSocketClient', () => {
     describe('Mode Management', () => {
         it('defaults to leader mode', () => {
             const client = new WebSocketClient({
-                onMessage: () => { },
+                onMessage: () => {},
             });
 
             expect(client.getMode()).toBe('leader');
@@ -157,10 +154,15 @@ describe('WebSocketClient', () => {
         it('can switch between modes', () => {
             fc.assert(
                 fc.property(
-                    fc.array(fc.constantFrom('leader', 'follower') as fc.Arbitrary<'leader' | 'follower'>, { minLength: 1, maxLength: 10 }),
+                    fc.array(
+                        fc.constantFrom('leader', 'follower') as fc.Arbitrary<
+                            'leader' | 'follower'
+                        >,
+                        { minLength: 1, maxLength: 10 }
+                    ),
                     (modes) => {
                         const client = new WebSocketClient({
-                            onMessage: () => { },
+                            onMessage: () => {},
                         });
 
                         for (const mode of modes) {
@@ -174,11 +176,12 @@ describe('WebSocketClient', () => {
         });
 
         it('generates unique tab IDs', () => {
-            const clients = Array.from({ length: 10 }, () =>
-                new WebSocketClient({ onMessage: () => { } })
+            const clients = Array.from(
+                { length: 10 },
+                () => new WebSocketClient({ onMessage: () => {} })
             );
 
-            const tabIds = clients.map(c => c.getTabId());
+            const tabIds = clients.map((c) => c.getTabId());
             const uniqueIds = new Set(tabIds);
 
             expect(uniqueIds.size).toBe(tabIds.length);

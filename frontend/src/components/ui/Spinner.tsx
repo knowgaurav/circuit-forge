@@ -13,9 +13,9 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
             className={clsx(
                 'animate-spin rounded-full border-2 border-current border-t-transparent',
                 {
-                    'w-4 h-4': size === 'sm',
-                    'w-6 h-6': size === 'md',
-                    'w-8 h-8': size === 'lg',
+                    'h-4 w-4': size === 'sm',
+                    'h-6 w-6': size === 'md',
+                    'h-8 w-8': size === 'lg',
                 },
                 className
             )}

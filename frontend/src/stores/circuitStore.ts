@@ -65,24 +65,23 @@ export const useCircuitStore = create<CircuitStore>((set) => ({
 
     updateComponentLabel: (componentId, label) =>
         set((state) => ({
-            components: state.components.map((c) =>
-                c.id === componentId ? { ...c, label } : c
-            ),
+            components: state.components.map((c) => (c.id === componentId ? { ...c, label } : c)),
         })),
 
     updateComponentProperties: (componentId, properties) =>
         set((state) => ({
             components: state.components.map((c) =>
-                c.id === componentId
-                    ? { ...c, properties: { ...c.properties, ...properties } }
-                    : c
+                c.id === componentId ? { ...c, properties: { ...c.properties, ...properties } } : c
             ),
         })),
 
     toggleSwitchState: (componentId) =>
         set((state) => ({
             components: state.components.map((c) => {
-                if (c.id === componentId && (c.type === 'SWITCH_TOGGLE' || c.type === 'SWITCH_PUSH')) {
+                if (
+                    c.id === componentId &&
+                    (c.type === 'SWITCH_TOGGLE' || c.type === 'SWITCH_PUSH')
+                ) {
                     const currentState = (c.properties as Record<string, unknown>)?.state === true;
                     return {
                         ...c,
@@ -114,9 +113,7 @@ export const useCircuitStore = create<CircuitStore>((set) => ({
             );
             // Also check if the target input pin already has a connection
             const inputAlreadyConnected = state.wires.some(
-                (w) =>
-                    w.toComponentId === wire.toComponentId &&
-                    w.toPinId === wire.toPinId
+                (w) => w.toComponentId === wire.toComponentId && w.toPinId === wire.toPinId
             );
             if (isDuplicate || inputAlreadyConnected) {
                 return state; // Don't add duplicate or conflicting wire

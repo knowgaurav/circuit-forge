@@ -65,11 +65,15 @@ export default function LevelPage() {
             setCoursePlan(plan);
 
             // Find level outline
-            const outline = plan.levels.find(l => l.levelNumber === levelNum);
+            const outline = plan.levels.find((l) => l.levelNumber === levelNum);
             setLevelOutline(outline || null);
 
             // Load level content with LLM config
-            const { content, isGenerating: generating } = await api.getLevelContent(courseId, levelNum, config);
+            const { content, isGenerating: generating } = await api.getLevelContent(
+                courseId,
+                levelNum,
+                config
+            );
             setLevelContent(content);
             setIsGenerating(generating);
 
@@ -90,7 +94,11 @@ export default function LevelPage() {
 
         const interval = setInterval(async () => {
             try {
-                const { content, isGenerating: generating } = await api.getLevelContent(courseId, levelNum, config);
+                const { content, isGenerating: generating } = await api.getLevelContent(
+                    courseId,
+                    levelNum,
+                    config
+                );
                 if (!generating && content?.generationState === 'generated') {
                     setLevelContent(content);
                     setIsGenerating(false);
@@ -126,14 +134,16 @@ export default function LevelPage() {
         }
 
         // Load the blueprint
-        const { components, wires, errors, warnings } = loadCircuitFromBlueprint(practical.circuitBlueprint);
+        const { components, wires, errors, warnings } = loadCircuitFromBlueprint(
+            practical.circuitBlueprint
+        );
 
         // Only show actual errors, not warnings (warnings are for skipped wires)
         if (errors.length > 0) {
             setBlueprintErrors(errors);
         } else if (warnings.length > 0) {
             // Show warnings but still load the circuit
-            setBlueprintErrors(warnings.map(w => `⚠️ ${w}`));
+            setBlueprintErrors(warnings.map((w) => `⚠️ ${w}`));
         } else {
             setBlueprintErrors([]);
         }
@@ -156,7 +166,7 @@ export default function LevelPage() {
 
         try {
             const courses = await api.getMyCourses(participantId);
-            const enrolled = courses.find(c => c.coursePlan.id === courseId);
+            const enrolled = courses.find((c) => c.coursePlan.id === courseId);
             if (!enrolled) return;
 
             const { nextLevel } = await api.completeLevel(
@@ -178,9 +188,9 @@ export default function LevelPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
+            <div className="flex min-h-screen items-center justify-center bg-background transition-colors duration-300">
                 <div className="text-center">
-                    <div className="animate-spin w-12 h-12 border-4 spinner-brand rounded-full mx-auto mb-4"></div>
+                    <div className="spinner-brand mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4"></div>
                     <p className="text-text-secondary">Loading level...</p>
                 </div>
             </div>
@@ -199,17 +209,19 @@ export default function LevelPage() {
 
     if (isGenerating) {
         return (
-            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
-                <div className="text-center max-w-md">
-                    <div className="animate-spin w-16 h-16 border-4 spinner-brand rounded-full mx-auto mb-6"></div>
-                    <h2 className="text-xl font-semibold text-text mb-2">
+            <div className="flex min-h-screen items-center justify-center bg-background transition-colors duration-300">
+                <div className="max-w-md text-center">
+                    <div className="spinner-brand mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4"></div>
+                    <h2 className="mb-2 text-xl font-semibold text-text">
                         Generating Your Personalized Content
                     </h2>
-                    <p className="text-text-secondary mb-4">
-                        Our AI is creating custom learning materials for this level. This usually takes 15-30 seconds.
+                    <p className="mb-4 text-text-secondary">
+                        Our AI is creating custom learning materials for this level. This usually
+                        takes 15-30 seconds.
                     </p>
-                    <div className="glass-card rounded-xl p-4 text-sm text-brand-muted">
-                        Tip: While you wait, you can review previous levels or explore the course outline.
+                    <div className="glass-card text-brand-muted rounded-xl p-4 text-sm">
+                        Tip: While you wait, you can review previous levels or explore the course
+                        outline.
                     </div>
                 </div>
             </div>
@@ -218,9 +230,9 @@ export default function LevelPage() {
 
     if (error || !coursePlan || !levelOutline) {
         return (
-            <div className="min-h-screen bg-background transition-colors duration-300 flex items-center justify-center">
+            <div className="flex min-h-screen items-center justify-center bg-background transition-colors duration-300">
                 <div className="text-center">
-                    <p className="text-red-400 mb-4">{error || 'Level not found'}</p>
+                    <p className="mb-4 text-red-400">{error || 'Level not found'}</p>
                     <Link href={`/courses/${courseId}`} className="text-brand-link">
                         Back to course
                     </Link>
@@ -236,10 +248,10 @@ export default function LevelPage() {
             <Navbar />
 
             {/* Content */}
-            <div className="pt-24 pb-12 px-4">
-                <div className="max-w-6xl mx-auto">
+            <div className="px-4 pb-12 pt-24">
+                <div className="mx-auto max-w-6xl">
                     {/* Level Header */}
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="mb-6 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-text-muted">
                                 Level {levelNum} of {coursePlan.levels.length}
@@ -250,29 +262,31 @@ export default function LevelPage() {
                         </div>
                         <button
                             onClick={handleCompleteLevel}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+                            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                         >
                             Complete Level
                         </button>
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-2 mb-6">
+                    <div className="mb-6 flex gap-2">
                         <button
                             onClick={() => setActiveTab('theory')}
-                            className={`px-6 py-3 rounded-xl font-medium transition-colors ${activeTab === 'theory'
-                                ? 'gradient-btn text-white'
-                                : 'glass-card text-gray-300 hover:text-white'
-                                }`}
+                            className={`rounded-xl px-6 py-3 font-medium transition-colors ${
+                                activeTab === 'theory'
+                                    ? 'gradient-btn text-white'
+                                    : 'glass-card text-gray-300 hover:text-white'
+                            }`}
                         >
                             📖 Theory
                         </button>
                         <button
                             onClick={() => setActiveTab('practical')}
-                            className={`px-6 py-3 rounded-xl font-medium transition-colors ${activeTab === 'practical'
-                                ? 'gradient-btn text-white'
-                                : 'glass-card text-gray-300 hover:text-white'
-                                }`}
+                            className={`rounded-xl px-6 py-3 font-medium transition-colors ${
+                                activeTab === 'practical'
+                                    ? 'gradient-btn text-white'
+                                    : 'glass-card text-gray-300 hover:text-white'
+                            }`}
                         >
                             🔧 Practical
                         </button>
@@ -283,11 +297,13 @@ export default function LevelPage() {
                         <div className="space-y-6">
                             {/* Learning Objectives */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="text-lg font-semibold text-white mb-4">🎯 Learning Objectives</h2>
+                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                    🎯 Learning Objectives
+                                </h2>
                                 <ul className="space-y-2">
                                     {theory.objectives.map((obj, i) => (
                                         <li key={i} className="flex items-start gap-2">
-                                            <span className="text-green-400 mt-1">✓</span>
+                                            <span className="mt-1 text-green-400">✓</span>
                                             <span className="text-gray-300">{obj}</span>
                                         </li>
                                     ))}
@@ -296,9 +312,11 @@ export default function LevelPage() {
 
                             {/* Concept Explanation */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="text-lg font-semibold text-white mb-4">📚 Concept Explanation</h2>
+                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                    📚 Concept Explanation
+                                </h2>
                                 <div className="prose max-w-none">
-                                    <p className="text-gray-300 whitespace-pre-wrap">
+                                    <p className="whitespace-pre-wrap text-gray-300">
                                         {theory.conceptExplanation}
                                     </p>
                                 </div>
@@ -307,10 +325,15 @@ export default function LevelPage() {
                             {/* Real World Examples */}
                             {theory.realWorldExamples.length > 0 && (
                                 <div className="glass-card rounded-2xl p-6">
-                                    <h2 className="text-lg font-semibold text-white mb-4">🌍 Real World Examples</h2>
+                                    <h2 className="mb-4 text-lg font-semibold text-white">
+                                        🌍 Real World Examples
+                                    </h2>
                                     <ul className="space-y-3">
                                         {theory.realWorldExamples.map((example, i) => (
-                                            <li key={i} className="flex items-start gap-3 p-3 bg-brand-subtle border border-brand-subtle rounded-xl">
+                                            <li
+                                                key={i}
+                                                className="bg-brand-subtle border-brand-subtle flex items-start gap-3 rounded-xl border p-3"
+                                            >
                                                 <span className="text-brand-link">💡</span>
                                                 <span className="text-gray-300">{example}</span>
                                             </li>
@@ -322,12 +345,21 @@ export default function LevelPage() {
                             {/* Key Terms */}
                             {theory.keyTerms.length > 0 && (
                                 <div className="glass-card rounded-2xl p-6">
-                                    <h2 className="text-lg font-semibold text-white mb-4">📝 Key Terms</h2>
+                                    <h2 className="mb-4 text-lg font-semibold text-white">
+                                        📝 Key Terms
+                                    </h2>
                                     <div className="grid gap-3">
                                         {theory.keyTerms.map((term, i) => (
-                                            <div key={i} className="p-3 bg-white/5 border border-white/10 rounded-xl">
-                                                <span className="font-medium text-white">{term.term}:</span>{' '}
-                                                <span className="text-gray-400">{term.definition}</span>
+                                            <div
+                                                key={i}
+                                                className="rounded-xl border border-white/10 bg-white/5 p-3"
+                                            >
+                                                <span className="font-medium text-white">
+                                                    {term.term}:
+                                                </span>{' '}
+                                                <span className="text-gray-400">
+                                                    {term.definition}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
@@ -341,12 +373,14 @@ export default function LevelPage() {
                         <div className="space-y-6">
                             {/* Components Needed */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="text-lg font-semibold text-white mb-4">🧩 Components Needed</h2>
+                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                    🧩 Components Needed
+                                </h2>
                                 <div className="flex flex-wrap gap-2">
                                     {practical.componentsNeeded.map((comp, i) => (
                                         <span
                                             key={i}
-                                            className="px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-gray-300"
+                                            className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm font-medium text-gray-300"
                                         >
                                             {comp.type} × {comp.count}
                                         </span>
@@ -356,17 +390,19 @@ export default function LevelPage() {
 
                             {/* Build Steps */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="text-lg font-semibold text-white mb-4">📋 Build Steps</h2>
+                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                    📋 Build Steps
+                                </h2>
                                 <div className="space-y-4">
                                     {practical.steps.map((step) => (
                                         <div key={step.stepNumber} className="flex gap-4">
-                                            <span className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center font-medium flex-shrink-0">
+                                            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20 font-medium text-blue-400">
                                                 {step.stepNumber}
                                             </span>
                                             <div className="flex-1">
                                                 <p className="text-gray-300">{step.instruction}</p>
                                                 {step.hint && (
-                                                    <p className="text-sm text-gray-500 mt-1">
+                                                    <p className="mt-1 text-sm text-gray-500">
                                                         💡 Hint: {step.hint}
                                                     </p>
                                                 )}
@@ -378,17 +414,24 @@ export default function LevelPage() {
 
                             {/* Expected Behavior */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="text-lg font-semibold text-white mb-4">✅ Expected Behavior</h2>
+                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                    ✅ Expected Behavior
+                                </h2>
                                 <p className="text-gray-300">{practical.expectedBehavior}</p>
                             </div>
 
                             {/* Common Mistakes */}
                             {practical.commonMistakes.length > 0 && (
                                 <div className="glass-card rounded-2xl p-6">
-                                    <h2 className="text-lg font-semibold text-white mb-4">⚠️ Common Mistakes to Avoid</h2>
+                                    <h2 className="mb-4 text-lg font-semibold text-white">
+                                        ⚠️ Common Mistakes to Avoid
+                                    </h2>
                                     <ul className="space-y-2">
                                         {practical.commonMistakes.map((mistake, i) => (
-                                            <li key={i} className="flex items-start gap-2 text-gray-300">
+                                            <li
+                                                key={i}
+                                                className="flex items-start gap-2 text-gray-300"
+                                            >
                                                 <span className="text-red-400">✗</span>
                                                 <span>{mistake}</span>
                                             </li>
@@ -399,13 +442,15 @@ export default function LevelPage() {
 
                             {/* Circuit Canvas */}
                             <div className="glass-card rounded-2xl p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-lg font-semibold text-white">🔌 Build Your Circuit</h2>
-                                    <div className="flex gap-2 items-center">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h2 className="text-lg font-semibold text-white">
+                                        🔌 Build Your Circuit
+                                    </h2>
+                                    <div className="flex items-center gap-2">
                                         {practical.circuitBlueprint && !blueprintLoaded && (
                                             <button
                                                 onClick={handleLoadBlueprint}
-                                                className="px-4 py-2 gradient-btn rounded-lg text-sm font-medium text-white"
+                                                className="gradient-btn rounded-lg px-4 py-2 text-sm font-medium text-white"
                                             >
                                                 Load Example Circuit
                                             </button>
@@ -413,14 +458,14 @@ export default function LevelPage() {
                                         {blueprintLoaded && (
                                             <button
                                                 onClick={handleClearCircuit}
-                                                className="px-4 py-2 bg-white/10 text-gray-300 rounded-lg text-sm font-medium hover:bg-white/20"
+                                                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/20"
                                             >
                                                 Clear Circuit
                                             </button>
                                         )}
                                         <Link
                                             href="/playground"
-                                            className="px-4 py-2 border border-white/20 text-gray-300 rounded-lg text-sm font-medium hover:bg-white/5"
+                                            className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/5"
                                         >
                                             Open Full Playground
                                         </Link>
@@ -429,9 +474,11 @@ export default function LevelPage() {
 
                                 {/* Blueprint errors */}
                                 {blueprintErrors.length > 0 && (
-                                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-                                        <p className="text-sm font-medium text-yellow-400 mb-1">⚠️ Some wires could not be connected:</p>
-                                        <ul className="text-sm text-yellow-300 list-disc list-inside">
+                                    <div className="mb-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3">
+                                        <p className="mb-1 text-sm font-medium text-yellow-400">
+                                            ⚠️ Some wires could not be connected:
+                                        </p>
+                                        <ul className="list-inside list-disc text-sm text-yellow-300">
                                             {blueprintErrors.map((err, i) => (
                                                 <li key={i}>{err}</li>
                                             ))}
@@ -441,9 +488,10 @@ export default function LevelPage() {
 
                                 {/* Blueprint loaded indicator */}
                                 {blueprintLoaded && blueprintErrors.length === 0 && (
-                                    <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                                    <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
                                         <p className="text-sm text-green-400">
-                                            ✓ Example circuit loaded! Click the Play button to run the simulation.
+                                            ✓ Example circuit loaded! Click the Play button to run
+                                            the simulation.
                                         </p>
                                     </div>
                                 )}
@@ -454,7 +502,8 @@ export default function LevelPage() {
                                 {/* No blueprint available message */}
                                 {!practical.circuitBlueprint && (
                                     <p className="mt-3 text-sm text-gray-500">
-                                        💡 No pre-built circuit available for this level. Build your own following the steps above!
+                                        💡 No pre-built circuit available for this level. Build your
+                                        own following the steps above!
                                     </p>
                                 )}
                             </div>

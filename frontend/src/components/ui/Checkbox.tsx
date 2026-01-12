@@ -15,7 +15,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         return (
             <label
                 htmlFor={checkboxId}
-                className={clsx('inline-flex items-center gap-2 cursor-pointer', className)}
+                className={clsx('inline-flex cursor-pointer items-center gap-2', className)}
             >
                 <div className="relative">
                     <input
@@ -23,21 +23,19 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                         id={checkboxId}
                         type="checkbox"
                         checked={checked}
-                        className="sr-only peer"
+                        className="peer sr-only"
                         {...props}
                     />
                     <div
                         className={clsx(
-                            'w-4 h-4 rounded border transition-colors',
+                            'h-4 w-4 rounded border transition-colors',
                             'peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-2',
-                            'peer-disabled:opacity-50 peer-disabled:cursor-not-allowed',
-                            checked
-                                ? 'bg-blue-500 border-blue-500'
-                                : 'bg-white border-gray-300'
+                            'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
+                            checked ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
                         )}
                     >
                         {checked && (
-                            <Check className="w-3 h-3 text-white absolute top-0.5 left-0.5" />
+                            <Check className="absolute left-0.5 top-0.5 h-3 w-3 text-white" />
                         )}
                     </div>
                 </div>

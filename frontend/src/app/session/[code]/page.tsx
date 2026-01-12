@@ -3,15 +3,44 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-    MousePointer2, Hand, Pencil, Eraser, Undo2, Redo2,
-    Copy, Check, Link2, LogOut, Download, Upload, Image, Spline, Trash2,
-    ZoomIn, ZoomOut, ChevronDown, X, UserMinus, ShieldOff
+    MousePointer2,
+    Hand,
+    Pencil,
+    Eraser,
+    Undo2,
+    Redo2,
+    Copy,
+    Check,
+    Link2,
+    LogOut,
+    Download,
+    Upload,
+    Image,
+    Spline,
+    Trash2,
+    ZoomIn,
+    ZoomOut,
+    ChevronDown,
+    X,
+    UserMinus,
+    ShieldOff,
 } from 'lucide-react';
 
 import {
-    Button, IconButton, Input, Modal, Panel, Badge,
-    Avatar, ColorPicker, Spinner, Tooltip, ToastContainer, ToastItem,
-    ThemeToggle, LeaveConfirmModal
+    Button,
+    IconButton,
+    Input,
+    Modal,
+    Panel,
+    Badge,
+    Avatar,
+    ColorPicker,
+    Spinner,
+    Tooltip,
+    ToastContainer,
+    ToastItem,
+    ThemeToggle,
+    LeaveConfirmModal,
 } from '@/components/ui';
 import { Canvas, SimulationOverlay } from '@/components/circuit';
 import { ComponentPalette } from '@/components/circuit/ComponentPalette';
@@ -45,9 +74,13 @@ export default function SessionPage() {
     const [draggingComponent, setDraggingComponent] = useState<ComponentDefinition | null>(null);
     const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
     const [isSimulationRunning, setIsSimulationRunning] = useState(false);
-    const [remoteSimulationResult, setRemoteSimulationResult] = useState<SimulationResult | null>(null);
+    const [remoteSimulationResult, setRemoteSimulationResult] = useState<SimulationResult | null>(
+        null
+    );
     const [showZoomDropdown, setShowZoomDropdown] = useState(false);
-    const [editingLabel, setEditingLabel] = useState<{ componentId: string; label: string } | null>(null);
+    const [editingLabel, setEditingLabel] = useState<{ componentId: string; label: string } | null>(
+        null
+    );
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [leaveModalStudentCount, setLeaveModalStudentCount] = useState(0);
 
@@ -87,18 +120,21 @@ export default function SessionPage() {
         setIsResizing(side);
     };
 
-    const handleResizeMouseMove = useCallback((e: MouseEvent) => {
-        if (!isResizing) return;
+    const handleResizeMouseMove = useCallback(
+        (e: MouseEvent) => {
+            if (!isResizing) return;
 
-        if (isResizing === 'left') {
-            // Account for toolbar width (48px)
-            const newWidth = Math.max(200, Math.min(400, e.clientX - 48));
-            setLeftSidebarWidth(newWidth);
-        } else if (isResizing === 'right') {
-            const newWidth = Math.max(200, Math.min(400, window.innerWidth - e.clientX));
-            setRightSidebarWidth(newWidth);
-        }
-    }, [isResizing]);
+            if (isResizing === 'left') {
+                // Account for toolbar width (48px)
+                const newWidth = Math.max(200, Math.min(400, e.clientX - 48));
+                setLeftSidebarWidth(newWidth);
+            } else if (isResizing === 'right') {
+                const newWidth = Math.max(200, Math.min(400, window.innerWidth - e.clientX));
+                setRightSidebarWidth(newWidth);
+            }
+        },
+        [isResizing]
+    );
 
     const handleResizeMouseUp = useCallback(() => {
         setIsResizing(null);
@@ -121,134 +157,156 @@ export default function SessionPage() {
     }, [isResizing, handleResizeMouseMove, handleResizeMouseUp]);
 
     // Handle WebSocket messages
-    const handleMessage = useCallback((message: ServerMessage) => {
-        switch (message.type) {
-            case 'sync:state':
-                circuitStore.setCircuitState(message.payload.circuit);
-                sessionStore.setParticipants(message.payload.participants);
-                break;
-            case 'circuit:component:added':
-                circuitStore.addComponent(message.payload.component);
-                break;
-            case 'circuit:component:moved':
-                circuitStore.moveComponent(message.payload.componentId, message.payload.position);
-                break;
-            case 'circuit:component:deleted':
-                circuitStore.deleteComponent(message.payload.componentId);
-                break;
-            case 'circuit:wire:added':
-                circuitStore.addWire(message.payload.wire);
-                break;
-            case 'circuit:wire:deleted':
-                circuitStore.deleteWire(message.payload.wireId);
-                break;
-            case 'circuit:annotation:added':
-                circuitStore.addAnnotation(message.payload.annotation);
-                break;
-            case 'circuit:annotation:deleted':
-                circuitStore.deleteAnnotation(message.payload.annotationId);
-                break;
-            case 'circuit:state:updated':
-                // Re-fetch full state after undo/redo to get the actual changes
-                circuitStore.updateVersion(message.payload.version);
-                // Request fresh state from server
-                api.getCircuit(code).then((state) => {
-                    if (state) {
-                        circuitStore.setCircuitState(state);
+    const handleMessage = useCallback(
+        (message: ServerMessage) => {
+            switch (message.type) {
+                case 'sync:state':
+                    circuitStore.setCircuitState(message.payload.circuit);
+                    sessionStore.setParticipants(message.payload.participants);
+                    break;
+                case 'circuit:component:added':
+                    circuitStore.addComponent(message.payload.component);
+                    break;
+                case 'circuit:component:moved':
+                    circuitStore.moveComponent(
+                        message.payload.componentId,
+                        message.payload.position
+                    );
+                    break;
+                case 'circuit:component:deleted':
+                    circuitStore.deleteComponent(message.payload.componentId);
+                    break;
+                case 'circuit:wire:added':
+                    circuitStore.addWire(message.payload.wire);
+                    break;
+                case 'circuit:wire:deleted':
+                    circuitStore.deleteWire(message.payload.wireId);
+                    break;
+                case 'circuit:annotation:added':
+                    circuitStore.addAnnotation(message.payload.annotation);
+                    break;
+                case 'circuit:annotation:deleted':
+                    circuitStore.deleteAnnotation(message.payload.annotationId);
+                    break;
+                case 'circuit:state:updated':
+                    // Re-fetch full state after undo/redo to get the actual changes
+                    circuitStore.updateVersion(message.payload.version);
+                    // Request fresh state from server
+                    api.getCircuit(code)
+                        .then((state) => {
+                            if (state) {
+                                circuitStore.setCircuitState(state);
+                            }
+                        })
+                        .catch(() => {
+                            // Silently fail - state will sync on next action
+                        });
+                    break;
+                case 'presence:cursor:moved':
+                    sessionStore.updateRemoteCursor(
+                        message.payload.participantId,
+                        message.payload.position
+                    );
+                    break;
+                case 'presence:selection:changed':
+                    sessionStore.updateRemoteSelection(
+                        message.payload.participantId,
+                        message.payload.componentIds
+                    );
+                    break;
+                case 'presence:participant:joined':
+                    sessionStore.addParticipant(message.payload.participant);
+                    addToast('info', `${message.payload.participant.displayName} joined`);
+                    break;
+                case 'presence:participant:left': {
+                    const leftParticipant = sessionStore.participants.find(
+                        (p: { id: string }) => p.id === message.payload.participantId
+                    );
+                    sessionStore.removeParticipant(message.payload.participantId);
+                    if (leftParticipant) {
+                        addToast('info', `${leftParticipant.displayName} left`);
                     }
-                }).catch(() => {
-                    // Silently fail - state will sync on next action
-                });
-                break;
-            case 'presence:cursor:moved':
-                sessionStore.updateRemoteCursor(message.payload.participantId, message.payload.position);
-                break;
-            case 'presence:selection:changed':
-                sessionStore.updateRemoteSelection(message.payload.participantId, message.payload.componentIds);
-                break;
-            case 'presence:participant:joined':
-                sessionStore.addParticipant(message.payload.participant);
-                addToast('info', `${message.payload.participant.displayName} joined`);
-                break;
-            case 'presence:participant:left': {
-                const leftParticipant = sessionStore.participants.find((p: { id: string }) => p.id === message.payload.participantId);
-                sessionStore.removeParticipant(message.payload.participantId);
-                if (leftParticipant) {
-                    addToast('info', `${leftParticipant.displayName} left`);
+                    break;
                 }
-                break;
+                case 'permission:request:sent':
+                    // Confirmation to student that their request was sent
+                    addToast('info', 'Edit request sent to teacher');
+                    break;
+                case 'permission:request:received':
+                    sessionStore.addEditRequest({
+                        participantId: message.payload.participantId,
+                        displayName: message.payload.displayName,
+                        requestedAt: new Date().toISOString(),
+                        status: 'pending',
+                    });
+                    addToast('info', `${message.payload.displayName} requested edit access`);
+                    break;
+                case 'permission:granted':
+                    sessionStore.updateParticipantEditStatus(message.payload.participantId, true);
+                    sessionStore.removeEditRequest(message.payload.participantId);
+                    if (message.payload.participantId === sessionStore.currentParticipant?.id) {
+                        addToast('success', 'Edit access granted!');
+                    }
+                    break;
+                case 'permission:denied':
+                    sessionStore.removeEditRequest(message.payload.participantId);
+                    if (message.payload.participantId === sessionStore.currentParticipant?.id) {
+                        addToast('warning', 'Edit access denied');
+                    }
+                    break;
+                case 'permission:revoked':
+                    sessionStore.updateParticipantEditStatus(message.payload.participantId, false);
+                    if (message.payload.participantId === sessionStore.currentParticipant?.id) {
+                        addToast('warning', 'Edit access revoked');
+                    }
+                    break;
+                case 'session:kicked':
+                    // Current user was kicked from the session
+                    addToast('error', 'You have been removed from the session');
+                    wsClient?.disconnect();
+                    router.push('/');
+                    break;
+                case 'presence:participant:kicked':
+                    // Another participant was kicked
+                    sessionStore.removeParticipant(message.payload.participantId);
+                    addToast('info', `${message.payload.displayName} was removed from the session`);
+                    break;
+                case 'simulation:started':
+                    setIsSimulationRunning(true);
+                    addToast('info', 'Simulation started');
+                    break;
+                case 'simulation:stopped':
+                    setIsSimulationRunning(false);
+                    setRemoteSimulationResult(null);
+                    setSimulationResult(null);
+                    addToast('info', 'Simulation stopped');
+                    break;
+                case 'simulation:state:updated':
+                    setIsSimulationRunning(message.payload.isRunning);
+                    if (message.payload.isRunning) {
+                        const result: SimulationResult = {
+                            success: message.payload.errors.length === 0,
+                            wireStates: message.payload.wireStates as Record<
+                                string,
+                                'HIGH' | 'LOW' | 'UNDEFINED' | 'ERROR'
+                            >,
+                            pinStates: message.payload.pinStates as Record<
+                                string,
+                                Record<string, 'HIGH' | 'LOW' | 'UNDEFINED' | 'ERROR'>
+                            >,
+                            errors: message.payload.errors,
+                        };
+                        setRemoteSimulationResult(result);
+                        setSimulationResult(result);
+                    }
+                    break;
+                case 'error':
+                    addToast('error', message.payload.message);
+                    break;
             }
-            case 'permission:request:sent':
-                // Confirmation to student that their request was sent
-                addToast('info', 'Edit request sent to teacher');
-                break;
-            case 'permission:request:received':
-                sessionStore.addEditRequest({
-                    participantId: message.payload.participantId,
-                    displayName: message.payload.displayName,
-                    requestedAt: new Date().toISOString(),
-                    status: 'pending',
-                });
-                addToast('info', `${message.payload.displayName} requested edit access`);
-                break;
-            case 'permission:granted':
-                sessionStore.updateParticipantEditStatus(message.payload.participantId, true);
-                sessionStore.removeEditRequest(message.payload.participantId);
-                if (message.payload.participantId === sessionStore.currentParticipant?.id) {
-                    addToast('success', 'Edit access granted!');
-                }
-                break;
-            case 'permission:denied':
-                sessionStore.removeEditRequest(message.payload.participantId);
-                if (message.payload.participantId === sessionStore.currentParticipant?.id) {
-                    addToast('warning', 'Edit access denied');
-                }
-                break;
-            case 'permission:revoked':
-                sessionStore.updateParticipantEditStatus(message.payload.participantId, false);
-                if (message.payload.participantId === sessionStore.currentParticipant?.id) {
-                    addToast('warning', 'Edit access revoked');
-                }
-                break;
-            case 'session:kicked':
-                // Current user was kicked from the session
-                addToast('error', 'You have been removed from the session');
-                wsClient?.disconnect();
-                router.push('/');
-                break;
-            case 'presence:participant:kicked':
-                // Another participant was kicked
-                sessionStore.removeParticipant(message.payload.participantId);
-                addToast('info', `${message.payload.displayName} was removed from the session`);
-                break;
-            case 'simulation:started':
-                setIsSimulationRunning(true);
-                addToast('info', 'Simulation started');
-                break;
-            case 'simulation:stopped':
-                setIsSimulationRunning(false);
-                setRemoteSimulationResult(null);
-                setSimulationResult(null);
-                addToast('info', 'Simulation stopped');
-                break;
-            case 'simulation:state:updated':
-                setIsSimulationRunning(message.payload.isRunning);
-                if (message.payload.isRunning) {
-                    const result: SimulationResult = {
-                        success: message.payload.errors.length === 0,
-                        wireStates: message.payload.wireStates as Record<string, 'HIGH' | 'LOW' | 'UNDEFINED' | 'ERROR'>,
-                        pinStates: message.payload.pinStates as Record<string, Record<string, 'HIGH' | 'LOW' | 'UNDEFINED' | 'ERROR'>>,
-                        errors: message.payload.errors,
-                    };
-                    setRemoteSimulationResult(result);
-                    setSimulationResult(result);
-                }
-                break;
-            case 'error':
-                addToast('error', message.payload.message);
-                break;
-        }
-    }, [circuitStore, sessionStore, addToast]);
+        },
+        [circuitStore, sessionStore, addToast]
+    );
 
     // Initialize session
     useEffect(() => {
@@ -268,7 +326,11 @@ export default function SessionPage() {
                 if (existingId && existingName) {
                     // Try to rejoin with existing ID and name
                     try {
-                        const { participant } = await api.joinSession(code, existingName, existingId);
+                        const { participant } = await api.joinSession(
+                            code,
+                            existingName,
+                            existingId
+                        );
                         sessionStore.setCurrentParticipant(participant);
                         connectWebSocket(existingId);
                     } catch {
@@ -335,7 +397,11 @@ export default function SessionPage() {
         try {
             // Check if we have an existing participant ID (creator case)
             const existingId = localStorage.getItem(`participant_${code}`);
-            const { participant } = await api.joinSession(code, displayName, existingId || undefined);
+            const { participant } = await api.joinSession(
+                code,
+                displayName,
+                existingId || undefined
+            );
             localStorage.setItem(`participant_${code}`, participant.id);
             localStorage.setItem(`participant_name_${code}`, displayName);
             sessionStore.setCurrentParticipant(participant);
@@ -370,7 +436,7 @@ export default function SessionPage() {
 
     const handleZoomIn = () => {
         const currentPercent = Math.round(uiStore.zoom * 100);
-        const nextPreset = ZOOM_PRESETS.find(p => p > currentPercent);
+        const nextPreset = ZOOM_PRESETS.find((p) => p > currentPercent);
         if (nextPreset) {
             uiStore.setZoom(nextPreset / 100);
         }
@@ -378,7 +444,7 @@ export default function SessionPage() {
 
     const handleZoomOut = () => {
         const currentPercent = Math.round(uiStore.zoom * 100);
-        const prevPreset = [...ZOOM_PRESETS].reverse().find(p => p < currentPercent);
+        const prevPreset = [...ZOOM_PRESETS].reverse().find((p) => p < currentPercent);
         if (prevPreset) {
             uiStore.setZoom(prevPreset / 100);
         }
@@ -400,7 +466,7 @@ export default function SessionPage() {
     const handleComponentDrop = (position: Position) => {
         if (!draggingComponent || !canEdit) return;
         // Get existing labels to avoid duplicates
-        const existingLabels = circuitStore.components.map(c => c.label).filter(Boolean);
+        const existingLabels = circuitStore.components.map((c) => c.label).filter(Boolean);
         const component = createComponentInstance(draggingComponent.type, position, existingLabels);
         if (component) {
             wsClient?.addComponent(component);
@@ -425,7 +491,12 @@ export default function SessionPage() {
         setEditingLabel(null);
     };
 
-    const handleWireCreate = (fromComponentId: string, fromPinId: string, toComponentId: string, toPinId: string) => {
+    const handleWireCreate = (
+        fromComponentId: string,
+        fromPinId: string,
+        toComponentId: string,
+        toPinId: string
+    ) => {
         const wire = {
             id: `wire-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             fromComponentId,
@@ -538,10 +609,10 @@ export default function SessionPage() {
         try {
             const circuitState = await importFromJson(file);
             // Import each component and wire via WebSocket
-            circuitState.components.forEach(comp => {
+            circuitState.components.forEach((comp) => {
                 wsClient?.addComponent(comp);
             });
-            circuitState.wires.forEach(wire => {
+            circuitState.wires.forEach((wire) => {
                 wsClient?.addWire(wire);
             });
             addToast('success', 'Circuit imported successfully');
@@ -596,7 +667,8 @@ export default function SessionPage() {
     }, [wsClient, uiStore.selectedComponentIds]);
 
     // Extract session state for hooks (must be before any conditional returns)
-    const { currentParticipant, participants, isConnected, isReconnecting, editRequests } = sessionStore;
+    const { currentParticipant, participants, isConnected, isReconnecting, editRequests } =
+        sessionStore;
     const canEdit = currentParticipant?.canEdit ?? false;
     const isTeacher = currentParticipant?.role === 'teacher';
     const activeStudentCount = participants.filter(
@@ -613,30 +685,40 @@ export default function SessionPage() {
             wsClient?.disconnect();
             router.push('/');
         },
-        onLeaveCancelled: () => { },
+        onLeaveCancelled: () => {},
     });
 
-    const pendingRequests = editRequests.filter(r => r.status === 'pending');
+    const pendingRequests = editRequests.filter((r) => r.status === 'pending');
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
                 <Spinner size="lg" />
             </div>
         );
     }
 
     return (
-        <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+        <div className="flex h-screen flex-col bg-gray-100 dark:bg-gray-900">
             {/* Header */}
-            <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between relative z-50">
+            <header className="relative z-50 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex items-center gap-4">
                     <h1 className="font-semibold text-gray-900 dark:text-white">CircuitForge</h1>
                     <div className="flex items-center gap-2">
-                        <Badge variant={isConnected ? 'success' : isReconnecting ? 'warning' : 'danger'}>
-                            {isConnected ? 'Connected' : isReconnecting ? 'Reconnecting...' : 'Disconnected'}
+                        <Badge
+                            variant={
+                                isConnected ? 'success' : isReconnecting ? 'warning' : 'danger'
+                            }
+                        >
+                            {isConnected
+                                ? 'Connected'
+                                : isReconnecting
+                                  ? 'Reconnecting...'
+                                  : 'Disconnected'}
                         </Badge>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Session: {code}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                            Session: {code}
+                        </span>
                     </div>
                 </div>
 
@@ -654,68 +736,80 @@ export default function SessionPage() {
                         onSimulationStateChange={setIsSimulationRunning}
                     />
 
-                    <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
 
                     {/* Export/Import */}
                     <Tooltip content="Export as PNG" position="bottom">
                         <IconButton
-                            icon={<Image className="w-4 h-4" />}
+                            icon={<Image className="h-4 w-4" />}
                             onClick={handleExportPng}
                             aria-label="Export PNG"
                         />
                     </Tooltip>
                     <Tooltip content="Export as JSON" position="bottom">
                         <IconButton
-                            icon={<Download className="w-4 h-4" />}
+                            icon={<Download className="h-4 w-4" />}
                             onClick={handleExportJson}
                             aria-label="Export JSON"
                         />
                     </Tooltip>
                     {canEdit && (
                         <Tooltip content="Import JSON" position="bottom">
-                            <label className="cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">
+                            <label className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
                                 <input
                                     type="file"
                                     accept=".json"
                                     onChange={handleImportJson}
                                     className="hidden"
                                 />
-                                <Upload className="w-4 h-4" />
+                                <Upload className="h-4 w-4" />
                             </label>
                         </Tooltip>
                     )}
 
-                    <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
 
                     <Tooltip content="Copy session code" position="bottom">
                         <IconButton
-                            icon={copied === 'code' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                            icon={
+                                copied === 'code' ? (
+                                    <Check className="h-4 w-4" />
+                                ) : (
+                                    <Copy className="h-4 w-4" />
+                                )
+                            }
                             onClick={() => handleCopy('code')}
                             aria-label="Copy code"
                         />
                     </Tooltip>
                     <Tooltip content="Copy session link" position="bottom">
                         <IconButton
-                            icon={copied === 'link' ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
+                            icon={
+                                copied === 'link' ? (
+                                    <Check className="h-4 w-4" />
+                                ) : (
+                                    <Link2 className="h-4 w-4" />
+                                )
+                            }
                             onClick={() => handleCopy('link')}
                             aria-label="Copy link"
                         />
                     </Tooltip>
                     <ThemeToggle />
                     <Button variant="ghost" size="sm" onClick={handleLeave}>
-                        <LogOut className="w-4 h-4 mr-1" />
+                        <LogOut className="mr-1 h-4 w-4" />
                         Leave
                     </Button>
                 </div>
             </header>
 
             {/* Main content */}
-            <div className="flex-1 flex overflow-hidden relative">
+            <div className="relative flex flex-1 overflow-hidden">
                 {/* Toolbar */}
-                <div className="w-12 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-2 gap-1">
+                <div className="flex w-12 flex-col items-center gap-1 border-r border-gray-200 bg-white py-2 dark:border-gray-700 dark:bg-gray-800">
                     <Tooltip content="Select (V)" position="right">
                         <IconButton
-                            icon={<MousePointer2 className="w-5 h-5" />}
+                            icon={<MousePointer2 className="h-5 w-5" />}
                             onClick={() => handleToolSelect('select')}
                             variant={uiStore.selectedTool === 'select' ? 'primary' : 'ghost'}
                             aria-label="Select tool"
@@ -723,7 +817,7 @@ export default function SessionPage() {
                     </Tooltip>
                     <Tooltip content="Pan (Space)" position="right">
                         <IconButton
-                            icon={<Hand className="w-5 h-5" />}
+                            icon={<Hand className="h-5 w-5" />}
                             onClick={() => handleToolSelect('pan')}
                             variant={uiStore.selectedTool === 'pan' ? 'primary' : 'ghost'}
                             aria-label="Pan tool"
@@ -733,7 +827,7 @@ export default function SessionPage() {
                         <>
                             <Tooltip content="Draw (D)" position="right">
                                 <IconButton
-                                    icon={<Pencil className="w-5 h-5" />}
+                                    icon={<Pencil className="h-5 w-5" />}
                                     onClick={() => handleToolSelect('draw')}
                                     variant={uiStore.selectedTool === 'draw' ? 'primary' : 'ghost'}
                                     aria-label="Draw tool"
@@ -741,7 +835,7 @@ export default function SessionPage() {
                             </Tooltip>
                             <Tooltip content="Erase (E)" position="right">
                                 <IconButton
-                                    icon={<Eraser className="w-5 h-5" />}
+                                    icon={<Eraser className="h-5 w-5" />}
                                     onClick={() => handleToolSelect('erase')}
                                     variant={uiStore.selectedTool === 'erase' ? 'primary' : 'ghost'}
                                     aria-label="Erase tool"
@@ -749,18 +843,18 @@ export default function SessionPage() {
                             </Tooltip>
                             <Tooltip content="Wire (W)" position="right">
                                 <IconButton
-                                    icon={<Spline className="w-5 h-5" />}
+                                    icon={<Spline className="h-5 w-5" />}
                                     onClick={() => handleToolSelect('wire')}
                                     variant={uiStore.selectedTool === 'wire' ? 'primary' : 'ghost'}
                                     aria-label="Wire tool"
                                 />
                             </Tooltip>
 
-                            <div className="w-8 h-px bg-gray-200 dark:bg-gray-700 my-1" />
+                            <div className="my-1 h-px w-8 bg-gray-200 dark:bg-gray-700" />
 
                             <Tooltip content="Delete Selected (Del)" position="right">
                                 <IconButton
-                                    icon={<Trash2 className="w-5 h-5" />}
+                                    icon={<Trash2 className="h-5 w-5" />}
                                     onClick={handleDeleteSelected}
                                     variant="ghost"
                                     disabled={uiStore.selectedComponentIds.length === 0}
@@ -776,14 +870,14 @@ export default function SessionPage() {
                         <>
                             <Tooltip content="Undo (Ctrl+Z)" position="right">
                                 <IconButton
-                                    icon={<Undo2 className="w-5 h-5" />}
+                                    icon={<Undo2 className="h-5 w-5" />}
                                     onClick={handleUndo}
                                     aria-label="Undo"
                                 />
                             </Tooltip>
                             <Tooltip content="Redo (Ctrl+Y)" position="right">
                                 <IconButton
-                                    icon={<Redo2 className="w-5 h-5" />}
+                                    icon={<Redo2 className="h-5 w-5" />}
                                     onClick={handleRedo}
                                     aria-label="Redo"
                                 />
@@ -795,7 +889,7 @@ export default function SessionPage() {
                 {/* Component Palette */}
                 {canEdit && (
                     <div
-                        className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 relative ${isResizing ? '' : 'transition-all duration-200'}`}
+                        className={`relative flex-shrink-0 overflow-hidden border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 ${isResizing ? '' : 'transition-all duration-200'}`}
                         style={{ width: leftSidebarCollapsed ? 0 : leftSidebarWidth }}
                     >
                         {!leftSidebarCollapsed && (
@@ -806,7 +900,7 @@ export default function SessionPage() {
                                 />
                                 {/* Resize handle */}
                                 <div
-                                    className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 bg-gray-200 dark:bg-gray-700 opacity-0 hover:opacity-100 transition-opacity"
+                                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-gray-200 opacity-0 transition-opacity hover:bg-blue-400 hover:opacity-100 dark:bg-gray-700"
                                     onMouseDown={handleResizeMouseDown('left')}
                                 />
                             </>
@@ -818,18 +912,18 @@ export default function SessionPage() {
                 {canEdit && (
                     <button
                         onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                        className={`absolute top-1/2 -translate-y-1/2 z-20 bg-blue-500 hover:bg-blue-600 text-white border-0 rounded-r-md px-2 py-4 shadow-lg ${isResizing ? '' : 'transition-all duration-200'}`}
+                        className={`absolute top-1/2 z-20 -translate-y-1/2 rounded-r-md border-0 bg-blue-500 px-2 py-4 text-white shadow-lg hover:bg-blue-600 ${isResizing ? '' : 'transition-all duration-200'}`}
                         style={{ left: leftSidebarCollapsed ? 48 : 48 + leftSidebarWidth }}
                         title={leftSidebarCollapsed ? 'Show Components' : 'Hide Components'}
                     >
-                        <span className="text-white text-sm font-bold">
+                        <span className="text-sm font-bold text-white">
                             {leftSidebarCollapsed ? '»' : '«'}
                         </span>
                     </button>
                 )}
 
                 {/* Canvas */}
-                <div className="flex-1 min-w-0 relative">
+                <div className="relative min-w-0 flex-1">
                     <Canvas
                         onComponentMove={handleComponentMove}
                         onAnnotationCreate={handleAnnotationCreate}
@@ -846,10 +940,10 @@ export default function SessionPage() {
                     />
 
                     {/* Zoom Controls */}
-                    <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1 z-10">
+                    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                         <Tooltip content="Zoom Out" position="top">
                             <IconButton
-                                icon={<ZoomOut className="w-4 h-4" />}
+                                icon={<ZoomOut className="h-4 w-4" />}
                                 onClick={handleZoomOut}
                                 size="sm"
                                 disabled={uiStore.zoom <= 0.25}
@@ -861,10 +955,10 @@ export default function SessionPage() {
                         <div className="relative">
                             <button
                                 onClick={() => setShowZoomDropdown(!showZoomDropdown)}
-                                className="flex items-center gap-1 px-2 py-1 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded min-w-[70px] justify-center"
+                                className="flex min-w-[70px] items-center justify-center gap-1 rounded px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
                             >
                                 {Math.round(uiStore.zoom * 100)}%
-                                <ChevronDown className="w-3 h-3" />
+                                <ChevronDown className="h-3 w-3" />
                             </button>
 
                             {showZoomDropdown && (
@@ -873,15 +967,16 @@ export default function SessionPage() {
                                         className="fixed inset-0 z-10"
                                         onClick={() => setShowZoomDropdown(false)}
                                     />
-                                    <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20 min-w-[80px]">
+                                    <div className="absolute bottom-full left-1/2 z-20 mb-1 min-w-[80px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                                         {ZOOM_PRESETS.map((percent) => (
                                             <button
                                                 key={percent}
                                                 onClick={() => handleZoomPreset(percent)}
-                                                className={`w-full px-3 py-1.5 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 ${Math.round(uiStore.zoom * 100) === percent
-                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium'
-                                                    : 'text-gray-700 dark:text-gray-200'
-                                                    }`}
+                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                                    Math.round(uiStore.zoom * 100) === percent
+                                                        ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                        : 'text-gray-700 dark:text-gray-200'
+                                                }`}
                                             >
                                                 {percent}%
                                             </button>
@@ -893,7 +988,7 @@ export default function SessionPage() {
 
                         <Tooltip content="Zoom In" position="top">
                             <IconButton
-                                icon={<ZoomIn className="w-4 h-4" />}
+                                icon={<ZoomIn className="h-4 w-4" />}
                                 onClick={handleZoomIn}
                                 size="sm"
                                 disabled={uiStore.zoom >= 4}
@@ -906,34 +1001,34 @@ export default function SessionPage() {
                 {/* Right sidebar collapse toggle */}
                 <button
                     onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-                    className={`absolute top-1/2 -translate-y-1/2 z-20 bg-blue-500 hover:bg-blue-600 text-white border-0 rounded-l-md px-2 py-4 shadow-lg ${isResizing ? '' : 'transition-all duration-200'}`}
+                    className={`absolute top-1/2 z-20 -translate-y-1/2 rounded-l-md border-0 bg-blue-500 px-2 py-4 text-white shadow-lg hover:bg-blue-600 ${isResizing ? '' : 'transition-all duration-200'}`}
                     style={{ right: rightSidebarCollapsed ? 0 : rightSidebarWidth }}
                     title={rightSidebarCollapsed ? 'Show Participants' : 'Hide Participants'}
                 >
-                    <span className="text-white text-sm font-bold">
+                    <span className="text-sm font-bold text-white">
                         {rightSidebarCollapsed ? '«' : '»'}
                     </span>
                 </button>
 
                 {/* Participants Panel */}
                 <div
-                    className={`bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 relative ${isResizing ? '' : 'transition-all duration-200'}`}
+                    className={`relative flex-shrink-0 overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 ${isResizing ? '' : 'transition-all duration-200'}`}
                     style={{ width: rightSidebarCollapsed ? 0 : rightSidebarWidth }}
                 >
                     {!rightSidebarCollapsed && (
                         <div className="h-full overflow-y-auto">
                             {/* Resize handle */}
                             <div
-                                className="absolute top-0 left-0 w-1 h-full cursor-col-resize hover:bg-blue-400 bg-gray-200 dark:bg-gray-700 opacity-0 hover:opacity-100 transition-opacity z-10"
+                                className="absolute left-0 top-0 z-10 h-full w-1 cursor-col-resize bg-gray-200 opacity-0 transition-opacity hover:bg-blue-400 hover:opacity-100 dark:bg-gray-700"
                                 onMouseDown={handleResizeMouseDown('right')}
                             />
 
                             <Panel title="Participants">
                                 {/* Pending Requests Section (Teacher only, shown only when there are requests) */}
                                 {isTeacher && pendingRequests.length > 0 && (
-                                    <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-xs font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                                    <div className="mb-3 border-b border-gray-200 pb-3 dark:border-gray-700">
+                                        <div className="mb-2 flex items-center gap-2">
+                                            <span className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
                                                 Pending Requests
                                             </span>
                                             <Badge variant="warning" size="sm">
@@ -942,19 +1037,21 @@ export default function SessionPage() {
                                         </div>
                                         <div className="space-y-2">
                                             {pendingRequests.map((request) => {
-                                                const participant = participants.find(p => p.id === request.participantId);
+                                                const participant = participants.find(
+                                                    (p) => p.id === request.participantId
+                                                );
                                                 return (
                                                     <div
                                                         key={request.participantId}
-                                                        className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700"
+                                                        className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2 dark:border-amber-700 dark:bg-amber-900/30"
                                                     >
                                                         <Avatar
                                                             name={request.displayName}
                                                             color={participant?.color || '#888'}
                                                             size="sm"
                                                         />
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                                                                 {request.displayName}
                                                             </p>
                                                             <p className="text-xs text-amber-600 dark:text-amber-400">
@@ -962,10 +1059,19 @@ export default function SessionPage() {
                                                             </p>
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <Tooltip content="Approve" position="top">
+                                                            <Tooltip
+                                                                content="Approve"
+                                                                position="top"
+                                                            >
                                                                 <IconButton
-                                                                    icon={<Check className="w-4 h-4" />}
-                                                                    onClick={() => wsClient?.approveEditRequest(request.participantId)}
+                                                                    icon={
+                                                                        <Check className="h-4 w-4" />
+                                                                    }
+                                                                    onClick={() =>
+                                                                        wsClient?.approveEditRequest(
+                                                                            request.participantId
+                                                                        )
+                                                                    }
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     className="text-green-600 hover:bg-green-100"
@@ -974,8 +1080,12 @@ export default function SessionPage() {
                                                             </Tooltip>
                                                             <Tooltip content="Deny" position="top">
                                                                 <IconButton
-                                                                    icon={<X className="w-4 h-4" />}
-                                                                    onClick={() => wsClient?.denyEditRequest(request.participantId)}
+                                                                    icon={<X className="h-4 w-4" />}
+                                                                    onClick={() =>
+                                                                        wsClient?.denyEditRequest(
+                                                                            request.participantId
+                                                                        )
+                                                                    }
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     className="text-red-600 hover:bg-red-100"
@@ -993,59 +1103,90 @@ export default function SessionPage() {
                                 {/* Participants List */}
                                 <div className="space-y-1">
                                     {participants.map((p: Participant) => {
-                                        const hasPendingRequest = pendingRequests.some(r => r.participantId === p.id);
+                                        const hasPendingRequest = pendingRequests.some(
+                                            (r) => r.participantId === p.id
+                                        );
                                         // Skip participants with pending requests (they're shown above)
                                         if (isTeacher && hasPendingRequest) return null;
 
                                         return (
                                             <div
                                                 key={p.id}
-                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
+                                                className="group flex items-center gap-2 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                                             >
-                                                <Avatar name={p.displayName} color={p.color} size="sm" />
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                <Avatar
+                                                    name={p.displayName}
+                                                    color={p.color}
+                                                    size="sm"
+                                                />
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                                                         {p.displayName}
-                                                        {p.id === currentParticipant?.id && ' (You)'}
+                                                        {p.id === currentParticipant?.id &&
+                                                            ' (You)'}
                                                     </p>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {p.role === 'teacher' ? 'Teacher' : 'Student'}
+                                                        {p.role === 'teacher'
+                                                            ? 'Teacher'
+                                                            : 'Student'}
                                                         {p.canEdit && ' • Can Edit'}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     {!p.isActive && (
-                                                        <Badge variant="default" size="sm">Away</Badge>
+                                                        <Badge variant="default" size="sm">
+                                                            Away
+                                                        </Badge>
                                                     )}
                                                     {/* Teacher controls for students */}
-                                                    {isTeacher && p.role === 'student' && p.id !== currentParticipant?.id && (
-                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
-                                                            {/* Revoke edit access */}
-                                                            {p.canEdit && (
-                                                                <Tooltip content="Revoke edit access" position="top">
+                                                    {isTeacher &&
+                                                        p.role === 'student' &&
+                                                        p.id !== currentParticipant?.id && (
+                                                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
+                                                                {/* Revoke edit access */}
+                                                                {p.canEdit && (
+                                                                    <Tooltip
+                                                                        content="Revoke edit access"
+                                                                        position="top"
+                                                                    >
+                                                                        <IconButton
+                                                                            icon={
+                                                                                <ShieldOff className="h-3.5 w-3.5" />
+                                                                            }
+                                                                            onClick={() =>
+                                                                                wsClient?.revokeEditPermission(
+                                                                                    p.id
+                                                                                )
+                                                                            }
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            className="text-gray-400 hover:bg-orange-50 hover:text-orange-600"
+                                                                            aria-label="Revoke edit access"
+                                                                        />
+                                                                    </Tooltip>
+                                                                )}
+                                                                {/* Kick from session */}
+                                                                <Tooltip
+                                                                    content="Remove from session"
+                                                                    position="top"
+                                                                >
                                                                     <IconButton
-                                                                        icon={<ShieldOff className="w-3.5 h-3.5" />}
-                                                                        onClick={() => wsClient?.revokeEditPermission(p.id)}
+                                                                        icon={
+                                                                            <UserMinus className="h-3.5 w-3.5" />
+                                                                        }
+                                                                        onClick={() =>
+                                                                            wsClient?.kickParticipant(
+                                                                                p.id
+                                                                            )
+                                                                        }
                                                                         size="sm"
                                                                         variant="ghost"
-                                                                        className="text-gray-400 hover:text-orange-600 hover:bg-orange-50"
-                                                                        aria-label="Revoke edit access"
+                                                                        className="text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                                                        aria-label="Remove from session"
                                                                     />
                                                                 </Tooltip>
-                                                            )}
-                                                            {/* Kick from session */}
-                                                            <Tooltip content="Remove from session" position="top">
-                                                                <IconButton
-                                                                    icon={<UserMinus className="w-3.5 h-3.5" />}
-                                                                    onClick={() => wsClient?.kickParticipant(p.id)}
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    className="text-gray-400 hover:text-red-600 hover:bg-red-50"
-                                                                    aria-label="Remove from session"
-                                                                />
-                                                            </Tooltip>
-                                                        </div>
-                                                    )}
+                                                            </div>
+                                                        )}
                                                 </div>
                                             </div>
                                         );
@@ -1054,7 +1195,7 @@ export default function SessionPage() {
 
                                 {/* Request Edit Access Button (Student only) */}
                                 {!canEdit && currentParticipant?.role === 'student' && (
-                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
                                         <Button
                                             variant="secondary"
                                             size="sm"
@@ -1072,27 +1213,39 @@ export default function SessionPage() {
                                 <Panel title="Drawing" className="mt-2">
                                     <div className="space-y-3">
                                         <div>
-                                            <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Color</label>
+                                            <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">
+                                                Color
+                                            </label>
                                             <ColorPicker
                                                 value={uiStore.selectedColor}
                                                 onChange={uiStore.setSelectedColor}
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Thickness</label>
+                                            <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">
+                                                Thickness
+                                            </label>
                                             <div className="flex gap-2">
                                                 {[2, 4, 8].map((width) => (
                                                     <button
                                                         key={width}
-                                                        className={`w-8 h-8 rounded border flex items-center justify-center ${uiStore.strokeWidth === width
-                                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                                                            : 'border-gray-200 dark:border-gray-600'
-                                                            }`}
-                                                        onClick={() => uiStore.setStrokeWidth(width as 2 | 4 | 8)}
+                                                        className={`flex h-8 w-8 items-center justify-center rounded border ${
+                                                            uiStore.strokeWidth === width
+                                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                                                                : 'border-gray-200 dark:border-gray-600'
+                                                        }`}
+                                                        onClick={() =>
+                                                            uiStore.setStrokeWidth(
+                                                                width as 2 | 4 | 8
+                                                            )
+                                                        }
                                                     >
                                                         <div
                                                             className="rounded-full bg-gray-900 dark:bg-gray-100"
-                                                            style={{ width: width * 2, height: width * 2 }}
+                                                            style={{
+                                                                width: width * 2,
+                                                                height: width * 2,
+                                                            }}
                                                         />
                                                     </button>
                                                 ))}
@@ -1107,12 +1260,7 @@ export default function SessionPage() {
             </div>
 
             {/* Name Modal */}
-            <Modal
-                isOpen={showNameModal}
-                onClose={() => { }}
-                title="Enter Your Name"
-                size="sm"
-            >
+            <Modal isOpen={showNameModal} onClose={() => {}} title="Enter Your Name" size="sm">
                 <form onSubmit={handleJoinWithName} className="space-y-4">
                     <Input
                         label="Display Name"
@@ -1135,19 +1283,35 @@ export default function SessionPage() {
                 title="Edit Component Label"
                 size="sm"
             >
-                <form onSubmit={(e) => { e.preventDefault(); handleLabelSave(); }} className="space-y-4">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleLabelSave();
+                    }}
+                    className="space-y-4"
+                >
                     <Input
                         label="Component Label"
                         placeholder="e.g., AND1, LED2"
                         value={editingLabel?.label || ''}
-                        onChange={(e) => setEditingLabel(prev => prev ? { ...prev, label: e.target.value } : null)}
+                        onChange={(e) =>
+                            setEditingLabel((prev) =>
+                                prev ? { ...prev, label: e.target.value } : null
+                            )
+                        }
                         autoFocus
                     />
                     <p className="text-xs text-gray-500">
-                        Double-click a component to edit its label. Labels help identify components in error messages.
+                        Double-click a component to edit its label. Labels help identify components
+                        in error messages.
                     </p>
                     <div className="flex gap-2">
-                        <Button type="button" variant="ghost" onClick={() => setEditingLabel(null)} className="flex-1">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setEditingLabel(null)}
+                            className="flex-1"
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" className="flex-1">

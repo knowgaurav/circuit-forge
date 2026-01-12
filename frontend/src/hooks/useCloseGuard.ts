@@ -55,7 +55,9 @@ export function useCloseGuard({
     }, [studentCount]);
 
     const handleLeaveRequest = useCallback(() => {
-        return guardRef.current?.handleLeaveRequest() ?? { shouldShowModal: false, studentCount: 0 };
+        return (
+            guardRef.current?.handleLeaveRequest() ?? { shouldShowModal: false, studentCount: 0 }
+        );
     }, []);
 
     const confirmLeave = useCallback(() => {

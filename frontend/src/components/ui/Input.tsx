@@ -17,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="block text-sm font-medium text-foreground mb-1.5"
+                        className="mb-1.5 block text-sm font-medium text-foreground"
                     >
                         {label}
                     </label>
@@ -28,7 +28,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     className={clsx(
                         'block w-full rounded-lg border shadow-sm transition-all duration-200',
                         'focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-offset-background',
-                        'disabled:bg-surface-secondary disabled:cursor-not-allowed disabled:text-text-muted',
+                        'disabled:cursor-not-allowed disabled:bg-surface-secondary disabled:text-text-muted',
                         'px-4 py-2.5 text-sm',
                         'bg-surface text-foreground placeholder:text-text-muted',
                         error

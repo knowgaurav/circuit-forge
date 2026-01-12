@@ -22,9 +22,9 @@ export function Avatar({ name, color, size = 'md', className }: AvatarProps) {
             className={clsx(
                 'inline-flex items-center justify-center rounded-full font-medium text-white',
                 {
-                    'w-6 h-6 text-xs': size === 'sm',
-                    'w-8 h-8 text-sm': size === 'md',
-                    'w-10 h-10 text-base': size === 'lg',
+                    'h-6 w-6 text-xs': size === 'sm',
+                    'h-8 w-8 text-sm': size === 'md',
+                    'h-10 w-10 text-base': size === 'lg',
                 },
                 className
             )}

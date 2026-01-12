@@ -27,28 +27,31 @@ export function ResizablePanel({
     const [isResizing, setIsResizing] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
 
-    const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        e.preventDefault();
-        setIsResizing(true);
+    const handleMouseDown = useCallback(
+        (e: React.MouseEvent) => {
+            e.preventDefault();
+            setIsResizing(true);
 
-        const startX = e.clientX;
-        const startWidth = width;
+            const startX = e.clientX;
+            const startWidth = width;
 
-        const handleMouseMove = (e: MouseEvent) => {
-            const delta = side === 'left' ? e.clientX - startX : startX - e.clientX;
-            const newWidth = Math.min(maxWidth, Math.max(minWidth, startWidth + delta));
-            setWidth(newWidth);
-        };
+            const handleMouseMove = (e: MouseEvent) => {
+                const delta = side === 'left' ? e.clientX - startX : startX - e.clientX;
+                const newWidth = Math.min(maxWidth, Math.max(minWidth, startWidth + delta));
+                setWidth(newWidth);
+            };
 
-        const handleMouseUp = () => {
-            setIsResizing(false);
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
+            const handleMouseUp = () => {
+                setIsResizing(false);
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            };
 
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    }, [width, side, minWidth, maxWidth]);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        },
+        [width, side, minWidth, maxWidth]
+    );
 
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
@@ -57,13 +60,13 @@ export function ResizablePanel({
             <div className={`flex flex-col bg-white ${side === 'left' ? 'border-r' : 'border-l'}`}>
                 <button
                     onClick={toggleCollapse}
-                    className="p-2 hover:bg-gray-100 transition-colors"
+                    className="p-2 transition-colors hover:bg-gray-100"
                     title={`Expand ${title || 'panel'}`}
                 >
                     {side === 'left' ? (
-                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                        <ChevronRight className="h-4 w-4 text-gray-500" />
                     ) : (
-                        <ChevronLeft className="w-4 h-4 text-gray-500" />
+                        <ChevronLeft className="h-4 w-4 text-gray-500" />
                     )}
                 </button>
             </div>
@@ -78,18 +81,18 @@ export function ResizablePanel({
         >
             {/* Header with collapse button */}
             {(title || collapsible) && (
-                <div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50">
+                <div className="flex items-center justify-between border-b bg-gray-50 px-3 py-2">
                     {title && <span className="text-sm font-semibold text-gray-700">{title}</span>}
                     {collapsible && (
                         <button
                             onClick={toggleCollapse}
-                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            className="rounded p-1 transition-colors hover:bg-gray-200"
                             title={`Collapse ${title || 'panel'}`}
                         >
                             {side === 'left' ? (
-                                <ChevronLeft className="w-4 h-4 text-gray-500" />
+                                <ChevronLeft className="h-4 w-4 text-gray-500" />
                             ) : (
-                                <ChevronRight className="w-4 h-4 text-gray-500" />
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
                             )}
                         </button>
                     )}
@@ -97,14 +100,13 @@ export function ResizablePanel({
             )}
 
             {/* Content */}
-            <div className="flex-1 overflow-hidden">
-                {children}
-            </div>
+            <div className="flex-1 overflow-hidden">{children}</div>
 
             {/* Resize handle */}
             <div
-                className={`absolute top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors ${isResizing ? 'bg-blue-500' : 'bg-transparent'
-                    } ${side === 'left' ? 'right-0' : 'left-0'}`}
+                className={`absolute bottom-0 top-0 w-1 cursor-col-resize transition-colors hover:bg-blue-400 ${
+                    isResizing ? 'bg-blue-500' : 'bg-transparent'
+                } ${side === 'left' ? 'right-0' : 'left-0'}`}
                 onMouseDown={handleMouseDown}
             />
         </div>

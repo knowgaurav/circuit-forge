@@ -1,8 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, ExternalLink, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, CheckCircle, AlertCircle, Key, Cpu, Sparkles, Home, Terminal, RefreshCw } from 'lucide-react';
-import { LLM_PROVIDERS, getProvider, validateKeyFormat, validateBaseUrl, validateBridgeToken } from '@/constants/llmProviders';
+import {
+    X,
+    ExternalLink,
+    Eye,
+    EyeOff,
+    ChevronDown,
+    ChevronUp,
+    Loader2,
+    CheckCircle,
+    AlertCircle,
+    Key,
+    Cpu,
+    Sparkles,
+    Home,
+    Terminal,
+    RefreshCw,
+} from 'lucide-react';
+import {
+    LLM_PROVIDERS,
+    getProvider,
+    validateKeyFormat,
+    validateBaseUrl,
+    validateBridgeToken,
+} from '@/constants/llmProviders';
 import { useLLMConfigStore } from '@/stores/llmConfigStore';
 import { api } from '@/services/api';
 
@@ -34,12 +56,14 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
     const [bridgeToken, setBridgeToken] = useState('');
     const [baseUrlError, setBaseUrlError] = useState<string | null>(null);
     const [tokenError, setTokenError] = useState<string | null>(null);
-    const [localModels, setLocalModels] = useState<Array<{ id: string; name: string; description: string }>>([]);
+    const [localModels, setLocalModels] = useState<
+        Array<{ id: string; name: string; description: string }>
+    >([]);
     const [fetchingModels, setFetchingModels] = useState(false);
 
     const provider = getProvider(selectedProvider);
     const isLocalProvider = provider?.requiresBaseUrl === true;
-    const models = isLocalProvider ? localModels : (provider?.models || []);
+    const models = isLocalProvider ? localModels : provider?.models || [];
 
     useEffect(() => {
         if (isOpen) {
@@ -66,7 +90,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             // Reset state when switching providers
             setTestStatus('idle');
             setTestError(null);
-            
+
             if (newProvider.requiresBaseUrl) {
                 // Local provider - clear API key state, keep local state
                 setApiKey('');
@@ -79,7 +103,8 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                 setBaseUrlError(null);
                 setTokenError(null);
                 setLocalModels([]);
-                const defaultModel = newProvider.models.find(m => m.isDefault) || newProvider.models[0];
+                const defaultModel =
+                    newProvider.models.find((m) => m.isDefault) || newProvider.models[0];
                 if (defaultModel) {
                     setSelectedModel(defaultModel.id);
                 }
@@ -173,7 +198,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             } else {
                 result = await api.testConnection(selectedProvider, apiKey, selectedModel);
             }
-            
+
             if (result.success) {
                 setTestStatus('success');
             } else {
@@ -189,7 +214,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
     const handleSave = () => {
         if (isLocalProvider) {
             if (!baseUrl || baseUrlError || !bridgeToken || tokenError || !selectedModel) return;
-            
+
             store.setProvider(selectedProvider);
             store.setModel(selectedModel);
             store.setLocalConfig(baseUrl, bridgeToken);
@@ -215,83 +240,102 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
 
     if (!isOpen) return null;
 
-    const selectedModelData = models.find(m => m.id === selectedModel);
+    const selectedModelData = models.find((m) => m.id === selectedModel);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
-            <div className="relative w-full max-w-2xl bg-gradient-to-b from-gray-900 to-[#0a0a0f] rounded-3xl border border-white/10 shadow-2xl shadow-brand-500/10 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 via-transparent to-blue-500/5 pointer-events-none" />
-                
+            <div className="shadow-brand-500/10 relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gray-900 to-[#0a0a0f] shadow-2xl">
+                <div className="from-brand-500/5 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent to-blue-500/5" />
+
                 <div className="relative p-6">
-                    <div className="flex items-start justify-between mb-6">
+                    <div className="mb-6 flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-blue-500 flex items-center justify-center shadow-lg shadow-brand-500/30">
-                                <Key className="w-6 h-6 text-white" />
+                            <div className="from-brand-500 shadow-brand-500/30 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br to-blue-500 shadow-lg">
+                                <Key className="h-6 w-6 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-white">Configure AI Provider</h2>
-                                <p className="text-sm text-gray-400">Connect your API key to generate courses</p>
+                                <h2 className="text-xl font-bold text-white">
+                                    Configure AI Provider
+                                </h2>
+                                <p className="text-sm text-gray-400">
+                                    Connect your API key to generate courses
+                                </p>
                             </div>
                         </div>
-                        <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors">
-                            <X className="w-5 h-5" />
+                        <button
+                            onClick={onClose}
+                            className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+                        >
+                            <X className="h-5 w-5" />
                         </button>
                     </div>
 
                     <div className="space-y-6">
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-3">
-                                <Cpu className="w-4 h-4 text-brand-400" />
+                            <label className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <Cpu className="text-brand-400 h-4 w-4" />
                                 Select Provider
                             </label>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                 {LLM_PROVIDERS.slice(0, 4).map((p) => (
                                     <button
                                         key={p.id}
                                         onClick={() => setSelectedProvider(p.id)}
-                                        className={`group relative p-3 rounded-xl border transition-all duration-200 ${
+                                        className={`group relative rounded-xl border p-3 transition-all duration-200 ${
                                             selectedProvider === p.id
-                                                ? 'border-brand-500 bg-brand-500/20 shadow-lg shadow-brand-500/20'
+                                                ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
                                                 : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                         }`}
                                     >
-                                        <div className="h-6 mb-2 flex items-center">
+                                        <div className="mb-2 flex h-6 items-center">
                                             {p.logoUrl ? (
-                                                <img src={p.logoUrl} alt={p.name} className="h-5 w-5 object-contain" />
+                                                <img
+                                                    src={p.logoUrl}
+                                                    alt={p.name}
+                                                    className="h-5 w-5 object-contain"
+                                                />
                                             ) : (
                                                 <span className="text-xl">{p.icon}</span>
                                             )}
                                         </div>
-                                        <div className="text-xs font-bold text-white truncate">{p.name}</div>
+                                        <div className="truncate text-xs font-bold text-white">
+                                            {p.name}
+                                        </div>
                                         {selectedProvider === p.id && (
-                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-brand-500 rounded-full border-2 border-gray-900" />
+                                            <div className="bg-brand-500 absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-gray-900" />
                                         )}
                                     </button>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-3 gap-2 mt-2">
+                            <div className="mt-2 grid grid-cols-3 gap-2">
                                 {LLM_PROVIDERS.slice(4).map((p) => (
                                     <button
                                         key={p.id}
                                         onClick={() => setSelectedProvider(p.id)}
-                                        className={`group relative p-3 rounded-xl border transition-all duration-200 ${
+                                        className={`group relative rounded-xl border p-3 transition-all duration-200 ${
                                             selectedProvider === p.id
-                                                ? 'border-brand-500 bg-brand-500/20 shadow-lg shadow-brand-500/20'
+                                                ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
                                                 : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                         }`}
                                     >
-                                        <div className="h-6 mb-2 flex items-center">
+                                        <div className="mb-2 flex h-6 items-center">
                                             {p.logoUrl ? (
-                                                <img src={p.logoUrl} alt={p.name} className="h-5 w-5 object-contain" />
+                                                <img
+                                                    src={p.logoUrl}
+                                                    alt={p.name}
+                                                    className="h-5 w-5 object-contain"
+                                                />
                                             ) : (
                                                 <span className="text-xl">{p.icon}</span>
                                             )}
                                         </div>
-                                        <div className="text-xs font-bold text-white truncate">{p.name}</div>
+                                        <div className="truncate text-xs font-bold text-white">
+                                            {p.name}
+                                        </div>
                                         {selectedProvider === p.id && (
-                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-brand-500 rounded-full border-2 border-gray-900" />
+                                            <div className="bg-brand-500 absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-gray-900" />
                                         )}
                                     </button>
                                 ))}
@@ -303,45 +347,52 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                 href={provider.docsUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-sm text-brand-400 hover:text-purple-300 transition-colors"
+                                className="text-brand-400 inline-flex items-center gap-2 text-sm transition-colors hover:text-purple-300"
                             >
-                                <Sparkles className="w-4 h-4" />
+                                <Sparkles className="h-4 w-4" />
                                 Get your {provider.name} API key
-                                <ExternalLink className="w-3 h-3" />
+                                <ExternalLink className="h-3 w-3" />
                             </a>
                         )}
 
                         {/* Local LLM Setup Instructions */}
                         {isLocalProvider && (
-                            <div className="p-4 bg-black/20 rounded-xl border border-white/5">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Terminal className="w-4 h-4 text-brand-400" />
-                                    <span className="text-sm font-medium text-gray-300">Quick Setup</span>
+                            <div className="rounded-xl border border-white/5 bg-black/20 p-4">
+                                <div className="mb-3 flex items-center gap-2">
+                                    <Terminal className="text-brand-400 h-4 w-4" />
+                                    <span className="text-sm font-medium text-gray-300">
+                                        Quick Setup
+                                    </span>
                                 </div>
                                 <div className="space-y-2 text-xs text-gray-400">
                                     <p>1. Install the bridge CLI:</p>
-                                    <code className="block p-2 bg-black/40 rounded-lg text-brand-300 font-mono text-[11px] break-all">
-                                        pip install git+https://github.com/Algozenith/circuit-forge.git#subdirectory=cli
+                                    <code className="text-brand-300 block break-all rounded-lg bg-black/40 p-2 font-mono text-[11px]">
+                                        pip install
+                                        git+https://github.com/Algozenith/circuit-forge.git#subdirectory=cli
                                     </code>
-                                    <p>2. Run <code className="text-brand-300">circuitforge-bridge</code> and paste the URL &amp; token below</p>
+                                    <p>
+                                        2. Run{' '}
+                                        <code className="text-brand-300">circuitforge-bridge</code>{' '}
+                                        and paste the URL &amp; token below
+                                    </p>
                                 </div>
                                 <a
                                     href={provider.docsUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 mt-3 text-xs text-brand-400 hover:text-purple-300"
+                                    className="text-brand-400 mt-3 inline-flex items-center gap-1 text-xs hover:text-purple-300"
                                 >
                                     View full setup guide
-                                    <ExternalLink className="w-3 h-3" />
+                                    <ExternalLink className="h-3 w-3" />
                                 </a>
                             </div>
                         )}
 
                         {/* Cloud Provider: API Key + Model */}
                         {!isLocalProvider && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    <label className="mb-2 block text-sm font-medium text-gray-300">
                                         API Key
                                     </label>
                                     <div className="relative">
@@ -349,23 +400,33 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             type={showKey ? 'text' : 'password'}
                                             value={apiKey}
                                             onChange={(e) => handleApiKeyChange(e.target.value)}
-                                            placeholder={provider?.keyPrefix ? `${provider.keyPrefix}...` : 'Paste your API key'}
-                                            className={`w-full px-4 py-3 pr-12 bg-black/40 border rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none transition-all ${
-                                                validationError ? 'border-red-500/50' : 'border-white/10'
+                                            placeholder={
+                                                provider?.keyPrefix
+                                                    ? `${provider.keyPrefix}...`
+                                                    : 'Paste your API key'
+                                            }
+                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                                validationError
+                                                    ? 'border-red-500/50'
+                                                    : 'border-white/10'
                                             }`}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowKey(!showKey)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
                                         >
-                                            {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            {showKey ? (
+                                                <EyeOff className="h-4 w-4" />
+                                            ) : (
+                                                <Eye className="h-4 w-4" />
+                                            )}
                                         </button>
                                     </div>
-                                    <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1 h-4">
+                                    <p className="mt-1.5 flex h-4 items-center gap-1 text-xs text-red-400">
                                         {validationError && (
                                             <>
-                                                <AlertCircle className="w-3 h-3" />
+                                                <AlertCircle className="h-3 w-3" />
                                                 {validationError}
                                             </>
                                         )}
@@ -373,24 +434,28 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    <label className="mb-2 block text-sm font-medium text-gray-300">
                                         Model
                                     </label>
                                     <div className="relative">
                                         <select
                                             value={selectedModel}
                                             onChange={(e) => setSelectedModel(e.target.value)}
-                                            className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none appearance-none cursor-pointer transition-all"
+                                            className="focus:ring-brand-500/50 focus:border-brand-500 w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition-all focus:ring-2"
                                         >
                                             {models.map((m) => (
-                                                <option key={m.id} value={m.id} className="bg-gray-900">
+                                                <option
+                                                    key={m.id}
+                                                    value={m.id}
+                                                    className="bg-gray-900"
+                                                >
                                                     {m.name}
                                                 </option>
                                             ))}
                                         </select>
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                     </div>
-                                    <p className="mt-1.5 text-xs text-gray-500 h-4 truncate">
+                                    <p className="mt-1.5 h-4 truncate text-xs text-gray-500">
                                         {selectedModelData?.description || ''}
                                     </p>
                                 </div>
@@ -400,9 +465,9 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                         {/* Local Provider: Base URL + Token + Model */}
                         {isLocalProvider && (
                             <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <label className="mb-2 block text-sm font-medium text-gray-300">
                                             Tunnel URL
                                         </label>
                                         <input
@@ -410,14 +475,16 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             value={baseUrl}
                                             onChange={(e) => handleBaseUrlChange(e.target.value)}
                                             placeholder="https://xxx.trycloudflare.com"
-                                            className={`w-full px-4 py-3 bg-black/40 border rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none transition-all ${
-                                                baseUrlError ? 'border-red-500/50' : 'border-white/10'
+                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                                baseUrlError
+                                                    ? 'border-red-500/50'
+                                                    : 'border-white/10'
                                             }`}
                                         />
-                                        <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1 h-4">
+                                        <p className="mt-1.5 flex h-4 items-center gap-1 text-xs text-red-400">
                                             {baseUrlError && (
                                                 <>
-                                                    <AlertCircle className="w-3 h-3" />
+                                                    <AlertCircle className="h-3 w-3" />
                                                     {baseUrlError}
                                                 </>
                                             )}
@@ -425,7 +492,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <label className="mb-2 block text-sm font-medium text-gray-300">
                                             Bridge Token
                                         </label>
                                         <div className="relative">
@@ -434,22 +501,28 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                                 value={bridgeToken}
                                                 onChange={(e) => handleTokenChange(e.target.value)}
                                                 placeholder="Paste token from CLI"
-                                                className={`w-full px-4 py-3 pr-12 bg-black/40 border rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none transition-all ${
-                                                    tokenError ? 'border-red-500/50' : 'border-white/10'
+                                                className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                                    tokenError
+                                                        ? 'border-red-500/50'
+                                                        : 'border-white/10'
                                                 }`}
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowKey(!showKey)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
                                             >
-                                                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                {showKey ? (
+                                                    <EyeOff className="h-4 w-4" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4" />
+                                                )}
                                             </button>
                                         </div>
-                                        <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1 h-4">
+                                        <p className="mt-1.5 flex h-4 items-center gap-1 text-xs text-red-400">
                                             {tokenError && (
                                                 <>
-                                                    <AlertCircle className="w-3 h-3" />
+                                                    <AlertCircle className="h-3 w-3" />
                                                     {tokenError}
                                                 </>
                                             )}
@@ -460,13 +533,19 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                 <div className="flex gap-3">
                                     <button
                                         onClick={handleFetchModels}
-                                        disabled={!baseUrl || !!baseUrlError || !bridgeToken || !!tokenError || fetchingModels}
-                                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                                        disabled={
+                                            !baseUrl ||
+                                            !!baseUrlError ||
+                                            !bridgeToken ||
+                                            !!tokenError ||
+                                            fetchingModels
+                                        }
+                                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {fetchingModels ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
-                                            <RefreshCw className="w-4 h-4" />
+                                            <RefreshCw className="h-4 w-4" />
                                         )}
                                         Fetch Models
                                     </button>
@@ -476,63 +555,86 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             <div className="relative">
                                                 <select
                                                     value={selectedModel}
-                                                    onChange={(e) => setSelectedModel(e.target.value)}
-                                                    className="w-full px-4 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none appearance-none cursor-pointer transition-all text-sm"
+                                                    onChange={(e) =>
+                                                        setSelectedModel(e.target.value)
+                                                    }
+                                                    className="focus:ring-brand-500/50 focus:border-brand-500 w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-2 text-sm text-white outline-none transition-all focus:ring-2"
                                                 >
                                                     {localModels.map((m) => (
-                                                        <option key={m.id} value={m.id} className="bg-gray-900">
+                                                        <option
+                                                            key={m.id}
+                                                            value={m.id}
+                                                            className="bg-gray-900"
+                                                        >
                                                             {m.name}
                                                         </option>
                                                     ))}
                                                 </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                             </div>
                                         </div>
                                     )}
                                 </div>
 
-                                {localModels.length === 0 && baseUrl && bridgeToken && !fetchingModels && (
-                                    <p className="text-xs text-gray-500">
-                                        Click &quot;Fetch Models&quot; to load available models from your local LLM server
-                                    </p>
-                                )}
+                                {localModels.length === 0 &&
+                                    baseUrl &&
+                                    bridgeToken &&
+                                    !fetchingModels && (
+                                        <p className="text-xs text-gray-500">
+                                            Click &quot;Fetch Models&quot; to load available models
+                                            from your local LLM server
+                                        </p>
+                                    )}
                             </div>
                         )}
 
                         <button
                             onClick={handleTestConnection}
                             disabled={!canTestConnection || testStatus === 'testing'}
-                            className={`w-full px-4 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
+                            className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium transition-all ${
                                 testStatus === 'success'
-                                    ? 'bg-green-500/20 border border-green-500/50 text-green-300'
+                                    ? 'border border-green-500/50 bg-green-500/20 text-green-300'
                                     : testStatus === 'error'
-                                    ? 'bg-red-500/20 border border-red-500/50 text-red-300'
-                                    : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed'
+                                      ? 'border border-red-500/50 bg-red-500/20 text-red-300'
+                                      : 'border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50'
                             }`}
                         >
-                            {testStatus === 'testing' && <Loader2 className="w-4 h-4 animate-spin" />}
-                            {testStatus === 'success' && <CheckCircle className="w-4 h-4" />}
-                            {testStatus === 'error' && <AlertCircle className="w-4 h-4" />}
-                            {testStatus === 'testing' ? 'Testing Connection...' : testStatus === 'success' ? 'Connection Successful!' : testStatus === 'error' ? 'Connection Failed' : 'Test Connection'}
+                            {testStatus === 'testing' && (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            )}
+                            {testStatus === 'success' && <CheckCircle className="h-4 w-4" />}
+                            {testStatus === 'error' && <AlertCircle className="h-4 w-4" />}
+                            {testStatus === 'testing'
+                                ? 'Testing Connection...'
+                                : testStatus === 'success'
+                                  ? 'Connection Successful!'
+                                  : testStatus === 'error'
+                                    ? 'Connection Failed'
+                                    : 'Test Connection'}
                         </button>
                         {testStatus === 'error' && testError && (
-                            <p className="text-xs text-red-400 text-center -mt-4">{testError}</p>
+                            <p className="-mt-4 text-center text-xs text-red-400">{testError}</p>
                         )}
 
                         <div className="border-t border-white/10 pt-4">
                             <button
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                                className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
                             >
-                                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                {showAdvanced ? (
+                                    <ChevronUp className="h-4 w-4" />
+                                ) : (
+                                    <ChevronDown className="h-4 w-4" />
+                                )}
                                 Advanced Settings
                             </button>
 
                             {showAdvanced && (
-                                <div className="mt-4 grid grid-cols-2 gap-4 p-4 bg-black/20 rounded-xl border border-white/5">
+                                <div className="mt-4 grid grid-cols-2 gap-4 rounded-xl border border-white/5 bg-black/20 p-4">
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-400 mb-2">
-                                            Temperature: <span className="text-brand-400">{temperature}</span>
+                                        <label className="mb-2 block text-xs font-medium text-gray-400">
+                                            Temperature:{' '}
+                                            <span className="text-brand-400">{temperature}</span>
                                         </label>
                                         <input
                                             type="range"
@@ -540,14 +642,19 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             max="2"
                                             step="0.1"
                                             value={temperature}
-                                            onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                                            className="w-full accent-brand-500"
+                                            onChange={(e) =>
+                                                setTemperature(parseFloat(e.target.value))
+                                            }
+                                            className="accent-brand-500 w-full"
                                         />
-                                        <p className="text-[10px] text-gray-600 mt-1">Lower = focused, Higher = creative</p>
+                                        <p className="mt-1 text-[10px] text-gray-600">
+                                            Lower = focused, Higher = creative
+                                        </p>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-400 mb-2">
-                                            Max Tokens: <span className="text-brand-400">{maxTokens}</span>
+                                        <label className="mb-2 block text-xs font-medium text-gray-400">
+                                            Max Tokens:{' '}
+                                            <span className="text-brand-400">{maxTokens}</span>
                                         </label>
                                         <input
                                             type="range"
@@ -556,7 +663,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             step="500"
                                             value={maxTokens}
                                             onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                                            className="w-full accent-brand-500"
+                                            className="accent-brand-500 w-full"
                                         />
                                     </div>
                                 </div>
@@ -566,14 +673,14 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={onClose}
-                                className="flex-1 px-4 py-3 border border-white/10 rounded-xl text-gray-300 hover:bg-white/5 font-medium transition-colors"
+                                className="flex-1 rounded-xl border border-white/10 px-4 py-3 font-medium text-gray-300 transition-colors hover:bg-white/5"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={!canSave}
-                                className="flex-1 gradient-btn py-3 rounded-xl text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-500/25"
+                                className="gradient-btn shadow-brand-500/25 flex-1 rounded-xl py-3 font-medium text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 Save & Continue
                             </button>

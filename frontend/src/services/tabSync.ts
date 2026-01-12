@@ -3,13 +3,7 @@
  * Coordinates cross-tab communication and leader election for session synchronization
  */
 
-import type {
-    SessionLock,
-    SyncState,
-    SyncAction,
-    BroadcastMessage,
-    TabSyncStatus
-} from '@/types';
+import type { SessionLock, SyncState, SyncAction, BroadcastMessage, TabSyncStatus } from '@/types';
 
 const LOCK_TIMEOUT = 5000; // 5 seconds - lock is stale after this
 const HEARTBEAT_INTERVAL = 2000; // 2 seconds - leader heartbeat frequency

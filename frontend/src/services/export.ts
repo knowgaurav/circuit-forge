@@ -37,13 +37,13 @@ export async function exportAsPng(
     ctx.translate(padding - bounds.minX, padding - bounds.minY);
 
     // Draw wires
-    wires.forEach(wire => drawWire(ctx, wire, components));
+    wires.forEach((wire) => drawWire(ctx, wire, components));
 
     // Draw components
-    components.forEach(comp => drawComponent(ctx, comp));
+    components.forEach((comp) => drawComponent(ctx, comp));
 
     // Draw annotations
-    annotations.forEach(ann => {
+    annotations.forEach((ann) => {
         if (ann.type === 'stroke') {
             drawStroke(ctx, ann.data as StrokeData);
         }
@@ -64,10 +64,7 @@ export async function exportAsPng(
 /**
  * Export circuit as JSON file
  */
-export function exportAsJson(
-    circuitState: CircuitState,
-    filename = 'circuit.json'
-): void {
+export function exportAsJson(circuitState: CircuitState, filename = 'circuit.json'): void {
     const json = JSON.stringify(circuitState, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -132,7 +129,7 @@ function calculateBounds(
     let maxY = -Infinity;
 
     // Include components
-    components.forEach(comp => {
+    components.forEach((comp) => {
         const width = 60;
         const height = 40;
         minX = Math.min(minX, comp.position.x - width / 2);
@@ -142,10 +139,10 @@ function calculateBounds(
     });
 
     // Include annotations
-    annotations.forEach(ann => {
+    annotations.forEach((ann) => {
         if (ann.type === 'stroke') {
             const stroke = ann.data as StrokeData;
-            stroke.points.forEach(point => {
+            stroke.points.forEach((point) => {
                 minX = Math.min(minX, point.x);
                 minY = Math.min(minY, point.y);
                 maxX = Math.max(maxX, point.x);
@@ -210,7 +207,7 @@ function drawComponent(ctx: CanvasRenderingContext2D, component: CircuitComponen
     ctx.fillText(label, position.x, position.y);
 
     // Draw pins
-    component.pins.forEach(pin => {
+    component.pins.forEach((pin) => {
         const pinX = position.x + pin.position.x;
         const pinY = position.y + pin.position.y;
         ctx.fillStyle = pin.type === 'input' ? '#22C55E' : '#EF4444';
@@ -221,12 +218,12 @@ function drawComponent(ctx: CanvasRenderingContext2D, component: CircuitComponen
 }
 
 function drawWire(ctx: CanvasRenderingContext2D, wire: Wire, components: CircuitComponent[]): void {
-    const fromComponent = components.find(c => c.id === wire.fromComponentId);
-    const toComponent = components.find(c => c.id === wire.toComponentId);
+    const fromComponent = components.find((c) => c.id === wire.fromComponentId);
+    const toComponent = components.find((c) => c.id === wire.toComponentId);
     if (!fromComponent || !toComponent) return;
 
-    const fromPin = fromComponent.pins.find(p => p.id === wire.fromPinId);
-    const toPin = toComponent.pins.find(p => p.id === wire.toPinId);
+    const fromPin = fromComponent.pins.find((p) => p.id === wire.fromPinId);
+    const toPin = toComponent.pins.find((p) => p.id === wire.toPinId);
     if (!fromPin || !toPin) return;
 
     const startX = fromComponent.position.x + fromPin.position.x;
@@ -239,7 +236,7 @@ function drawWire(ctx: CanvasRenderingContext2D, wire: Wire, components: Circuit
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     if (wire.waypoints.length > 0) {
-        wire.waypoints.forEach(wp => ctx.lineTo(wp.x, wp.y));
+        wire.waypoints.forEach((wp) => ctx.lineTo(wp.x, wp.y));
     }
     ctx.lineTo(endX, endY);
     ctx.stroke();
@@ -257,6 +254,6 @@ function drawStroke(ctx: CanvasRenderingContext2D, stroke: StrokeData): void {
     ctx.lineJoin = 'round';
     ctx.beginPath();
     ctx.moveTo(firstPoint.x, firstPoint.y);
-    stroke.points.slice(1).forEach(point => ctx.lineTo(point.x, point.y));
+    stroke.points.slice(1).forEach((point) => ctx.lineTo(point.x, point.y));
     ctx.stroke();
 }

@@ -57,7 +57,10 @@ export const useSessionStore = create<SessionStore>((set) => ({
 
     addParticipant: (participant) =>
         set((state) => ({
-            participants: [...state.participants.filter(p => p.id !== participant.id), participant],
+            participants: [
+                ...state.participants.filter((p) => p.id !== participant.id),
+                participant,
+            ],
         })),
 
     removeParticipant: (participantId) =>
@@ -86,7 +89,10 @@ export const useSessionStore = create<SessionStore>((set) => ({
 
     addEditRequest: (request) =>
         set((state) => ({
-            editRequests: [...state.editRequests.filter(r => r.participantId !== request.participantId), request],
+            editRequests: [
+                ...state.editRequests.filter((r) => r.participantId !== request.participantId),
+                request,
+            ],
         })),
 
     removeEditRequest: (participantId) =>

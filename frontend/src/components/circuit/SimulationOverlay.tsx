@@ -23,7 +23,7 @@ export function SimulationOverlay({
     onStart,
     onStop,
     onSimulationResult,
-    onSimulationStateChange
+    onSimulationStateChange,
 }: SimulationOverlayProps) {
     const [localIsRunning, setLocalIsRunning] = useState(false);
     const [result, setResult] = useState<SimulationResult | null>(null);
@@ -57,7 +57,7 @@ export function SimulationOverlay({
         if (!canSimulate) return; // Only users with simulation permission can run
 
         // Inject clock phase into clock components and counter state
-        const componentsWithState = components.map(comp => {
+        const componentsWithState = components.map((comp) => {
             if (comp.type === 'CLOCK') {
                 return {
                     ...comp,
@@ -156,44 +156,61 @@ export function SimulationOverlay({
     };
 
     // Deduplicate errors by message for accurate count
-    const uniqueErrors = result?.errors.filter((error, index, self) =>
-        index === self.findIndex(e => e.message === error.message)
-    ) ?? [];
+    const uniqueErrors =
+        result?.errors.filter(
+            (error, index, self) => index === self.findIndex((e) => e.message === error.message)
+        ) ?? [];
     const errorCount = uniqueErrors.length;
 
     return (
-        <div className="flex items-center gap-2 relative">
+        <div className="relative flex items-center gap-2">
             {/* Simulation Controls */}
-            <div className="flex items-center gap-1 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 px-2 py-1">
+            <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1 shadow-sm dark:border-gray-600 dark:bg-gray-700">
                 {!isRunning ? (
-                    <Tooltip content={canSimulate ? "Start Simulation" : "Request edit access to run simulation"} position="bottom">
+                    <Tooltip
+                        content={
+                            canSimulate
+                                ? 'Start Simulation'
+                                : 'Request edit access to run simulation'
+                        }
+                        position="bottom"
+                    >
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleStart}
                             disabled={!canSimulate}
-                            className={canSimulate
-                                ? "text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30"
-                                : "text-gray-400 cursor-not-allowed"
+                            className={
+                                canSimulate
+                                    ? 'text-green-600 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900/30 dark:hover:text-green-300'
+                                    : 'cursor-not-allowed text-gray-400'
                             }
                         >
-                            <Play className="w-4 h-4 mr-1" />
+                            <Play className="mr-1 h-4 w-4" />
                             Simulate
                         </Button>
                     </Tooltip>
                 ) : (
-                    <Tooltip content={canSimulate ? "Stop Simulation" : "Request edit access to control simulation"} position="bottom">
+                    <Tooltip
+                        content={
+                            canSimulate
+                                ? 'Stop Simulation'
+                                : 'Request edit access to control simulation'
+                        }
+                        position="bottom"
+                    >
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleStop}
                             disabled={!canSimulate}
-                            className={canSimulate
-                                ? "text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
-                                : "text-gray-400 cursor-not-allowed"
+                            className={
+                                canSimulate
+                                    ? 'text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300'
+                                    : 'cursor-not-allowed text-gray-400'
                             }
                         >
-                            <Pause className="w-4 h-4 mr-1" />
+                            <Pause className="mr-1 h-4 w-4" />
                             Stop
                         </Button>
                     </Tooltip>
@@ -207,7 +224,7 @@ export function SimulationOverlay({
                             onClick={handleReset}
                             disabled={!isRunning}
                         >
-                            <RotateCcw className="w-4 h-4" />
+                            <RotateCcw className="h-4 w-4" />
                         </Button>
                     </Tooltip>
                 )}
@@ -229,7 +246,7 @@ export function SimulationOverlay({
                         onClick={() => setShowErrors(true)}
                         className="text-red-600"
                     >
-                        <AlertCircle className="w-4 h-4 mr-1" />
+                        <AlertCircle className="mr-1 h-4 w-4" />
                         {errorCount}
                     </Button>
                 </Tooltip>
@@ -237,9 +254,11 @@ export function SimulationOverlay({
 
             {/* Error Panel */}
             {showErrors && result?.errors && result.errors.length > 0 && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg shadow-lg p-3 z-50">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-red-800 dark:text-red-300">Simulation Errors</span>
+                <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-red-200 bg-red-50 p-3 shadow-lg dark:border-red-800 dark:bg-red-950">
+                    <div className="mb-2 flex items-center justify-between">
+                        <span className="font-medium text-red-800 dark:text-red-300">
+                            Simulation Errors
+                        </span>
                         <button
                             type="button"
                             onClick={(e) => {
@@ -248,18 +267,22 @@ export function SimulationOverlay({
                                 setShowErrors(false);
                                 setShowAllErrors(false);
                             }}
-                            className="p-1 hover:bg-red-100 dark:hover:bg-red-800/50 rounded cursor-pointer"
+                            className="cursor-pointer rounded p-1 hover:bg-red-100 dark:hover:bg-red-800/50"
                         >
-                            <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                            <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                         </button>
                     </div>
-                    <div className="space-y-1 max-h-64 overflow-y-auto">
-                        {(showAllErrors ? uniqueErrors : uniqueErrors.slice(0, 5))
-                            .map((error, i) => (
-                                <div key={`${error.componentId}-${error.pinId}-${i}`} className="text-sm text-red-700 dark:text-red-300">
+                    <div className="max-h-64 space-y-1 overflow-y-auto">
+                        {(showAllErrors ? uniqueErrors : uniqueErrors.slice(0, 5)).map(
+                            (error, i) => (
+                                <div
+                                    key={`${error.componentId}-${error.pinId}-${i}`}
+                                    className="text-sm text-red-700 dark:text-red-300"
+                                >
                                     • {error.message}
                                 </div>
-                            ))}
+                            )
+                        )}
                         {uniqueErrors.length > 5 && !showAllErrors && (
                             <button
                                 type="button"
@@ -268,7 +291,7 @@ export function SimulationOverlay({
                                     e.stopPropagation();
                                     setShowAllErrors(true);
                                 }}
-                                className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+                                className="cursor-pointer text-sm text-red-500 hover:text-red-700 hover:underline dark:text-red-400 dark:hover:text-red-300"
                             >
                                 +{uniqueErrors.length - 5} more errors
                             </button>
@@ -281,7 +304,7 @@ export function SimulationOverlay({
                                     e.stopPropagation();
                                     setShowAllErrors(false);
                                 }}
-                                className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+                                className="cursor-pointer text-sm text-red-500 hover:text-red-700 hover:underline dark:text-red-400 dark:hover:text-red-300"
                             >
                                 Show less
                             </button>

@@ -1,6 +1,6 @@
 /**
  * Property-based tests for SessionCloseGuard
- * 
+ *
  * **Feature: session-management, Property 1: Close Protection Registration**
  * **Validates: Requirements 1.1, 1.5**
  */
@@ -23,8 +23,8 @@ describe('SessionCloseGuard', () => {
     /**
      * **Feature: session-management, Property 1: Close Protection Registration**
      * **Validates: Requirements 1.1, 1.5**
-     * 
-     * For any session state with one or more participants (teacher or students), 
+     *
+     * For any session state with one or more participants (teacher or students),
      * the beforeunload event handler SHALL be registered to prevent accidental closure.
      */
     describe('Property 1: Close Protection Registration', () => {
@@ -40,8 +40,8 @@ describe('SessionCloseGuard', () => {
                         testGuard.enable({
                             isTeacher,
                             studentCount,
-                            onLeaveConfirmed: () => { },
-                            onLeaveCancelled: () => { },
+                            onLeaveConfirmed: () => {},
+                            onLeaveCancelled: () => {},
                         });
 
                         expect(addEventListenerSpy).toHaveBeenCalledWith(
@@ -66,8 +66,8 @@ describe('SessionCloseGuard', () => {
                         testGuard.enable({
                             isTeacher: true,
                             studentCount,
-                            onLeaveConfirmed: () => { },
-                            onLeaveCancelled: () => { },
+                            onLeaveConfirmed: () => {},
+                            onLeaveCancelled: () => {},
                         });
 
                         expect(testGuard.shouldShowWarning()).toBe(true);
@@ -84,8 +84,8 @@ describe('SessionCloseGuard', () => {
             testGuard.enable({
                 isTeacher: true,
                 studentCount: 0,
-                onLeaveConfirmed: () => { },
-                onLeaveCancelled: () => { },
+                onLeaveConfirmed: () => {},
+                onLeaveCancelled: () => {},
             });
 
             expect(testGuard.shouldShowWarning()).toBe(false);
@@ -102,8 +102,8 @@ describe('SessionCloseGuard', () => {
                         testGuard.enable({
                             isTeacher: false,
                             studentCount,
-                            onLeaveConfirmed: () => { },
-                            onLeaveCancelled: () => { },
+                            onLeaveConfirmed: () => {},
+                            onLeaveCancelled: () => {},
                         });
 
                         expect(testGuard.shouldShowWarning()).toBe(true);
@@ -127,8 +127,8 @@ describe('SessionCloseGuard', () => {
                         testGuard.enable({
                             isTeacher,
                             studentCount,
-                            onLeaveConfirmed: () => { },
-                            onLeaveCancelled: () => { },
+                            onLeaveConfirmed: () => {},
+                            onLeaveCancelled: () => {},
                         });
 
                         testGuard.disable();
@@ -148,24 +148,21 @@ describe('SessionCloseGuard', () => {
     describe('Leave Request Handling', () => {
         it('teacher with students should show modal', () => {
             fc.assert(
-                fc.property(
-                    fc.integer({ min: 1, max: 20 }),
-                    (studentCount) => {
-                        const testGuard = new SessionCloseGuard();
-                        testGuard.enable({
-                            isTeacher: true,
-                            studentCount,
-                            onLeaveConfirmed: () => { },
-                            onLeaveCancelled: () => { },
-                        });
+                fc.property(fc.integer({ min: 1, max: 20 }), (studentCount) => {
+                    const testGuard = new SessionCloseGuard();
+                    testGuard.enable({
+                        isTeacher: true,
+                        studentCount,
+                        onLeaveConfirmed: () => {},
+                        onLeaveCancelled: () => {},
+                    });
 
-                        const result = testGuard.handleLeaveRequest();
-                        expect(result.shouldShowModal).toBe(true);
-                        expect(result.studentCount).toBe(studentCount);
+                    const result = testGuard.handleLeaveRequest();
+                    expect(result.shouldShowModal).toBe(true);
+                    expect(result.studentCount).toBe(studentCount);
 
-                        testGuard.disable();
-                    }
-                ),
+                    testGuard.disable();
+                }),
                 { numRuns: 100 }
             );
         });
@@ -175,8 +172,8 @@ describe('SessionCloseGuard', () => {
             testGuard.enable({
                 isTeacher: true,
                 studentCount: 0,
-                onLeaveConfirmed: () => { },
-                onLeaveCancelled: () => { },
+                onLeaveConfirmed: () => {},
+                onLeaveCancelled: () => {},
             });
 
             const result = testGuard.handleLeaveRequest();
@@ -187,23 +184,20 @@ describe('SessionCloseGuard', () => {
 
         it('student should not show modal', () => {
             fc.assert(
-                fc.property(
-                    fc.integer({ min: 0, max: 20 }),
-                    (studentCount) => {
-                        const testGuard = new SessionCloseGuard();
-                        testGuard.enable({
-                            isTeacher: false,
-                            studentCount,
-                            onLeaveConfirmed: () => { },
-                            onLeaveCancelled: () => { },
-                        });
+                fc.property(fc.integer({ min: 0, max: 20 }), (studentCount) => {
+                    const testGuard = new SessionCloseGuard();
+                    testGuard.enable({
+                        isTeacher: false,
+                        studentCount,
+                        onLeaveConfirmed: () => {},
+                        onLeaveCancelled: () => {},
+                    });
 
-                        const result = testGuard.handleLeaveRequest();
-                        expect(result.shouldShowModal).toBe(false);
+                    const result = testGuard.handleLeaveRequest();
+                    expect(result.shouldShowModal).toBe(false);
 
-                        testGuard.disable();
-                    }
-                ),
+                    testGuard.disable();
+                }),
                 { numRuns: 100 }
             );
         });
@@ -260,8 +254,8 @@ describe('SessionCloseGuard', () => {
                         testGuard.enable({
                             isTeacher: true,
                             studentCount: initialCount,
-                            onLeaveConfirmed: () => { },
-                            onLeaveCancelled: () => { },
+                            onLeaveConfirmed: () => {},
+                            onLeaveCancelled: () => {},
                         });
 
                         expect(testGuard.getStudentCount()).toBe(initialCount);

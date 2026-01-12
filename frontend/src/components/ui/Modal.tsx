@@ -45,7 +45,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         >
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-background/80 transition-opacity"
+                className="bg-background/80 absolute inset-0 transition-opacity"
                 onClick={onClose}
                 aria-hidden="true"
             />
@@ -53,8 +53,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {/* Modal content */}
             <div
                 className={clsx(
-                    'relative bg-surface rounded-xl shadow-2xl border border-border/50 animate-in fade-in zoom-in-95 duration-200',
-                    'max-h-[85vh] overflow-y-auto custom-scrollbar',
+                    'border-border/50 animate-in fade-in zoom-in-95 relative rounded-xl border bg-surface shadow-2xl duration-200',
+                    'custom-scrollbar max-h-[85vh] overflow-y-auto',
                     {
                         'w-full max-w-sm': size === 'sm',
                         'w-full max-w-md': size === 'md',
@@ -66,12 +66,12 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             >
                 {/* Header */}
                 {title && (
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-surface/50 sticky top-0 backdrop-blur z-10">
+                    <div className="border-border/50 bg-surface/50 sticky top-0 z-10 flex items-center justify-between border-b px-6 py-4 backdrop-blur">
                         <h2 id="modal-title" className="text-lg font-semibold text-foreground">
                             {title}
                         </h2>
                         <IconButton
-                            icon={<X className="w-5 h-5" />}
+                            icon={<X className="h-5 w-5" />}
                             onClick={onClose}
                             aria-label="Close modal"
                             variant="ghost"
@@ -80,9 +80,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
                         />
                     </div>
                 )}
-
-                {/* Body */}-
-                <div className="p-6">{children}</div>
+                {/* Body */}-<div className="p-6">{children}</div>
             </div>
         </div>
     );

@@ -14,20 +14,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <button
                 ref={ref}
                 className={clsx(
-                    'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200',
+                    'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200',
                     'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    'disabled:cursor-not-allowed disabled:opacity-50',
                     {
                         // Variants
-                        'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm focus:ring-primary':
+                        'hover:bg-primary/90 bg-primary text-primary-foreground shadow-sm focus:ring-primary':
                             variant === 'primary',
-                        'bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:ring-secondary':
+                        'hover:bg-secondary/80 bg-secondary text-secondary-foreground focus:ring-secondary':
                             variant === 'secondary',
                         'bg-transparent text-foreground hover:bg-surface-secondary hover:text-foreground focus:ring-border':
                             variant === 'ghost',
-                        'bg-error text-error-foreground hover:bg-error/90 focus:ring-error':
+                        'hover:bg-error/90 bg-error text-error-foreground focus:ring-error':
                             variant === 'danger',
-                        'bg-primary text-primary-foreground shadow-glow hover:shadow-glow-lg hover:-translate-y-0.5':
+                        'shadow-glow hover:shadow-glow-lg bg-primary text-primary-foreground hover:-translate-y-0.5':
                             variant === 'glow',
 
                         // Sizes

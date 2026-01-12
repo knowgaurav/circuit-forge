@@ -1,6 +1,6 @@
 /**
  * CircuitForge UI Component Library
- * 
+ *
  * All reusable UI components for the application.
  * Preview available at /dev/preview in development mode.
  */

@@ -26,13 +26,16 @@ export function useSessionRecovery(): UseSessionRecoveryReturn {
         setPendingSession(null);
     }, []);
 
-    const saveSession = useCallback((sessionCode: string, participantId: string, displayName: string) => {
-        sessionPersistence.saveSession({
-            sessionCode,
-            participantId,
-            displayName,
-        });
-    }, []);
+    const saveSession = useCallback(
+        (sessionCode: string, participantId: string, displayName: string) => {
+            sessionPersistence.saveSession({
+                sessionCode,
+                participantId,
+                displayName,
+            });
+        },
+        []
+    );
 
     return {
         pendingSession,

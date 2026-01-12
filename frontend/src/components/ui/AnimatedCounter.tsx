@@ -16,7 +16,7 @@ export function AnimatedCounter({
     suffix = '',
     duration = 2000,
     label,
-    icon
+    icon,
 }: AnimatedCounterProps) {
     const [count, setCount] = useState(0);
     const [ref, isInView] = useInView<HTMLDivElement>({ threshold: 0.3, triggerOnce: true });
@@ -58,17 +58,12 @@ export function AnimatedCounter({
 
     return (
         <div ref={ref} className="flex flex-col items-center text-center">
-            {icon && (
-                <div className="mb-2 text-brand-500">
-                    {icon}
-                </div>
-            )}
-            <div className="text-3xl md:text-4xl font-bold text-text">
-                {count}{suffix}
+            {icon && <div className="text-brand-500 mb-2">{icon}</div>}
+            <div className="text-3xl font-bold text-text md:text-4xl">
+                {count}
+                {suffix}
             </div>
-            <div className="text-sm text-text-secondary mt-1">
-                {label}
-            </div>
+            <div className="mt-1 text-sm text-text-secondary">{label}</div>
         </div>
     );
 }

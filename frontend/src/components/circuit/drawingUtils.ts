@@ -26,7 +26,13 @@ export function drawComponent(
     const def = getComponentDefinition(type);
     const width = def?.width || 60;
     const height = def?.height || 40;
-    const { isSelected = false, isDarkMode = true, pinStates, showLabel = true, showPins = true } = options;
+    const {
+        isSelected = false,
+        isDarkMode = true,
+        pinStates,
+        showLabel = true,
+        showPins = true,
+    } = options;
 
     ctx.save();
     ctx.translate(position.x, position.y);
@@ -43,12 +49,22 @@ export function drawComponent(
     // Get input signal for LEDs
     let inputSignal: SignalState | undefined;
     if (pinStates) {
-        const inputPin = component.pins.find(p => p.type === 'input');
+        const inputPin = component.pins.find((p) => p.type === 'input');
         if (inputPin) inputSignal = pinStates[inputPin.id];
     }
 
     // Draw component symbol
-    drawComponentSymbol(ctx, type, width, height, isDarkMode, inputSignal, component.properties, component.pins, pinStates);
+    drawComponentSymbol(
+        ctx,
+        type,
+        width,
+        height,
+        isDarkMode,
+        inputSignal,
+        component.properties,
+        component.pins,
+        pinStates
+    );
 
     // Draw label
     if (showLabel && label) {
@@ -62,7 +78,7 @@ export function drawComponent(
 
     // Draw pins
     if (showPins) {
-        component.pins.forEach(pin => {
+        component.pins.forEach((pin) => {
             const pinX = position.x + pin.position.x;
             const pinY = position.y + pin.position.y;
             ctx.fillStyle = pin.type === 'input' ? '#22C55E' : '#EF4444';
@@ -81,7 +97,12 @@ export function drawComponentSymbol(
     isDarkMode = false,
     signalState?: SignalState,
     properties?: Record<string, unknown>,
-    pins?: { id: string; name: string; type: 'input' | 'output'; position: { x: number; y: number } }[],
+    pins?: {
+        id: string;
+        name: string;
+        type: 'input' | 'output';
+        position: { x: number; y: number };
+    }[],
     pinStates?: Record<string, SignalState>
 ) {
     // Logic Gates
@@ -108,7 +129,14 @@ export function drawComponentSymbol(
     }
     // Output Devices
     else if (type.startsWith('LED_')) {
-        const color = type === 'LED_RED' ? '#EF4444' : type === 'LED_GREEN' ? '#22C55E' : type === 'LED_BLUE' ? '#3B82F6' : '#FBBF24';
+        const color =
+            type === 'LED_RED'
+                ? '#EF4444'
+                : type === 'LED_GREEN'
+                  ? '#22C55E'
+                  : type === 'LED_BLUE'
+                    ? '#3B82F6'
+                    : '#FBBF24';
         drawLed(ctx, width, height, color, signalState === 'HIGH');
     } else if (type === 'DISPLAY_7SEG') {
         // Get segment states from pinStates
@@ -123,7 +151,12 @@ export function drawComponentSymbol(
         draw7Segment(ctx, width, height, segments);
     }
     // Sequential Logic
-    else if (type === 'D_FLIPFLOP' || type === 'SR_LATCH' || type === 'JK_FLIPFLOP' || type === 'T_FLIPFLOP') {
+    else if (
+        type === 'D_FLIPFLOP' ||
+        type === 'SR_LATCH' ||
+        type === 'JK_FLIPFLOP' ||
+        type === 'T_FLIPFLOP'
+    ) {
         drawFlipFlop(ctx, width, height, type);
     } else if (type === 'COUNTER_4BIT') {
         drawCounter(ctx, width, height);
@@ -164,8 +197,8 @@ export function drawComponentSymbol(
         let fwdHigh = false;
         let revHigh = false;
         if (pinStates && pins) {
-            const fwdPin = pins.find(p => p.name === 'FWD');
-            const revPin = pins.find(p => p.name === 'REV');
+            const fwdPin = pins.find((p) => p.name === 'FWD');
+            const revPin = pins.find((p) => p.name === 'REV');
             if (fwdPin) fwdHigh = pinStates[fwdPin.id] === 'HIGH';
             if (revPin) revHigh = pinStates[revPin.id] === 'HIGH';
         }
@@ -192,12 +225,12 @@ export function drawWire(
     components: CircuitComponent[],
     wireState?: SignalState
 ) {
-    const fromComp = components.find(c => c.id === wire.fromComponentId);
-    const toComp = components.find(c => c.id === wire.toComponentId);
+    const fromComp = components.find((c) => c.id === wire.fromComponentId);
+    const toComp = components.find((c) => c.id === wire.toComponentId);
     if (!fromComp || !toComp) return;
 
-    const fromPin = fromComp.pins.find(p => p.id === wire.fromPinId);
-    const toPin = toComp.pins.find(p => p.id === wire.toPinId);
+    const fromPin = fromComp.pins.find((p) => p.id === wire.fromPinId);
+    const toPin = toComp.pins.find((p) => p.id === wire.toPinId);
     if (!fromPin || !toPin) return;
 
     const fromX = fromComp.position.x + fromPin.position.x;
@@ -242,7 +275,7 @@ export function drawGrid(
     panY = 0
 ) {
     const gridSize = 5;
-    
+
     // Calculate visible area - extend well beyond visible bounds for infinite feel
     const startX = Math.floor(-panX / gridSize) * gridSize - gridSize * 20;
     const startY = Math.floor(-panY / gridSize) * gridSize - gridSize * 20;
@@ -293,7 +326,8 @@ export function drawGrid(
 // ============================================================================
 
 function drawAndGate(ctx: CanvasRenderingContext2D, w: number, h: number, isNand: boolean) {
-    const gw = w * 0.7, gh = h * 0.8;
+    const gw = w * 0.7,
+        gh = h * 0.8;
     ctx.fillStyle = '#e8e8f0';
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
@@ -320,7 +354,8 @@ function drawAndGate(ctx: CanvasRenderingContext2D, w: number, h: number, isNand
 }
 
 function drawOrGate(ctx: CanvasRenderingContext2D, w: number, h: number, isNor: boolean) {
-    const gw = w * 0.7, gh = h * 0.8;
+    const gw = w * 0.7,
+        gh = h * 0.8;
     ctx.fillStyle = '#e8e8f0';
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
@@ -347,7 +382,8 @@ function drawOrGate(ctx: CanvasRenderingContext2D, w: number, h: number, isNor: 
 }
 
 function drawNotGate(ctx: CanvasRenderingContext2D, w: number, h: number, hasInvert: boolean) {
-    const gw = w * 0.6, gh = h * 0.7;
+    const gw = w * 0.6,
+        gh = h * 0.7;
     ctx.fillStyle = '#e8e8f0';
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
@@ -376,7 +412,8 @@ function drawXorGate(ctx: CanvasRenderingContext2D, w: number, h: number, isXnor
     drawOrGate(ctx, w, h, isXnor);
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
-    const gw = w * 0.7, gh = h * 0.8;
+    const gw = w * 0.7,
+        gh = h * 0.8;
     ctx.beginPath();
     ctx.moveTo(-gw / 2 - 6, -gh / 2);
     ctx.quadraticCurveTo(-gw / 4 - 6, 0, -gw / 2 - 6, gh / 2);
@@ -445,7 +482,13 @@ function drawPushButton(ctx: CanvasRenderingContext2D, w: number, h: number, isP
     ctx.stroke();
 }
 
-function drawLed(ctx: CanvasRenderingContext2D, w: number, h: number, color: string, isLit: boolean) {
+function drawLed(
+    ctx: CanvasRenderingContext2D,
+    w: number,
+    h: number,
+    color: string,
+    isLit: boolean
+) {
     // Diode triangle
     ctx.fillStyle = isLit ? color : '#374151';
     ctx.strokeStyle = '#374151';
@@ -538,7 +581,14 @@ function drawFlipFlop(ctx: CanvasRenderingContext2D, w: number, h: number, type:
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const label = type === 'D_FLIPFLOP' ? 'D-FF' : type === 'SR_LATCH' ? 'SR' : type === 'JK_FLIPFLOP' ? 'JK' : 'T';
+    const label =
+        type === 'D_FLIPFLOP'
+            ? 'D-FF'
+            : type === 'SR_LATCH'
+              ? 'SR'
+              : type === 'JK_FLIPFLOP'
+                ? 'JK'
+                : 'T';
     ctx.fillText(label, 0, 0);
 }
 
@@ -574,7 +624,12 @@ function drawShiftRegister(ctx: CanvasRenderingContext2D, w: number, h: number) 
     ctx.fillText('SHIFT', 0, 0);
 }
 
-function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number, segments: Record<string, boolean> = {}) {
+function draw7Segment(
+    ctx: CanvasRenderingContext2D,
+    w: number,
+    h: number,
+    segments: Record<string, boolean> = {}
+) {
     ctx.fillStyle = '#1f2937';
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
@@ -582,49 +637,51 @@ function draw7Segment(ctx: CanvasRenderingContext2D, w: number, h: number, segme
     ctx.rect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8);
     ctx.fill();
     ctx.stroke();
-    
+
     // 7-segment layout:
     //    AAA
     //   F   B
     //    GGG
     //   E   C
     //    DDD
-    const t = 3;  // segment thickness
+    const t = 3; // segment thickness
     const offColor = '#374151';
     const onColor = '#22C55E';
-    
+
     // Digit bounding box (centered in display)
-    const x1 = -10, x2 = 10;  // left and right edges
-    const y1 = -22, y2 = 22;  // top and bottom edges
-    const ym = 0;              // middle y
-    
+    const x1 = -10,
+        x2 = 10; // left and right edges
+    const y1 = -22,
+        y2 = 22; // top and bottom edges
+    const ym = 0; // middle y
+
     // Segment A (top horizontal)
     ctx.fillStyle = segments['A'] ? onColor : offColor;
-    ctx.fillRect(x1 + t, y1, x2 - x1 - 2*t, t);
-    
+    ctx.fillRect(x1 + t, y1, x2 - x1 - 2 * t, t);
+
     // Segment B (upper right vertical)
     ctx.fillStyle = segments['B'] ? onColor : offColor;
     ctx.fillRect(x2 - t, y1 + t, t, ym - y1 - t);
-    
+
     // Segment C (lower right vertical)
     ctx.fillStyle = segments['C'] ? onColor : offColor;
-    ctx.fillRect(x2 - t, ym + t, t, y2 - ym - 2*t);
-    
+    ctx.fillRect(x2 - t, ym + t, t, y2 - ym - 2 * t);
+
     // Segment D (bottom horizontal)
     ctx.fillStyle = segments['D'] ? onColor : offColor;
-    ctx.fillRect(x1 + t, y2 - t, x2 - x1 - 2*t, t);
-    
+    ctx.fillRect(x1 + t, y2 - t, x2 - x1 - 2 * t, t);
+
     // Segment E (lower left vertical)
     ctx.fillStyle = segments['E'] ? onColor : offColor;
-    ctx.fillRect(x1, ym + t, t, y2 - ym - 2*t);
-    
+    ctx.fillRect(x1, ym + t, t, y2 - ym - 2 * t);
+
     // Segment F (upper left vertical)
     ctx.fillStyle = segments['F'] ? onColor : offColor;
     ctx.fillRect(x1, y1 + t, t, ym - y1 - t);
-    
+
     // Segment G (middle horizontal)
     ctx.fillStyle = segments['G'] ? onColor : offColor;
-    ctx.fillRect(x1 + t, ym - t/2, x2 - x1 - 2*t, t);
+    ctx.fillRect(x1 + t, ym - t / 2, x2 - x1 - 2 * t, t);
 }
 
 function drawMux(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -788,10 +845,16 @@ function drawProbe(ctx: CanvasRenderingContext2D, w: number, h: number, isHigh: 
     ctx.stroke();
 }
 
-function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActive: boolean, revActive: boolean) {
+function drawMotor(
+    ctx: CanvasRenderingContext2D,
+    w: number,
+    h: number,
+    fwdActive: boolean,
+    revActive: boolean
+) {
     const isRunning = fwdActive || revActive;
-    const direction = fwdActive ? 1 : (revActive ? -1 : 0);
-    
+    const direction = fwdActive ? 1 : revActive ? -1 : 0;
+
     // Motor body (circle)
     ctx.fillStyle = isRunning ? '#1E40AF' : '#374151';
     ctx.strokeStyle = isRunning ? '#3B82F6' : '#6B7280';
@@ -800,34 +863,34 @@ function drawMotor(ctx: CanvasRenderingContext2D, w: number, h: number, fwdActiv
     ctx.arc(0, 0, Math.min(w, h) / 2 - 4, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    
+
     // Inner circle
     ctx.fillStyle = isRunning ? '#3B82F6' : '#4B5563';
     ctx.beginPath();
     ctx.arc(0, 0, Math.min(w, h) / 4, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // "M" label
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('M', 0, 0);
-    
+
     // Direction indicator (when running)
     if (isRunning) {
         ctx.fillStyle = '#22C55E';
         ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
+
         // Draw rotation symbol using Unicode arrows
         const symbol = direction > 0 ? '↻' : '↺';
-        ctx.fillText(symbol, w/2 + 8, -h/2 + 8);
-        
+        ctx.fillText(symbol, w / 2 + 8, -h / 2 + 8);
+
         // Status text below
         ctx.font = '9px sans-serif';
-        ctx.fillText(direction > 0 ? 'CW' : 'CCW', 0, h/2 + 18);
+        ctx.fillText(direction > 0 ? 'CW' : 'CCW', 0, h / 2 + 18);
     }
 }
 
@@ -836,33 +899,39 @@ function drawBuzzer(ctx: CanvasRenderingContext2D, w: number, h: number, isActiv
     ctx.fillStyle = isActive ? '#F59E0B' : '#374151';
     ctx.strokeStyle = isActive ? '#FBBF24' : '#6B7280';
     ctx.lineWidth = 2;
-    
+
     // Draw speaker shape
     const size = Math.min(w, h) / 2 - 4;
     ctx.beginPath();
-    ctx.moveTo(-size/2, -size/3);
-    ctx.lineTo(-size/2, size/3);
-    ctx.lineTo(0, size/2);
-    ctx.lineTo(size/2, size/2);
-    ctx.lineTo(size/2, -size/2);
-    ctx.lineTo(0, -size/2);
+    ctx.moveTo(-size / 2, -size / 3);
+    ctx.lineTo(-size / 2, size / 3);
+    ctx.lineTo(0, size / 2);
+    ctx.lineTo(size / 2, size / 2);
+    ctx.lineTo(size / 2, -size / 2);
+    ctx.lineTo(0, -size / 2);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    
+
     // Sound waves when active
     if (isActive) {
         ctx.strokeStyle = '#FBBF24';
         ctx.lineWidth = 1.5;
         for (let i = 1; i <= 3; i++) {
             ctx.beginPath();
-            ctx.arc(size/2 + 4, 0, i * 4, -Math.PI/3, Math.PI/3);
+            ctx.arc(size / 2 + 4, 0, i * 4, -Math.PI / 3, Math.PI / 3);
             ctx.stroke();
         }
     }
 }
 
-function drawDefault(ctx: CanvasRenderingContext2D, w: number, h: number, type: string, isDarkMode: boolean) {
+function drawDefault(
+    ctx: CanvasRenderingContext2D,
+    w: number,
+    h: number,
+    type: string,
+    isDarkMode: boolean
+) {
     ctx.fillStyle = isDarkMode ? '#374151' : '#e8e8f0';
     ctx.strokeStyle = isDarkMode ? '#4b5563' : '#374151';
     ctx.lineWidth = 2;

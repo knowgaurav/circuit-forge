@@ -3,215 +3,215 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Brand Foundation */
-    --brand-hue: 215;
-    /* Deep Blue */
-    --brand-saturation: 90%;
-    --brand-lightness: 50%;
+    :root {
+        /* Brand Foundation */
+        --brand-hue: 215;
+        /* Deep Blue */
+        --brand-saturation: 90%;
+        --brand-lightness: 50%;
 
-    /* Light Mode Palette */
-    --background: #ffffff;
-    --foreground: #0f172a;
-    /* Slate 900 */
+        /* Light Mode Palette */
+        --background: #ffffff;
+        --foreground: #0f172a;
+        /* Slate 900 */
 
-    /* Primary Action */
-    --primary: #0ea5e9;
-    /* Sky 500 */
-    --primary-hover: #0284c7;
-    /* Sky 600 */
-    --primary-foreground: #ffffff;
+        /* Primary Action */
+        --primary: #0ea5e9;
+        /* Sky 500 */
+        --primary-hover: #0284c7;
+        /* Sky 600 */
+        --primary-foreground: #ffffff;
 
-    /* Secondary Action */
-    --secondary: #f1f5f9;
-    /* Slate 100 */
-    --secondary-foreground: #334155;
-    /* Slate 700 */
+        /* Secondary Action */
+        --secondary: #f1f5f9;
+        /* Slate 100 */
+        --secondary-foreground: #334155;
+        /* Slate 700 */
 
-    /* Accents */
-    --accent: #3b82f6;
-    /* Blue 500 */
-    --accent-foreground: #ffffff;
+        /* Accents */
+        --accent: #3b82f6;
+        /* Blue 500 */
+        --accent-foreground: #ffffff;
 
-    /* Surfaces */
-    --surface: #ffffff;
-    --surface-secondary: #f8fafc;
-    /* Slate 50 */
-    --surface-tertiary: #f1f5f9;
-    /* Slate 100 */
-    --surface-elevated: #ffffff;
+        /* Surfaces */
+        --surface: #ffffff;
+        --surface-secondary: #f8fafc;
+        /* Slate 50 */
+        --surface-tertiary: #f1f5f9;
+        /* Slate 100 */
+        --surface-elevated: #ffffff;
 
-    /* Borders */
-    --border: #e2e8f0;
-    /* Slate 200 */
-    --border-subtle: #f8fafc;
-    /* Slate 50 */
-    --border-strong: #cbd5e1;
-    /* Slate 300 */
+        /* Borders */
+        --border: #e2e8f0;
+        /* Slate 200 */
+        --border-subtle: #f8fafc;
+        /* Slate 50 */
+        --border-strong: #cbd5e1;
+        /* Slate 300 */
 
-    /* Text */
-    --text-secondary: #475569;
-    /* Slate 600 */
-    --text-muted: #94a3b8;
-    /* Slate 400 */
-    --text-inverse: #ffffff;
+        /* Text */
+        --text-secondary: #475569;
+        /* Slate 600 */
+        --text-muted: #94a3b8;
+        /* Slate 400 */
+        --text-inverse: #ffffff;
 
-    /* Status */
-    --success: #22c55e;
-    --success-foreground: #ffffff;
-    --warning: #f59e0b;
-    --warning-foreground: #ffffff;
-    --error: #ef4444;
-    --error-foreground: #ffffff;
+        /* Status */
+        --success: #22c55e;
+        --success-foreground: #ffffff;
+        --warning: #f59e0b;
+        --warning-foreground: #ffffff;
+        --error: #ef4444;
+        --error-foreground: #ffffff;
 
-    /* Circuit Specific */
-    --canvas-bg: #f8fafc;
-    /* Slate 50 */
-    --canvas-grid: #e2e8f0;
-    /* Slate 200 */
-    --canvas-border: #cbd5e1;
-    --circuit-node: #3b82f6;
-    --wire-active: #22c55e;
-    --wire-inactive: #94a3b8;
-  }
+        /* Circuit Specific */
+        --canvas-bg: #f8fafc;
+        /* Slate 50 */
+        --canvas-grid: #e2e8f0;
+        /* Slate 200 */
+        --canvas-border: #cbd5e1;
+        --circuit-node: #3b82f6;
+        --wire-active: #22c55e;
+        --wire-inactive: #94a3b8;
+    }
 
-  html.dark {
-    /* Dark Mode Palette (Rich, Deep Blue/Black) */
-    --background: #020617;
-    /* Slate 950 essentially */
-    --foreground: #f8fafc;
-    /* Slate 50 */
+    html.dark {
+        /* Dark Mode Palette (Rich, Deep Blue/Black) */
+        --background: #020617;
+        /* Slate 950 essentially */
+        --foreground: #f8fafc;
+        /* Slate 50 */
 
-    /* Primary Action */
-    --primary: #0ea5e9;
-    /* Sky 500 - keeps pop in dark mode */
-    --primary-hover: #38bdf8;
-    /* Sky 400 - lighter on hover in dark */
-    --primary-foreground: #ffffff;
+        /* Primary Action */
+        --primary: #0ea5e9;
+        /* Sky 500 - keeps pop in dark mode */
+        --primary-hover: #38bdf8;
+        /* Sky 400 - lighter on hover in dark */
+        --primary-foreground: #ffffff;
 
-    /* Secondary Action */
-    --secondary: #1e293b;
-    /* Slate 800 */
-    --secondary-foreground: #f1f5f9;
-    /* Slate 100 */
+        /* Secondary Action */
+        --secondary: #1e293b;
+        /* Slate 800 */
+        --secondary-foreground: #f1f5f9;
+        /* Slate 100 */
 
-    /* Accents */
-    --accent: #60a5fa;
-    /* Blue 400 */
-    --accent-foreground: #ffffff;
+        /* Accents */
+        --accent: #60a5fa;
+        /* Blue 400 */
+        --accent-foreground: #ffffff;
 
-    /* Surfaces */
-    --surface: #0f172a;
-    /* Slate 900 */
-    --surface-secondary: #1e293b;
-    /* Slate 800 */
-    --surface-tertiary: #334155;
-    /* Slate 700 */
-    --surface-elevated: #1e293b;
-    /* Good for modals */
+        /* Surfaces */
+        --surface: #0f172a;
+        /* Slate 900 */
+        --surface-secondary: #1e293b;
+        /* Slate 800 */
+        --surface-tertiary: #334155;
+        /* Slate 700 */
+        --surface-elevated: #1e293b;
+        /* Good for modals */
 
-    /* Borders */
-    --border: #1e293b;
-    /* Slate 800 */
-    --border-subtle: #0f172a;
-    --border-strong: #334155;
-    /* Slate 700 */
+        /* Borders */
+        --border: #1e293b;
+        /* Slate 800 */
+        --border-subtle: #0f172a;
+        --border-strong: #334155;
+        /* Slate 700 */
 
-    /* Text */
-    --text-secondary: #cbd5e1;
-    /* Slate 300 */
-    --text-muted: #64748b;
-    /* Slate 500 */
-    --text-inverse: #020617;
+        /* Text */
+        --text-secondary: #cbd5e1;
+        /* Slate 300 */
+        --text-muted: #64748b;
+        /* Slate 500 */
+        --text-inverse: #020617;
 
-    /* Status - Slightly desaturated/lighter for dark mode readability */
-    --success: #4ade80;
-    --warning: #fbbf24;
-    --error: #f87171;
+        /* Status - Slightly desaturated/lighter for dark mode readability */
+        --success: #4ade80;
+        --warning: #fbbf24;
+        --error: #f87171;
 
-    /* Circuit Specific */
-    --canvas-bg: #0f172a;
-    --canvas-grid: #1e293b;
-    --canvas-border: #334155;
-    --circuit-node: #60a5fa;
-    --wire-active: #4ade80;
-    --wire-inactive: #475569;
-  }
+        /* Circuit Specific */
+        --canvas-bg: #0f172a;
+        --canvas-grid: #1e293b;
+        --canvas-border: #334155;
+        --circuit-node: #60a5fa;
+        --wire-active: #4ade80;
+        --wire-inactive: #475569;
+    }
 }
 
 @layer base {
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
-  }
+    body {
+        @apply bg-background text-foreground antialiased;
+        font-feature-settings: 'ss01', 'ss02', 'cv01', 'cv02';
+    }
 
-  ::selection {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-  }
+    ::selection {
+        background-color: var(--primary);
+        color: var(--primary-foreground);
+    }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-heading tracking-tight text-foreground;
-  }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-heading tracking-tight text-foreground;
+    }
 
-  h1 {
-    @apply text-4xl font-bold;
-  }
+    h1 {
+        @apply text-4xl font-bold;
+    }
 
-  h2 {
-    @apply text-3xl font-semibold;
-  }
+    h2 {
+        @apply text-3xl font-semibold;
+    }
 
-  h3 {
-    @apply text-2xl font-semibold;
-  }
+    h3 {
+        @apply text-2xl font-semibold;
+    }
 }
 
 /* Glassmorphism Utilities */
 @layer components {
-  .glass {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/10 dark:border-white/5;
-  }
+    .glass {
+        @apply border border-white/10 bg-white/70 backdrop-blur-md dark:border-white/5 dark:bg-slate-900/70;
+    }
 
-  .glass-card {
-    @apply bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 shadow-glass dark:border-white/10;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+    .glass-card {
+        @apply border border-white/20 bg-white/40 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  .glass-card:hover {
-    @apply -translate-y-1 shadow-glass-sm bg-white/60 dark:bg-slate-900/60 border-sky-500/30;
-  }
+    .glass-card:hover {
+        @apply -translate-y-1 border-sky-500/30 bg-white/60 shadow-glass-sm dark:bg-slate-900/60;
+    }
 
-  /* Gradient Text */
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-brand;
-  }
+    /* Gradient Text */
+    .text-gradient {
+        @apply bg-gradient-brand bg-clip-text text-transparent;
+    }
 
-  /* Modern Button Base */
-  .btn-base {
-    @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:pointer-events-none;
-  }
+    /* Modern Button Base */
+    .btn-base {
+        @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-transparent;
+    @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full transition-colors;
+    @apply rounded-full bg-border transition-colors;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: color-mix(in srgb, var(--text-muted) 50%, transparent);
+    background-color: color-mix(in srgb, var(--text-muted) 50%, transparent);
 }

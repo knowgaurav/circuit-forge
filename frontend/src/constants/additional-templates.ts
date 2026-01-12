@@ -9,18 +9,43 @@ import type { Template } from './templates';
 
 // Helper functions
 function createComp(
-    id: string, type: string, x: number, y: number,
+    id: string,
+    type: string,
+    x: number,
+    y: number,
     pins: Array<{ id: string; name: string; type: 'input' | 'output'; x: number; y: number }>
 ): CircuitComponent {
     return {
-        id, type: type as CircuitComponent['type'], label: id.toUpperCase(),
-        position: { x, y }, rotation: 0, properties: {},
-        pins: pins.map(p => ({ id: p.id, name: p.name, type: p.type, position: { x: p.x, y: p.y } })),
+        id,
+        type: type as CircuitComponent['type'],
+        label: id.toUpperCase(),
+        position: { x, y },
+        rotation: 0,
+        properties: {},
+        pins: pins.map((p) => ({
+            id: p.id,
+            name: p.name,
+            type: p.type,
+            position: { x: p.x, y: p.y },
+        })),
     };
 }
 
-function createWire(id: string, fromComp: string, fromPin: string, toComp: string, toPin: string): Wire {
-    return { id, fromComponentId: fromComp, fromPinId: fromPin, toComponentId: toComp, toPinId: toPin, waypoints: [] };
+function createWire(
+    id: string,
+    fromComp: string,
+    fromPin: string,
+    toComp: string,
+    toPin: string
+): Wire {
+    return {
+        id,
+        fromComponentId: fromComp,
+        fromPinId: fromPin,
+        toComponentId: toComp,
+        toPinId: toPin,
+        waypoints: [],
+    };
 }
 
 // Standard pin definitions
@@ -40,7 +65,6 @@ const notPins = [
 const switchPins = [{ id: 'out', name: 'Q', type: 'output' as const, x: 30, y: 0 }];
 const ledPins = [{ id: 'in', name: 'D', type: 'input' as const, x: -30, y: 0 }];
 
-
 // ============================================================================
 // 1. 4-TO-1 MUX FROM GATES (Advanced) - No MUX component, pure gates
 // ============================================================================
@@ -50,7 +74,7 @@ export const mux4to1FromGatesTemplate: Template = {
     category: 'computing',
     description: 'Build a 4-to-1 multiplexer using only AND, OR, NOT gates',
     difficulty: 'advanced',
-    overview: 'Y = S1\'S0\'D0 + S1\'S0·D1 + S1·S0\'D2 + S1·S0·D3',
+    overview: "Y = S1'S0'D0 + S1'S0·D1 + S1·S0'D2 + S1·S0·D3",
     theory: `
 4-to-1 Multiplexer from basic gates:
 - 2 select lines (S1, S0) choose one of 4 inputs (D0-D3)
@@ -125,16 +149,57 @@ export const mux4to1FromGatesTemplate: Template = {
         createWire('w25', 'or3', 'out', 'led', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Data Inputs', description: 'Add 4 data switches D0-D3', components: ['d0', 'd1', 'd2', 'd3'], wires: [] },
-        { id: 's2', title: 'Add Select Lines', description: 'Add S0, S1 and their inverters', components: ['s0', 's1', 'not-s0', 'not-s1'], wires: ['w1', 'w2'] },
-        { id: 's3', title: 'Build D0 Path', description: 'D0 AND S1\' AND S0\'', components: ['and-d0-1', 'and-d0-2'], wires: ['w3', 'w4', 'w5', 'w6'] },
-        { id: 's4', title: 'Build D1 Path', description: 'D1 AND S1\' AND S0', components: ['and-d1-1', 'and-d1-2'], wires: ['w7', 'w8', 'w9', 'w10'] },
-        { id: 's5', title: 'Build D2 Path', description: 'D2 AND S1 AND S0\'', components: ['and-d2-1', 'and-d2-2'], wires: ['w11', 'w12', 'w13', 'w14'] },
-        { id: 's6', title: 'Build D3 Path', description: 'D3 AND S1 AND S0', components: ['and-d3-1', 'and-d3-2'], wires: ['w15', 'w16', 'w17', 'w18'] },
-        { id: 's7', title: 'Combine with OR', description: 'OR all paths together', components: ['or1', 'or2', 'or3', 'led'], wires: ['w19', 'w20', 'w21', 'w22', 'w23', 'w24', 'w25'] },
+        {
+            id: 's1',
+            title: 'Add Data Inputs',
+            description: 'Add 4 data switches D0-D3',
+            components: ['d0', 'd1', 'd2', 'd3'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Add Select Lines',
+            description: 'Add S0, S1 and their inverters',
+            components: ['s0', 's1', 'not-s0', 'not-s1'],
+            wires: ['w1', 'w2'],
+        },
+        {
+            id: 's3',
+            title: 'Build D0 Path',
+            description: "D0 AND S1' AND S0'",
+            components: ['and-d0-1', 'and-d0-2'],
+            wires: ['w3', 'w4', 'w5', 'w6'],
+        },
+        {
+            id: 's4',
+            title: 'Build D1 Path',
+            description: "D1 AND S1' AND S0",
+            components: ['and-d1-1', 'and-d1-2'],
+            wires: ['w7', 'w8', 'w9', 'w10'],
+        },
+        {
+            id: 's5',
+            title: 'Build D2 Path',
+            description: "D2 AND S1 AND S0'",
+            components: ['and-d2-1', 'and-d2-2'],
+            wires: ['w11', 'w12', 'w13', 'w14'],
+        },
+        {
+            id: 's6',
+            title: 'Build D3 Path',
+            description: 'D3 AND S1 AND S0',
+            components: ['and-d3-1', 'and-d3-2'],
+            wires: ['w15', 'w16', 'w17', 'w18'],
+        },
+        {
+            id: 's7',
+            title: 'Combine with OR',
+            description: 'OR all paths together',
+            components: ['or1', 'or2', 'or3', 'led'],
+            wires: ['w19', 'w20', 'w21', 'w22', 'w23', 'w24', 'w25'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 2. 2-BIT BINARY COUNTER FROM GATES (Advanced) - Using JK flip-flops built from NANDs
@@ -145,7 +210,8 @@ export const binaryCounterFromGatesTemplate: Template = {
     category: 'sequential',
     description: 'Build a 2-bit binary counter using NAND gates to create JK flip-flops',
     difficulty: 'advanced',
-    overview: 'Each bit uses a JK flip-flop in toggle mode. LSB toggles every clock, MSB toggles when LSB is high.',
+    overview:
+        'Each bit uses a JK flip-flop in toggle mode. LSB toggles every clock, MSB toggles when LSB is high.',
     theory: `
 2-bit Binary Counter: 00 → 01 → 10 → 11 → 00...
 
@@ -205,15 +271,50 @@ This shows how counters are built at the gate level!
         createWire('w18', 'nand1-1', 'out', 'led-q1', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Clock', description: 'Add clock input', components: ['clk'], wires: [] },
-        { id: 's2', title: 'Build FF0 Latch', description: 'Cross-coupled NANDs for LSB', components: ['nand1-0', 'nand2-0'], wires: ['w1', 'w2'] },
-        { id: 's3', title: 'Add FF0 Gating', description: 'Clock gating for toggle', components: ['nand3-0', 'nand4-0'], wires: ['w3', 'w4', 'w5', 'w6', 'w7', 'w8'] },
-        { id: 's4', title: 'Build FF1 Latch', description: 'Cross-coupled NANDs for MSB', components: ['nand1-1', 'nand2-1'], wires: ['w10', 'w11'] },
-        { id: 's5', title: 'Add FF1 Gating', description: 'Gated by Q0', components: ['nand3-1', 'nand4-1'], wires: ['w12', 'w13', 'w14', 'w15', 'w16', 'w17'] },
-        { id: 's6', title: 'Add LEDs', description: 'Show Q1 Q0', components: ['led-q0', 'led-q1'], wires: ['w9', 'w18'] },
+        {
+            id: 's1',
+            title: 'Add Clock',
+            description: 'Add clock input',
+            components: ['clk'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Build FF0 Latch',
+            description: 'Cross-coupled NANDs for LSB',
+            components: ['nand1-0', 'nand2-0'],
+            wires: ['w1', 'w2'],
+        },
+        {
+            id: 's3',
+            title: 'Add FF0 Gating',
+            description: 'Clock gating for toggle',
+            components: ['nand3-0', 'nand4-0'],
+            wires: ['w3', 'w4', 'w5', 'w6', 'w7', 'w8'],
+        },
+        {
+            id: 's4',
+            title: 'Build FF1 Latch',
+            description: 'Cross-coupled NANDs for MSB',
+            components: ['nand1-1', 'nand2-1'],
+            wires: ['w10', 'w11'],
+        },
+        {
+            id: 's5',
+            title: 'Add FF1 Gating',
+            description: 'Gated by Q0',
+            components: ['nand3-1', 'nand4-1'],
+            wires: ['w12', 'w13', 'w14', 'w15', 'w16', 'w17'],
+        },
+        {
+            id: 's6',
+            title: 'Add LEDs',
+            description: 'Show Q1 Q0',
+            components: ['led-q0', 'led-q1'],
+            wires: ['w9', 'w18'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 3. 1-BIT ALU FROM GATES (Advanced) - Full ALU slice with AND, OR, ADD, SUB
@@ -224,7 +325,8 @@ export const aluSliceFromGatesTemplate: Template = {
     category: 'computing',
     description: 'Build a 1-bit ALU that can AND, OR, ADD, SUB using only basic gates',
     difficulty: 'advanced',
-    overview: 'Op select chooses operation. Uses full adder for arithmetic, gates for logic, MUX for output selection.',
+    overview:
+        'Op select chooses operation. Uses full adder for arithmetic, gates for logic, MUX for output selection.',
     theory: `
 1-bit ALU Operations:
 - Op=00: A AND B
@@ -319,14 +421,69 @@ This is how real CPUs work at the bit level!
         createWire('w33', 'mux-or3', 'out', 'led-result', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'A, B, Cin, Op0, Op1', components: ['a', 'b', 'cin', 'op0', 'op1'], wires: [] },
-        { id: 's2', title: 'Logic Ops', description: 'AND and OR gates', components: ['and-ab', 'or-ab'], wires: ['w2', 'w3', 'w4', 'w5'] },
-        { id: 's3', title: 'Full Adder', description: 'XOR chain for sum', components: ['xor1', 'xor2', 'and1', 'and2', 'or-carry'], wires: ['w6', 'w7', 'w8', 'w9', 'w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16'] },
-        { id: 's4', title: 'Op Decode', description: 'Invert op bits', components: ['not-b', 'not-op0', 'not-op1'], wires: ['w1', 'w17', 'w18'] },
-        { id: 's5', title: 'Result MUX', description: '4:1 MUX selects output', components: ['mux-and0', 'mux-and1', 'mux-and2', 'mux-and3', 'mux-or1', 'mux-or2', 'mux-or3', 'led-result', 'led-cout'], wires: ['w19', 'w20', 'w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27', 'w28', 'w29', 'w30', 'w31', 'w32', 'w33'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'A, B, Cin, Op0, Op1',
+            components: ['a', 'b', 'cin', 'op0', 'op1'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Logic Ops',
+            description: 'AND and OR gates',
+            components: ['and-ab', 'or-ab'],
+            wires: ['w2', 'w3', 'w4', 'w5'],
+        },
+        {
+            id: 's3',
+            title: 'Full Adder',
+            description: 'XOR chain for sum',
+            components: ['xor1', 'xor2', 'and1', 'and2', 'or-carry'],
+            wires: ['w6', 'w7', 'w8', 'w9', 'w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16'],
+        },
+        {
+            id: 's4',
+            title: 'Op Decode',
+            description: 'Invert op bits',
+            components: ['not-b', 'not-op0', 'not-op1'],
+            wires: ['w1', 'w17', 'w18'],
+        },
+        {
+            id: 's5',
+            title: 'Result MUX',
+            description: '4:1 MUX selects output',
+            components: [
+                'mux-and0',
+                'mux-and1',
+                'mux-and2',
+                'mux-and3',
+                'mux-or1',
+                'mux-or2',
+                'mux-or3',
+                'led-result',
+                'led-cout',
+            ],
+            wires: [
+                'w19',
+                'w20',
+                'w21',
+                'w22',
+                'w23',
+                'w24',
+                'w25',
+                'w26',
+                'w27',
+                'w28',
+                'w29',
+                'w30',
+                'w31',
+                'w32',
+                'w33',
+            ],
+        },
     ],
 };
-
 
 // ============================================================================
 // 4. 1-BIT MEMORY CELL (D LATCH) FROM NAND GATES (Intermediate)
@@ -337,7 +494,8 @@ export const memoryCell1BitTemplate: Template = {
     category: 'sequential',
     description: 'Build a D latch memory cell using only NAND gates - the basis of RAM',
     difficulty: 'intermediate',
-    overview: 'A gated D latch stores 1 bit. When Write Enable is HIGH, data is captured. When LOW, data is held.',
+    overview:
+        'A gated D latch stores 1 bit. When Write Enable is HIGH, data is captured. When LOW, data is held.',
     theory: `
 D Latch from NAND gates:
 1. Two NANDs form SR latch (cross-coupled)
@@ -384,14 +542,43 @@ This is the fundamental building block of RAM!
         createWire('w11', 'nand-qn', 'out', 'led-qn', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'Data (D) and Write Enable (WE)', components: ['d', 'we'], wires: [] },
-        { id: 's2', title: 'Invert D', description: 'Create D\' for reset path', components: ['not-d'], wires: ['w1'] },
-        { id: 's3', title: 'Add Gating', description: 'NANDs gate D and D\' with WE', components: ['nand-s', 'nand-r'], wires: ['w2', 'w3', 'w4', 'w5'] },
-        { id: 's4', title: 'Build SR Latch', description: 'Cross-coupled NANDs store the bit', components: ['nand-q', 'nand-qn'], wires: ['w6', 'w7', 'w8', 'w9'] },
-        { id: 's5', title: 'Add Outputs', description: 'Q and Q\' LEDs', components: ['led-q', 'led-qn'], wires: ['w10', 'w11'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'Data (D) and Write Enable (WE)',
+            components: ['d', 'we'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Invert D',
+            description: "Create D' for reset path",
+            components: ['not-d'],
+            wires: ['w1'],
+        },
+        {
+            id: 's3',
+            title: 'Add Gating',
+            description: "NANDs gate D and D' with WE",
+            components: ['nand-s', 'nand-r'],
+            wires: ['w2', 'w3', 'w4', 'w5'],
+        },
+        {
+            id: 's4',
+            title: 'Build SR Latch',
+            description: 'Cross-coupled NANDs store the bit',
+            components: ['nand-q', 'nand-qn'],
+            wires: ['w6', 'w7', 'w8', 'w9'],
+        },
+        {
+            id: 's5',
+            title: 'Add Outputs',
+            description: "Q and Q' LEDs",
+            components: ['led-q', 'led-qn'],
+            wires: ['w10', 'w11'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 5. 2x2 RAM FROM GATES (Advanced) - Real RAM internals!
@@ -400,9 +587,11 @@ export const ram2x2FromGatesTemplate: Template = {
     id: 'ram-2x2-gates',
     name: '2x2 RAM from Gates',
     category: 'computing',
-    description: 'Build a 2-word x 2-bit RAM using D latches, decoder, and MUX - all from basic gates',
+    description:
+        'Build a 2-word x 2-bit RAM using D latches, decoder, and MUX - all from basic gates',
     difficulty: 'advanced',
-    overview: 'Real RAM architecture: Address decoder selects word, D latches store bits, MUX reads data.',
+    overview:
+        'Real RAM architecture: Address decoder selects word, D latches store bits, MUX reads data.',
     theory: `
 2x2 RAM Architecture:
 - 2 words, 2 bits each = 4 D latches total
@@ -435,8 +624,8 @@ This is exactly how real SRAM works!
         createComp('and-sel0', 'AND_2', 240, 220, and2Pins),
         createComp('and-sel1', 'AND_2', 240, 280, and2Pins),
         // Word 0, Bit 0: D latch (Set AND + Reset AND + NOR SR latch)
-        createComp('and-set-00', 'AND_2', 340, 40, and2Pins),   // D0 AND SEL0 -> Set
-        createComp('and-rst-00', 'AND_2', 340, 80, and2Pins),   // D0' AND SEL0 -> Reset
+        createComp('and-set-00', 'AND_2', 340, 40, and2Pins), // D0 AND SEL0 -> Set
+        createComp('and-rst-00', 'AND_2', 340, 80, and2Pins), // D0' AND SEL0 -> Reset
         createComp('nor-00-q', 'NOR_2', 460, 50, nor2Pins),
         createComp('nor-00-qn', 'NOR_2', 460, 90, nor2Pins),
         // Word 0, Bit 1: D latch
@@ -530,18 +719,91 @@ This is exactly how real SRAM works!
         createWire('w71', 'or-mux1', 'out', 'led-out1', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'Data D0, D1, Address, Write Enable', components: ['d0', 'd1', 'addr', 'we'], wires: [] },
-        { id: 's2', title: 'Data Inverters', description: 'Invert D0 and D1 for reset path', components: ['not-d0', 'not-d1'], wires: ['w1', 'w2'] },
-        { id: 's3', title: 'Address Decoder', description: 'Decode address to select word', components: ['not-addr', 'and-sel0', 'and-sel1'], wires: ['w3', 'w4', 'w5', 'w6', 'w7'] },
-        { id: 's4', title: 'Word 0 Bit 0', description: 'D latch for word 0, bit 0', components: ['and-set-00', 'and-rst-00', 'nor-00-q', 'nor-00-qn'], wires: ['w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17'] },
-        { id: 's5', title: 'Word 0 Bit 1', description: 'D latch for word 0, bit 1', components: ['and-set-01', 'and-rst-01', 'nor-01-q', 'nor-01-qn'], wires: ['w20', 'w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27'] },
-        { id: 's6', title: 'Word 1 Bit 0', description: 'D latch for word 1, bit 0', components: ['and-set-10', 'and-rst-10', 'nor-10-q', 'nor-10-qn'], wires: ['w30', 'w31', 'w32', 'w33', 'w34', 'w35', 'w36', 'w37'] },
-        { id: 's7', title: 'Word 1 Bit 1', description: 'D latch for word 1, bit 1', components: ['and-set-11', 'and-rst-11', 'nor-11-q', 'nor-11-qn'], wires: ['w40', 'w41', 'w42', 'w43', 'w44', 'w45', 'w46', 'w47'] },
-        { id: 's8', title: 'Read MUX', description: 'Select word for output', components: ['and-mux0-w0', 'and-mux0-w1', 'or-mux0', 'and-mux1-w0', 'and-mux1-w1', 'or-mux1'], wires: ['w50', 'w51', 'w52', 'w53', 'w54', 'w55', 'w60', 'w61', 'w62', 'w63', 'w64', 'w65'] },
-        { id: 's9', title: 'Outputs', description: 'Read data LEDs', components: ['led-out0', 'led-out1'], wires: ['w70', 'w71'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'Data D0, D1, Address, Write Enable',
+            components: ['d0', 'd1', 'addr', 'we'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Data Inverters',
+            description: 'Invert D0 and D1 for reset path',
+            components: ['not-d0', 'not-d1'],
+            wires: ['w1', 'w2'],
+        },
+        {
+            id: 's3',
+            title: 'Address Decoder',
+            description: 'Decode address to select word',
+            components: ['not-addr', 'and-sel0', 'and-sel1'],
+            wires: ['w3', 'w4', 'w5', 'w6', 'w7'],
+        },
+        {
+            id: 's4',
+            title: 'Word 0 Bit 0',
+            description: 'D latch for word 0, bit 0',
+            components: ['and-set-00', 'and-rst-00', 'nor-00-q', 'nor-00-qn'],
+            wires: ['w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17'],
+        },
+        {
+            id: 's5',
+            title: 'Word 0 Bit 1',
+            description: 'D latch for word 0, bit 1',
+            components: ['and-set-01', 'and-rst-01', 'nor-01-q', 'nor-01-qn'],
+            wires: ['w20', 'w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27'],
+        },
+        {
+            id: 's6',
+            title: 'Word 1 Bit 0',
+            description: 'D latch for word 1, bit 0',
+            components: ['and-set-10', 'and-rst-10', 'nor-10-q', 'nor-10-qn'],
+            wires: ['w30', 'w31', 'w32', 'w33', 'w34', 'w35', 'w36', 'w37'],
+        },
+        {
+            id: 's7',
+            title: 'Word 1 Bit 1',
+            description: 'D latch for word 1, bit 1',
+            components: ['and-set-11', 'and-rst-11', 'nor-11-q', 'nor-11-qn'],
+            wires: ['w40', 'w41', 'w42', 'w43', 'w44', 'w45', 'w46', 'w47'],
+        },
+        {
+            id: 's8',
+            title: 'Read MUX',
+            description: 'Select word for output',
+            components: [
+                'and-mux0-w0',
+                'and-mux0-w1',
+                'or-mux0',
+                'and-mux1-w0',
+                'and-mux1-w1',
+                'or-mux1',
+            ],
+            wires: [
+                'w50',
+                'w51',
+                'w52',
+                'w53',
+                'w54',
+                'w55',
+                'w60',
+                'w61',
+                'w62',
+                'w63',
+                'w64',
+                'w65',
+            ],
+        },
+        {
+            id: 's9',
+            title: 'Outputs',
+            description: 'Read data LEDs',
+            components: ['led-out0', 'led-out1'],
+            wires: ['w70', 'w71'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 6. 4-BIT SHIFT REGISTER FROM GATES (Advanced)
@@ -645,14 +907,43 @@ Applications: Serial-to-parallel conversion, delay lines, FIFO buffers
         createWire('w40', 'nand-3c', 'out', 'led-q3', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'Serial data in and clock', components: ['din', 'clk'], wires: [] },
-        { id: 's2', title: 'Stage 0', description: 'First D latch from NANDs', components: ['not-0', 'nand-0a', 'nand-0b', 'nand-0c', 'nand-0d', 'led-q0'], wires: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10'] },
-        { id: 's3', title: 'Stage 1', description: 'Second D latch', components: ['not-1', 'nand-1a', 'nand-1b', 'nand-1c', 'nand-1d', 'led-q1'], wires: ['w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17', 'w18', 'w19', 'w20'] },
-        { id: 's4', title: 'Stage 2', description: 'Third D latch', components: ['not-2', 'nand-2a', 'nand-2b', 'nand-2c', 'nand-2d', 'led-q2'], wires: ['w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27', 'w28', 'w29', 'w30'] },
-        { id: 's5', title: 'Stage 3', description: 'Fourth D latch', components: ['not-3', 'nand-3a', 'nand-3b', 'nand-3c', 'nand-3d', 'led-q3'], wires: ['w31', 'w32', 'w33', 'w34', 'w35', 'w36', 'w37', 'w38', 'w39', 'w40'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'Serial data in and clock',
+            components: ['din', 'clk'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Stage 0',
+            description: 'First D latch from NANDs',
+            components: ['not-0', 'nand-0a', 'nand-0b', 'nand-0c', 'nand-0d', 'led-q0'],
+            wires: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10'],
+        },
+        {
+            id: 's3',
+            title: 'Stage 1',
+            description: 'Second D latch',
+            components: ['not-1', 'nand-1a', 'nand-1b', 'nand-1c', 'nand-1d', 'led-q1'],
+            wires: ['w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17', 'w18', 'w19', 'w20'],
+        },
+        {
+            id: 's4',
+            title: 'Stage 2',
+            description: 'Third D latch',
+            components: ['not-2', 'nand-2a', 'nand-2b', 'nand-2c', 'nand-2d', 'led-q2'],
+            wires: ['w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27', 'w28', 'w29', 'w30'],
+        },
+        {
+            id: 's5',
+            title: 'Stage 3',
+            description: 'Fourth D latch',
+            components: ['not-3', 'nand-3a', 'nand-3b', 'nand-3c', 'nand-3d', 'led-q3'],
+            wires: ['w31', 'w32', 'w33', 'w34', 'w35', 'w36', 'w37', 'w38', 'w39', 'w40'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 7. 2-BIT MAGNITUDE COMPARATOR FROM GATES (Advanced)
@@ -761,15 +1052,50 @@ For single bits: X > Y = X·Y', X = Y = X XNOR Y, X < Y = X'·Y
         createWire('w31', 'or-lt', 'out', 'led-lt', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'A1A0 and B1B0', components: ['a0', 'a1', 'b0', 'b1'], wires: [] },
-        { id: 's2', title: 'Inverters', description: 'Create complements', components: ['not-a0', 'not-a1', 'not-b0', 'not-b1'], wires: ['w1', 'w2', 'w3', 'w4'] },
-        { id: 's3', title: 'MSB Compare', description: 'Compare A1 vs B1', components: ['and-a1-gt-b1', 'and-a1-lt-b1', 'xor-eq1', 'not-eq1'], wires: ['w5', 'w6', 'w7', 'w8', 'w9', 'w10', 'w11'] },
-        { id: 's4', title: 'LSB Compare', description: 'Compare A0 vs B0', components: ['and-a0-gt-b0', 'and-a0-lt-b0', 'xor-eq0', 'not-eq0'], wires: ['w12', 'w13', 'w14', 'w15', 'w16', 'w17', 'w18'] },
-        { id: 's5', title: 'Combine Results', description: 'Final GT, EQ, LT logic', components: ['and-gt-cond', 'or-gt', 'and-lt-cond', 'or-lt', 'and-eq'], wires: ['w19', 'w20', 'w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27', 'w28'] },
-        { id: 's6', title: 'Outputs', description: 'Result LEDs', components: ['led-gt', 'led-eq', 'led-lt'], wires: ['w29', 'w30', 'w31'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'A1A0 and B1B0',
+            components: ['a0', 'a1', 'b0', 'b1'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Inverters',
+            description: 'Create complements',
+            components: ['not-a0', 'not-a1', 'not-b0', 'not-b1'],
+            wires: ['w1', 'w2', 'w3', 'w4'],
+        },
+        {
+            id: 's3',
+            title: 'MSB Compare',
+            description: 'Compare A1 vs B1',
+            components: ['and-a1-gt-b1', 'and-a1-lt-b1', 'xor-eq1', 'not-eq1'],
+            wires: ['w5', 'w6', 'w7', 'w8', 'w9', 'w10', 'w11'],
+        },
+        {
+            id: 's4',
+            title: 'LSB Compare',
+            description: 'Compare A0 vs B0',
+            components: ['and-a0-gt-b0', 'and-a0-lt-b0', 'xor-eq0', 'not-eq0'],
+            wires: ['w12', 'w13', 'w14', 'w15', 'w16', 'w17', 'w18'],
+        },
+        {
+            id: 's5',
+            title: 'Combine Results',
+            description: 'Final GT, EQ, LT logic',
+            components: ['and-gt-cond', 'or-gt', 'and-lt-cond', 'or-lt', 'and-eq'],
+            wires: ['w19', 'w20', 'w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27', 'w28'],
+        },
+        {
+            id: 's6',
+            title: 'Outputs',
+            description: 'Result LEDs',
+            components: ['led-gt', 'led-eq', 'led-lt'],
+            wires: ['w29', 'w30', 'w31'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 8. 7-SEGMENT DECODER FROM GATES (Advanced) - BCD to 7-segment
@@ -909,17 +1235,71 @@ Each segment is a sum-of-products expression!
         createWire('w52', 'or-seg-g', 'out', 'led-g', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add BCD Inputs', description: '4-bit input DCBA', components: ['d', 'c', 'b', 'a'], wires: [] },
-        { id: 's2', title: 'Add Inverters', description: 'Create complements', components: ['not-d', 'not-c', 'not-b'], wires: ['w1', 'w2', 'w3'] },
-        { id: 's3', title: 'Segment A Logic', description: 'A + C + BD + B\'D\'', components: ['and-seg-a-1', 'and-seg-a-2', 'or-seg-a-1', 'or-seg-a-2', 'or-seg-a-3', 'led-a'], wires: ['w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10', 'w11', 'w12', 'w13', 'w14'] },
-        { id: 's4', title: 'Segment B Logic', description: 'B\' + C\'D\' + CD', components: ['and-seg-b-1', 'and-seg-b-2', 'or-seg-b-1', 'or-seg-b-2', 'led-b'], wires: ['w15', 'w16', 'w17', 'w18', 'w19', 'w20', 'w21', 'w22', 'w23'] },
-        { id: 's5', title: 'Segment C Logic', description: 'B + C\' + D', components: ['or-seg-c-1', 'or-seg-c-2', 'led-c'], wires: ['w24', 'w25', 'w26', 'w27', 'w28'] },
-        { id: 's6', title: 'Segments D,E Logic', description: 'B\'D\' + CD\'', components: ['and-seg-e-1', 'and-seg-e-2', 'or-seg-e', 'led-d', 'led-e'], wires: ['w29', 'w30', 'w31', 'w32', 'w33', 'w34', 'w35', 'w36'] },
-        { id: 's7', title: 'Segment F Logic', description: 'C\'D\' + BC\' + A', components: ['and-seg-f-1', 'and-seg-f-2', 'or-seg-f-1', 'or-seg-f-2', 'led-f'], wires: ['w37', 'w38', 'w39', 'w40', 'w41', 'w42', 'w43', 'w44', 'w45'] },
-        { id: 's8', title: 'Segment G Logic', description: 'BC\' + B\'C', components: ['and-seg-g-1', 'and-seg-g-2', 'or-seg-g', 'led-g'], wires: ['w46', 'w47', 'w48', 'w49', 'w50', 'w51', 'w52'] },
+        {
+            id: 's1',
+            title: 'Add BCD Inputs',
+            description: '4-bit input DCBA',
+            components: ['d', 'c', 'b', 'a'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Add Inverters',
+            description: 'Create complements',
+            components: ['not-d', 'not-c', 'not-b'],
+            wires: ['w1', 'w2', 'w3'],
+        },
+        {
+            id: 's3',
+            title: 'Segment A Logic',
+            description: "A + C + BD + B'D'",
+            components: [
+                'and-seg-a-1',
+                'and-seg-a-2',
+                'or-seg-a-1',
+                'or-seg-a-2',
+                'or-seg-a-3',
+                'led-a',
+            ],
+            wires: ['w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10', 'w11', 'w12', 'w13', 'w14'],
+        },
+        {
+            id: 's4',
+            title: 'Segment B Logic',
+            description: "B' + C'D' + CD",
+            components: ['and-seg-b-1', 'and-seg-b-2', 'or-seg-b-1', 'or-seg-b-2', 'led-b'],
+            wires: ['w15', 'w16', 'w17', 'w18', 'w19', 'w20', 'w21', 'w22', 'w23'],
+        },
+        {
+            id: 's5',
+            title: 'Segment C Logic',
+            description: "B + C' + D",
+            components: ['or-seg-c-1', 'or-seg-c-2', 'led-c'],
+            wires: ['w24', 'w25', 'w26', 'w27', 'w28'],
+        },
+        {
+            id: 's6',
+            title: 'Segments D,E Logic',
+            description: "B'D' + CD'",
+            components: ['and-seg-e-1', 'and-seg-e-2', 'or-seg-e', 'led-d', 'led-e'],
+            wires: ['w29', 'w30', 'w31', 'w32', 'w33', 'w34', 'w35', 'w36'],
+        },
+        {
+            id: 's7',
+            title: 'Segment F Logic',
+            description: "C'D' + BC' + A",
+            components: ['and-seg-f-1', 'and-seg-f-2', 'or-seg-f-1', 'or-seg-f-2', 'led-f'],
+            wires: ['w37', 'w38', 'w39', 'w40', 'w41', 'w42', 'w43', 'w44', 'w45'],
+        },
+        {
+            id: 's8',
+            title: 'Segment G Logic',
+            description: "BC' + B'C",
+            components: ['and-seg-g-1', 'and-seg-g-2', 'or-seg-g', 'led-g'],
+            wires: ['w46', 'w47', 'w48', 'w49', 'w50', 'w51', 'w52'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 9. FULL ADDER FROM NAND GATES ONLY (Intermediate)
@@ -994,13 +1374,36 @@ This proves NAND is a universal gate - any circuit can be built from NANDs!
         createWire('w24', 'nand-cout', 'out', 'led-cout', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'A, B, and Carry-in', components: ['a', 'b', 'cin'], wires: [] },
-        { id: 's2', title: 'First XOR', description: 'A XOR B using 4 NANDs', components: ['nand-ab', 'nand-a-ab', 'nand-b-ab', 'nand-xor1'], wires: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8'] },
-        { id: 's3', title: 'Second XOR', description: '(A XOR B) XOR Cin for Sum', components: ['nand-xc', 'nand-x-xc', 'nand-c-xc', 'nand-sum', 'led-sum'], wires: ['w9', 'w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17'] },
-        { id: 's4', title: 'Carry Logic', description: 'Cout = NAND(NAND(A,B), NAND(XOR,Cin))', components: ['nand-ab-carry', 'nand-xc-carry', 'nand-cout', 'led-cout'], wires: ['w18', 'w19', 'w20', 'w21', 'w22', 'w23', 'w24'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'A, B, and Carry-in',
+            components: ['a', 'b', 'cin'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'First XOR',
+            description: 'A XOR B using 4 NANDs',
+            components: ['nand-ab', 'nand-a-ab', 'nand-b-ab', 'nand-xor1'],
+            wires: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8'],
+        },
+        {
+            id: 's3',
+            title: 'Second XOR',
+            description: '(A XOR B) XOR Cin for Sum',
+            components: ['nand-xc', 'nand-x-xc', 'nand-c-xc', 'nand-sum', 'led-sum'],
+            wires: ['w9', 'w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17'],
+        },
+        {
+            id: 's4',
+            title: 'Carry Logic',
+            description: 'Cout = NAND(NAND(A,B), NAND(XOR,Cin))',
+            components: ['nand-ab-carry', 'nand-xc-carry', 'nand-cout', 'led-cout'],
+            wires: ['w18', 'w19', 'w20', 'w21', 'w22', 'w23', 'w24'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 10. T FLIP-FLOP FROM NAND GATES (Intermediate)
@@ -1011,7 +1414,8 @@ export const tFlipFlopFromNandTemplate: Template = {
     category: 'sequential',
     description: 'Build a toggle flip-flop using only NAND gates',
     difficulty: 'intermediate',
-    overview: 'T flip-flop toggles output on each clock when T=1. Built from JK flip-flop with J=K=T.',
+    overview:
+        'T flip-flop toggles output on each clock when T=1. Built from JK flip-flop with J=K=T.',
     theory: `
 T Flip-Flop (Toggle):
 - T=0: Hold state
@@ -1073,15 +1477,50 @@ This is the basis of binary counters!
         createWire('w19', 'nand-s2', 'out', 'led-qn', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'Toggle (T) and Clock', components: ['t', 'clk'], wires: [] },
-        { id: 's2', title: 'J/K Gating', description: 'J=T·Q\', K=T·Q', components: ['nand-j', 'nand-k'], wires: ['w1', 'w3'] },
-        { id: 's3', title: 'Master Latch', description: 'First SR latch', components: ['nand-m1', 'nand-m2'], wires: ['w5', 'w6', 'w7', 'w8'] },
-        { id: 's4', title: 'Clock Logic', description: 'Invert clock for slave', components: ['not-clk', 'nand-clk1', 'nand-clk2'], wires: ['w9', 'w10', 'w11', 'w12', 'w13'] },
-        { id: 's5', title: 'Slave Latch', description: 'Second SR latch', components: ['nand-s1', 'nand-s2'], wires: ['w14', 'w15', 'w16', 'w17'] },
-        { id: 's6', title: 'Feedback & Output', description: 'Connect Q/Q\' back to J/K', components: ['led-q', 'led-qn'], wires: ['w2', 'w4', 'w18', 'w19'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'Toggle (T) and Clock',
+            components: ['t', 'clk'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'J/K Gating',
+            description: "J=T·Q', K=T·Q",
+            components: ['nand-j', 'nand-k'],
+            wires: ['w1', 'w3'],
+        },
+        {
+            id: 's3',
+            title: 'Master Latch',
+            description: 'First SR latch',
+            components: ['nand-m1', 'nand-m2'],
+            wires: ['w5', 'w6', 'w7', 'w8'],
+        },
+        {
+            id: 's4',
+            title: 'Clock Logic',
+            description: 'Invert clock for slave',
+            components: ['not-clk', 'nand-clk1', 'nand-clk2'],
+            wires: ['w9', 'w10', 'w11', 'w12', 'w13'],
+        },
+        {
+            id: 's5',
+            title: 'Slave Latch',
+            description: 'Second SR latch',
+            components: ['nand-s1', 'nand-s2'],
+            wires: ['w14', 'w15', 'w16', 'w17'],
+        },
+        {
+            id: 's6',
+            title: 'Feedback & Output',
+            description: "Connect Q/Q' back to J/K",
+            components: ['led-q', 'led-qn'],
+            wires: ['w2', 'w4', 'w18', 'w19'],
+        },
     ],
 };
-
 
 // ============================================================================
 // 11. 3-TO-8 DECODER FROM GATES (Advanced)
@@ -1092,7 +1531,8 @@ export const decoder3to8Template: Template = {
     category: 'digital-logic',
     description: 'Build a 3-to-8 line decoder using only AND and NOT gates',
     difficulty: 'advanced',
-    overview: 'Decode 3-bit input to activate one of 8 output lines. Used in memory address decoding.',
+    overview:
+        'Decode 3-bit input to activate one of 8 output lines. Used in memory address decoding.',
     theory: `
 3-to-8 Decoder:
 - 3 inputs (A2, A1, A0) select one of 8 outputs (Y0-Y7)
@@ -1204,13 +1644,104 @@ Used in: Memory chips, I/O selection, instruction decoding
         createWire('w43', 'and-y7-2', 'out', 'led-y7', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: '3-bit address A2,A1,A0', components: ['a0', 'a1', 'a2'], wires: [] },
-        { id: 's2', title: 'Add Inverters', description: 'Create A2\',A1\',A0\'', components: ['not-a0', 'not-a1', 'not-a2'], wires: ['w1', 'w2', 'w3'] },
-        { id: 's3', title: 'Decode 000-011', description: 'Y0-Y3 (A2\')', components: ['and-y0-1', 'and-y0-2', 'and-y1-1', 'and-y1-2', 'and-y2-1', 'and-y2-2', 'and-y3-1', 'and-y3-2', 'led-y0', 'led-y1', 'led-y2', 'led-y3'], wires: ['w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17', 'w18', 'w19', 'w20', 'w21', 'w22', 'w23'] },
-        { id: 's4', title: 'Decode 100-111', description: 'Y4-Y7 (A2)', components: ['and-y4-1', 'and-y4-2', 'and-y5-1', 'and-y5-2', 'and-y6-1', 'and-y6-2', 'and-y7-1', 'and-y7-2', 'led-y4', 'led-y5', 'led-y6', 'led-y7'], wires: ['w24', 'w25', 'w26', 'w27', 'w28', 'w29', 'w30', 'w31', 'w32', 'w33', 'w34', 'w35', 'w36', 'w37', 'w38', 'w39', 'w40', 'w41', 'w42', 'w43'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: '3-bit address A2,A1,A0',
+            components: ['a0', 'a1', 'a2'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Add Inverters',
+            description: "Create A2',A1',A0'",
+            components: ['not-a0', 'not-a1', 'not-a2'],
+            wires: ['w1', 'w2', 'w3'],
+        },
+        {
+            id: 's3',
+            title: 'Decode 000-011',
+            description: "Y0-Y3 (A2')",
+            components: [
+                'and-y0-1',
+                'and-y0-2',
+                'and-y1-1',
+                'and-y1-2',
+                'and-y2-1',
+                'and-y2-2',
+                'and-y3-1',
+                'and-y3-2',
+                'led-y0',
+                'led-y1',
+                'led-y2',
+                'led-y3',
+            ],
+            wires: [
+                'w4',
+                'w5',
+                'w6',
+                'w7',
+                'w8',
+                'w9',
+                'w10',
+                'w11',
+                'w12',
+                'w13',
+                'w14',
+                'w15',
+                'w16',
+                'w17',
+                'w18',
+                'w19',
+                'w20',
+                'w21',
+                'w22',
+                'w23',
+            ],
+        },
+        {
+            id: 's4',
+            title: 'Decode 100-111',
+            description: 'Y4-Y7 (A2)',
+            components: [
+                'and-y4-1',
+                'and-y4-2',
+                'and-y5-1',
+                'and-y5-2',
+                'and-y6-1',
+                'and-y6-2',
+                'and-y7-1',
+                'and-y7-2',
+                'led-y4',
+                'led-y5',
+                'led-y6',
+                'led-y7',
+            ],
+            wires: [
+                'w24',
+                'w25',
+                'w26',
+                'w27',
+                'w28',
+                'w29',
+                'w30',
+                'w31',
+                'w32',
+                'w33',
+                'w34',
+                'w35',
+                'w36',
+                'w37',
+                'w38',
+                'w39',
+                'w40',
+                'w41',
+                'w42',
+                'w43',
+            ],
+        },
     ],
 };
-
 
 // ============================================================================
 // 12. PRIORITY ENCODER FROM GATES (Advanced)
@@ -1285,14 +1816,43 @@ Priority: D3 > D2 > D1 > D0
         createWire('w17', 'or-v3', 'out', 'led-v', 'in'),
     ],
     steps: [
-        { id: 's1', title: 'Add Inputs', description: 'D3 (highest) to D0 (lowest)', components: ['d0', 'd1', 'd2', 'd3'], wires: [] },
-        { id: 's2', title: 'Add Inverters', description: 'For priority masking', components: ['not-d2', 'not-d3'], wires: ['w1', 'w2'] },
-        { id: 's3', title: 'Y1 Output', description: 'D3 + D2', components: ['or-y1', 'led-y1'], wires: ['w3', 'w4', 'w5'] },
-        { id: 's4', title: 'Y0 Output', description: 'D3 + D2\'·D1', components: ['and-y0-1', 'or-y0', 'led-y0'], wires: ['w6', 'w7', 'w8', 'w9', 'w10'] },
-        { id: 's5', title: 'Valid Output', description: 'Any input active', components: ['or-v1', 'or-v2', 'or-v3', 'led-v'], wires: ['w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17'] },
+        {
+            id: 's1',
+            title: 'Add Inputs',
+            description: 'D3 (highest) to D0 (lowest)',
+            components: ['d0', 'd1', 'd2', 'd3'],
+            wires: [],
+        },
+        {
+            id: 's2',
+            title: 'Add Inverters',
+            description: 'For priority masking',
+            components: ['not-d2', 'not-d3'],
+            wires: ['w1', 'w2'],
+        },
+        {
+            id: 's3',
+            title: 'Y1 Output',
+            description: 'D3 + D2',
+            components: ['or-y1', 'led-y1'],
+            wires: ['w3', 'w4', 'w5'],
+        },
+        {
+            id: 's4',
+            title: 'Y0 Output',
+            description: "D3 + D2'·D1",
+            components: ['and-y0-1', 'or-y0', 'led-y0'],
+            wires: ['w6', 'w7', 'w8', 'w9', 'w10'],
+        },
+        {
+            id: 's5',
+            title: 'Valid Output',
+            description: 'Any input active',
+            components: ['or-v1', 'or-v2', 'or-v3', 'led-v'],
+            wires: ['w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17'],
+        },
     ],
 };
-
 
 // ============================================================================
 // EXPORT ALL TEMPLATES AS ARRAY

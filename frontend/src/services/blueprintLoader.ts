@@ -42,12 +42,14 @@ export function loadCircuitFromBlueprint(blueprint: CircuitBlueprint): LoadedCir
             position: blueprintComp.position,
             rotation: 0,
             properties: blueprintComp.properties || {},
-            pins: def.pins.map((pin, index): Pin => ({
-                id: `${componentId}-pin-${index}`,
-                name: pin.name,
-                type: pin.type,
-                position: pin.position,
-            })),
+            pins: def.pins.map(
+                (pin, index): Pin => ({
+                    id: `${componentId}-pin-${index}`,
+                    name: pin.name,
+                    type: pin.type,
+                    position: pin.position,
+                })
+            ),
         };
 
         components.push(component);
@@ -63,7 +65,9 @@ export function loadCircuitFromBlueprint(blueprint: CircuitBlueprint): LoadedCir
         const toParts = blueprintWire.to.split(':');
 
         if (fromParts.length !== 2 || toParts.length !== 2) {
-            errors.push(`Invalid wire format: ${blueprintWire.from} -> ${blueprintWire.to}. Expected "LABEL:PIN" format.`);
+            errors.push(
+                `Invalid wire format: ${blueprintWire.from} -> ${blueprintWire.to}. Expected "LABEL:PIN" format.`
+            );
             continue;
         }
 
@@ -86,35 +90,33 @@ export function loadCircuitFromBlueprint(blueprint: CircuitBlueprint): LoadedCir
         // Find pins by name - try exact match first, then common variations
         const findPin = (component: CircuitComponent, pinName: string) => {
             // Exact match (case insensitive)
-            let pin = component.pins.find(p =>
-                p.name.toUpperCase() === pinName?.toUpperCase()
-            );
+            let pin = component.pins.find((p) => p.name.toUpperCase() === pinName?.toUpperCase());
             if (pin) return pin;
 
             // Common pin name mappings
             const pinMappings: Record<string, string[]> = {
                 // DIP_SWITCH outputs
-                'OUT0': ['Q0'],
-                'OUT1': ['Q1'],
-                'OUT2': ['Q2'],
-                'OUT3': ['Q3'],
+                OUT0: ['Q0'],
+                OUT1: ['Q1'],
+                OUT2: ['Q2'],
+                OUT3: ['Q3'],
                 // Power pins
-                'VCC': ['OUT', 'VCC'],
-                'GND': ['OUT', 'GND', 'IN'],
+                VCC: ['OUT', 'VCC'],
+                GND: ['OUT', 'GND', 'IN'],
                 // Resistor/passive pins
-                'A': ['IN', 'A'],
-                'B': ['IN', 'B'],
-                'K': ['OUT', 'K'],
+                A: ['IN', 'A'],
+                B: ['IN', 'B'],
+                K: ['OUT', 'K'],
                 // Generic mappings
-                'OUTPUT': ['OUT', 'Y'],
-                'INPUT': ['IN', 'A'],
+                OUTPUT: ['OUT', 'Y'],
+                INPUT: ['IN', 'A'],
             };
 
             const variations = pinMappings[pinName?.toUpperCase() || ''];
             if (variations) {
                 for (const variation of variations) {
-                    pin = component.pins.find(p =>
-                        p.name.toUpperCase() === variation.toUpperCase()
+                    pin = component.pins.find(
+                        (p) => p.name.toUpperCase() === variation.toUpperCase()
                     );
                     if (pin) return pin;
                 }
@@ -127,12 +129,16 @@ export function loadCircuitFromBlueprint(blueprint: CircuitBlueprint): LoadedCir
         const toPin = findPin(toComponent, toPinName!);
 
         if (!fromPin) {
-            warnings.push(`Skipped wire: Pin "${fromPinName}" not found on "${fromLabel}" (${fromComponent.type})`);
+            warnings.push(
+                `Skipped wire: Pin "${fromPinName}" not found on "${fromLabel}" (${fromComponent.type})`
+            );
             continue;
         }
 
         if (!toPin) {
-            warnings.push(`Skipped wire: Pin "${toPinName}" not found on "${toLabel}" (${toComponent.type})`);
+            warnings.push(
+                `Skipped wire: Pin "${toPinName}" not found on "${toLabel}" (${toComponent.type})`
+            );
             continue;
         }
 
@@ -176,7 +182,11 @@ export function validateBlueprint(blueprint: CircuitBlueprint): string[] {
         if (!comp.label) {
             errors.push('Component missing label');
         }
-        if (!comp.position || typeof comp.position.x !== 'number' || typeof comp.position.y !== 'number') {
+        if (
+            !comp.position ||
+            typeof comp.position.x !== 'number' ||
+            typeof comp.position.y !== 'number'
+        ) {
             errors.push(`Component "${comp.label}" has invalid position`);
         }
         if (labels.has(comp.label)) {

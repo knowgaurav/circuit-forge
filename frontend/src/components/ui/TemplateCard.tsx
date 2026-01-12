@@ -17,33 +17,40 @@ const difficultyColors = {
     advanced: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
 };
 
-export function TemplateCard({ id, name, difficulty, category, description, href }: TemplateCardProps) {
+export function TemplateCard({
+    id,
+    name,
+    difficulty,
+    category,
+    description,
+    href,
+}: TemplateCardProps) {
     const cardContent = (
         <div
-            className="glass-card p-5 h-full transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
+            className="glass-card group h-full cursor-pointer p-5 transition-all duration-300 hover:scale-[1.02]"
             data-testid={`template-card-${id}`}
         >
-            <div className="flex items-center gap-2 mb-3">
+            <div className="mb-3 flex items-center gap-2">
                 <span
-                    className={`text-xs px-2.5 py-1 rounded-full border font-medium ${difficultyColors[difficulty]}`}
+                    className={`rounded-full border px-2.5 py-1 text-xs font-medium ${difficultyColors[difficulty]}`}
                     data-testid="template-difficulty"
                 >
                     {difficulty}
                 </span>
                 <span
-                    className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium"
+                    className="bg-primary/10 border-primary/20 rounded-full border px-2.5 py-1 text-xs font-medium text-primary"
                     data-testid="template-category"
                 >
                     {category}
                 </span>
             </div>
             <h3
-                className="font-bold text-lg text-foreground group-hover:text-primary transition-colors mb-2"
+                className="mb-2 text-lg font-bold text-foreground transition-colors group-hover:text-primary"
                 data-testid="template-name"
             >
                 {name}
             </h3>
-            <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
+            <p className="line-clamp-2 text-sm leading-relaxed text-text-secondary">
                 {description}
             </p>
         </div>
