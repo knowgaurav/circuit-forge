@@ -32,16 +32,19 @@ describe('LLM Providers Configuration', () => {
      * **Property 1: Provider Selection Displays Correct Models with Default**
      * For any provider ID, selecting that provider SHALL display a non-empty
      * list of models where exactly one model is marked as default.
+     * Note: Local provider is excluded as it has no predefined models (users configure their own).
      */
     describe('Property 1: Provider Selection Displays Correct Models with Default', () => {
-        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
+        const providersWithModels = LLM_PROVIDERS.filter((p) => p.id !== 'local');
+
+        it.each(providersWithModels.map((p) => [p.id, p]))(
             'provider %s should have at least one model',
             (_, provider) => {
                 expect(provider.models.length).toBeGreaterThan(0);
             }
         );
 
-        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
+        it.each(providersWithModels.map((p) => [p.id, p]))(
             'provider %s should have exactly one default model or first model as fallback',
             (providerId, provider) => {
                 const defaultModels = provider.models.filter((m) => m.isDefault);
@@ -55,7 +58,7 @@ describe('LLM Providers Configuration', () => {
             }
         );
 
-        it.each(LLM_PROVIDERS.map((p) => [p.id, p]))(
+        it.each(providersWithModels.map((p) => [p.id, p]))(
             'provider %s models should have required fields',
             (_, provider) => {
                 for (const model of provider.models) {
@@ -75,9 +78,8 @@ describe('LLM Providers Configuration', () => {
             'anthropic',
             'google',
             'ohmygpt',
-            'megallm',
-            'agentrouter',
             'openrouter',
+            'local',
         ];
 
         it.each(requiredProviders)('should include %s provider', (providerId) => {

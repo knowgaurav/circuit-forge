@@ -8,6 +8,7 @@ from app.models.circuit import CircuitComponent, CircuitState, ComponentType, Wi
 
 class SignalState(str, Enum):
     """Signal state on a wire."""
+
     HIGH = "HIGH"
     LOW = "LOW"
     UNDEFINED = "UNDEFINED"
@@ -17,6 +18,7 @@ class SignalState(str, Enum):
 @dataclass
 class SimulationError:
     """Represents a simulation error."""
+
     error_type: str
     message: str
     component_id: str | None = None
@@ -26,6 +28,7 @@ class SimulationError:
 @dataclass
 class SimulationResult:
     """Result of circuit simulation."""
+
     success: bool
     wire_states: dict[str, SignalState] = field(default_factory=dict)
     pin_states: dict[str, dict[str, SignalState]] = field(default_factory=dict)
@@ -40,14 +43,22 @@ class LogicGate:
         """AND gate: Output HIGH only when all inputs are HIGH."""
         if SignalState.UNDEFINED in inputs or SignalState.ERROR in inputs:
             return SignalState.UNDEFINED
-        return SignalState.HIGH if all(s == SignalState.HIGH for s in inputs) else SignalState.LOW
+        return (
+            SignalState.HIGH
+            if all(s == SignalState.HIGH for s in inputs)
+            else SignalState.LOW
+        )
 
     @staticmethod
     def evaluate_or(inputs: list[SignalState]) -> SignalState:
         """OR gate: Output HIGH when any input is HIGH."""
         if SignalState.UNDEFINED in inputs or SignalState.ERROR in inputs:
             return SignalState.UNDEFINED
-        return SignalState.HIGH if any(s == SignalState.HIGH for s in inputs) else SignalState.LOW
+        return (
+            SignalState.HIGH
+            if any(s == SignalState.HIGH for s in inputs)
+            else SignalState.LOW
+        )
 
     @staticmethod
     def evaluate_not(input_signal: SignalState) -> SignalState:
@@ -96,43 +107,62 @@ class SimulationService:
 
     # Component types that are logic gates
     LOGIC_GATES = {
-        ComponentType.AND_2, ComponentType.AND_3, ComponentType.AND_4,
-        ComponentType.OR_2, ComponentType.OR_3, ComponentType.OR_4,
-        ComponentType.NOT, ComponentType.BUFFER,
-        ComponentType.NAND_2, ComponentType.NAND_3,
-        ComponentType.NOR_2, ComponentType.NOR_3,
-        ComponentType.XOR_2, ComponentType.XNOR_2,
+        ComponentType.AND_2,
+        ComponentType.AND_3,
+        ComponentType.AND_4,
+        ComponentType.OR_2,
+        ComponentType.OR_3,
+        ComponentType.OR_4,
+        ComponentType.NOT,
+        ComponentType.BUFFER,
+        ComponentType.NAND_2,
+        ComponentType.NAND_3,
+        ComponentType.NOR_2,
+        ComponentType.NOR_3,
+        ComponentType.XOR_2,
+        ComponentType.XNOR_2,
     }
 
     # Input devices that produce signals
     INPUT_DEVICES = {
-        ComponentType.SWITCH_TOGGLE, ComponentType.SWITCH_PUSH,
-        ComponentType.CONST_HIGH, ComponentType.CONST_LOW,
-        ComponentType.CLOCK, ComponentType.DIP_SWITCH_4,
+        ComponentType.SWITCH_TOGGLE,
+        ComponentType.SWITCH_PUSH,
+        ComponentType.CONST_HIGH,
+        ComponentType.CONST_LOW,
+        ComponentType.CLOCK,
+        ComponentType.DIP_SWITCH_4,
         ComponentType.NUMERIC_INPUT,
     }
 
     # Output devices that consume signals
     OUTPUT_DEVICES = {
-        ComponentType.LED_RED, ComponentType.LED_GREEN,
-        ComponentType.LED_YELLOW, ComponentType.LED_BLUE,
-        ComponentType.LED_RGB, ComponentType.DISPLAY_7SEG,
-        ComponentType.BUZZER, ComponentType.MOTOR_DC,
+        ComponentType.LED_RED,
+        ComponentType.LED_GREEN,
+        ComponentType.LED_YELLOW,
+        ComponentType.LED_BLUE,
+        ComponentType.LED_RGB,
+        ComponentType.DISPLAY_7SEG,
+        ComponentType.BUZZER,
+        ComponentType.MOTOR_DC,
     }
 
     def __init__(self):
         self._component_map: dict[str, CircuitComponent] = {}
         self._wire_map: dict[str, Wire] = {}
-        self._adjacency: dict[str, list[str]] = {}  # component_id -> connected component_ids
-        self._pin_connections: dict[tuple[str, str], list[tuple[str, str]]] = {}  # (comp_id, pin_id) -> [(comp_id, pin_id)]
+        self._adjacency: dict[
+            str, list[str]
+        ] = {}  # component_id -> connected component_ids
+        self._pin_connections: dict[
+            tuple[str, str], list[tuple[str, str]]
+        ] = {}  # (comp_id, pin_id) -> [(comp_id, pin_id)]
 
     def simulate(self, circuit: CircuitState) -> SimulationResult:
         """
         Simulate the circuit and compute signal states.
-        
+
         Args:
             circuit: The circuit state to simulate
-            
+
         Returns:
             SimulationResult with wire states and any errors
         """
@@ -145,19 +175,13 @@ class SimulationService:
         # Check for floating inputs and output conflicts
         validation_errors = self._validate_circuit(circuit)
         if validation_errors:
-            return SimulationResult(
-                success=False,
-                errors=validation_errors
-            )
+            return SimulationResult(success=False, errors=validation_errors)
 
         # Get topological order for evaluation
         try:
             eval_order = self._topological_sort(circuit)
         except ValueError as e:
-            errors.append(SimulationError(
-                error_type="CYCLE_DETECTED",
-                message=str(e)
-            ))
+            errors.append(SimulationError(error_type="CYCLE_DETECTED", message=str(e)))
             return SimulationResult(success=False, errors=errors)
 
         # Initialize input device states
@@ -179,14 +203,13 @@ class SimulationService:
 
         # Compute wire states from pin states
         for wire in circuit.wires:
-            from_state = pin_states.get(wire.from_component_id, {}).get(wire.from_pin_id, SignalState.UNDEFINED)
+            from_state = pin_states.get(wire.from_component_id, {}).get(
+                wire.from_pin_id, SignalState.UNDEFINED
+            )
             wire_states[wire.id] = from_state
 
         return SimulationResult(
-            success=True,
-            wire_states=wire_states,
-            pin_states=pin_states,
-            errors=errors
+            success=True, wire_states=wire_states, pin_states=pin_states, errors=errors
         )
 
     def _build_graph(self, circuit: CircuitState) -> None:
@@ -216,7 +239,9 @@ class SimulationService:
 
         # Check for floating inputs (input pins with no connection)
         connected_inputs: set[tuple[str, str]] = set()
-        output_drivers: dict[tuple[str, str], list[str]] = {}  # input pin -> list of driving outputs
+        output_drivers: dict[
+            tuple[str, str], list[str]
+        ] = {}  # input pin -> list of driving outputs
 
         for wire in circuit.wires:
             to_key = (wire.to_component_id, wire.to_pin_id)
@@ -236,12 +261,14 @@ class SimulationService:
                 if pin.type.value == "input":
                     pin_key = (comp.id, pin.id)
                     if pin_key not in connected_inputs:
-                        errors.append(SimulationError(
-                            error_type="FLOATING_INPUT",
-                            message=f"Floating Input: Input pin '{pin.name}' has no connection",
-                            component_id=comp.id,
-                            pin_id=pin.id
-                        ))
+                        errors.append(
+                            SimulationError(
+                                error_type="FLOATING_INPUT",
+                                message=f"Floating Input: Input pin '{pin.name}' has no connection",
+                                component_id=comp.id,
+                                pin_id=pin.id,
+                            )
+                        )
 
         # Check for output conflicts (multiple outputs driving same input pin)
         for pin_key, drivers in output_drivers.items():
@@ -250,26 +277,28 @@ class SimulationService:
             if len(unique_drivers) > 1:
                 comp_id, pin_id = pin_key
                 comp = self._component_map.get(comp_id)
-                comp_label = comp.label if comp and comp.label else comp_id
+                comp_label = comp_id  # Use component ID as label
                 pin_name = pin_id
                 if comp:
                     for pin in comp.pins:
                         if pin.id == pin_id:
                             pin_name = pin.name
                             break
-                errors.append(SimulationError(
-                    error_type="OUTPUT_CONFLICT",
-                    message=f"Output Conflict: {comp_label} pin '{pin_name}' has multiple drivers",
-                    component_id=comp_id,
-                    pin_id=pin_id
-                ))
+                errors.append(
+                    SimulationError(
+                        error_type="OUTPUT_CONFLICT",
+                        message=f"Output Conflict: {comp_label} pin '{pin_name}' has multiple drivers",
+                        component_id=comp_id,
+                        pin_id=pin_id,
+                    )
+                )
 
         return errors
 
     def _topological_sort(self, circuit: CircuitState) -> list[str]:
         """
         Perform topological sort on circuit components.
-        
+
         Returns components in order they should be evaluated.
         Raises ValueError if cycle detected.
         """
@@ -301,9 +330,7 @@ class SimulationService:
         return result
 
     def _initialize_input_device(
-        self,
-        comp: CircuitComponent,
-        pin_states: dict[str, dict[str, SignalState]]
+        self, comp: CircuitComponent, pin_states: dict[str, dict[str, SignalState]]
     ) -> None:
         """Initialize output states for input devices."""
         if comp.type == ComponentType.CONST_HIGH:
@@ -321,21 +348,27 @@ class SimulationService:
             is_on = comp.properties.get("state", False)
             for pin in comp.pins:
                 if pin.type.value == "output":
-                    pin_states[comp.id][pin.id] = SignalState.HIGH if is_on else SignalState.LOW
+                    pin_states[comp.id][pin.id] = (
+                        SignalState.HIGH if is_on else SignalState.LOW
+                    )
 
         elif comp.type == ComponentType.SWITCH_PUSH:
             # Push buttons are normally LOW
             is_pressed = comp.properties.get("pressed", False)
             for pin in comp.pins:
                 if pin.type.value == "output":
-                    pin_states[comp.id][pin.id] = SignalState.HIGH if is_pressed else SignalState.LOW
+                    pin_states[comp.id][pin.id] = (
+                        SignalState.HIGH if is_pressed else SignalState.LOW
+                    )
 
         elif comp.type == ComponentType.CLOCK:
             # Clock state alternates, use current phase from properties
             phase = comp.properties.get("phase", 0)
             for pin in comp.pins:
                 if pin.type.value == "output":
-                    pin_states[comp.id][pin.id] = SignalState.HIGH if phase % 2 == 0 else SignalState.LOW
+                    pin_states[comp.id][pin.id] = (
+                        SignalState.HIGH if phase % 2 == 0 else SignalState.LOW
+                    )
 
         else:
             # Default: all outputs LOW
@@ -344,9 +377,7 @@ class SimulationService:
                     pin_states[comp.id][pin.id] = SignalState.LOW
 
     def _get_input_signals(
-        self,
-        comp: CircuitComponent,
-        pin_states: dict[str, dict[str, SignalState]]
+        self, comp: CircuitComponent, pin_states: dict[str, dict[str, SignalState]]
     ) -> list[SignalState]:
         """Get input signal states for a component."""
         inputs: list[SignalState] = []
@@ -358,16 +389,16 @@ class SimulationService:
                 for (from_comp, from_pin), connections in self._pin_connections.items():
                     for to_comp, to_pin in connections:
                         if to_comp == comp.id and to_pin == pin.id:
-                            signal = pin_states.get(from_comp, {}).get(from_pin, SignalState.UNDEFINED)
+                            signal = pin_states.get(from_comp, {}).get(
+                                from_pin, SignalState.UNDEFINED
+                            )
                             break
                 inputs.append(signal)
 
         return inputs
 
     def _evaluate_gate(
-        self,
-        comp: CircuitComponent,
-        pin_states: dict[str, dict[str, SignalState]]
+        self, comp: CircuitComponent, pin_states: dict[str, dict[str, SignalState]]
     ) -> None:
         """Evaluate a logic gate and set its output state."""
         inputs = self._get_input_signals(comp, pin_states)
@@ -380,10 +411,14 @@ class SimulationService:
             output = LogicGate.evaluate_or(inputs)
 
         elif comp.type == ComponentType.NOT:
-            output = LogicGate.evaluate_not(inputs[0] if inputs else SignalState.UNDEFINED)
+            output = LogicGate.evaluate_not(
+                inputs[0] if inputs else SignalState.UNDEFINED
+            )
 
         elif comp.type == ComponentType.BUFFER:
-            output = LogicGate.evaluate_buffer(inputs[0] if inputs else SignalState.UNDEFINED)
+            output = LogicGate.evaluate_buffer(
+                inputs[0] if inputs else SignalState.UNDEFINED
+            )
 
         elif comp.type in {ComponentType.NAND_2, ComponentType.NAND_3}:
             output = LogicGate.evaluate_nand(inputs)
@@ -403,9 +438,7 @@ class SimulationService:
                 pin_states[comp.id][pin.id] = output
 
     def _evaluate_output_device(
-        self,
-        comp: CircuitComponent,
-        pin_states: dict[str, dict[str, SignalState]]
+        self, comp: CircuitComponent, pin_states: dict[str, dict[str, SignalState]]
     ) -> None:
         """Evaluate an output device (LED, etc.) - just propagate input to state."""
         inputs = self._get_input_signals(comp, pin_states)
