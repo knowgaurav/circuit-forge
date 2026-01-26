@@ -90,8 +90,6 @@ llm_request_strategy = st.builds(
 OPENAI_COMPATIBLE_PROVIDERS = [
     ("openai", "https://api.openai.com/v1/chat/completions", "sk-"),
     ("ohmygpt", "https://api.ohmygpt.com/v1/chat/completions", ""),
-    ("megallm", "https://api.megallm.com/v1/chat/completions", ""),
-    ("agentrouter", "https://api.agentrouter.ai/v1/chat/completions", ""),
     ("openrouter", "https://openrouter.ai/api/v1/chat/completions", "sk-or-"),
 ]
 
@@ -351,7 +349,7 @@ def test_provider_factory_returns_correct_strategies() -> None:
     from app.services.llm_provider_factory import LLMProviderFactory
     
     # OpenAI-compatible providers should return OpenAICompatibleStrategy
-    for provider_id in ["openai", "ohmygpt", "megallm", "agentrouter", "openrouter"]:
+    for provider_id in ["openai", "ohmygpt", "openrouter"]:
         strategy = LLMProviderFactory.get_provider(provider_id)
         assert isinstance(strategy, OpenAICompatibleStrategy)
         assert strategy.provider_id == provider_id
@@ -387,7 +385,7 @@ def test_all_providers_are_supported() -> None:
     """
     from app.services.llm_provider_factory import LLMProviderFactory
     
-    required_providers = ["openai", "anthropic", "google", "ohmygpt", "megallm", "agentrouter", "openrouter"]
+    required_providers = ["openai", "anthropic", "google", "ohmygpt", "openrouter", "local"]
     supported = LLMProviderFactory.get_supported_providers()
     
     for provider in required_providers:

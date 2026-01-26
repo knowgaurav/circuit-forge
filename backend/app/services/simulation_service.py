@@ -250,7 +250,7 @@ class SimulationService:
             if len(unique_drivers) > 1:
                 comp_id, pin_id = pin_key
                 comp = self._component_map.get(comp_id)
-                comp_label = comp.label if comp and comp.label else comp_id
+                comp_label = comp_id  # Use component ID as label
                 pin_name = pin_id
                 if comp:
                     for pin in comp.pins:
