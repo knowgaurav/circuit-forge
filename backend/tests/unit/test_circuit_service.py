@@ -65,7 +65,9 @@ class TestAddComponent:
             }
         ]
 
-        event, state = await circuit_service.add_component(session_code, user_id, component)
+        event, state = await circuit_service.add_component(
+            session_code, user_id, component
+        )
 
         # Verify event was created
         assert isinstance(event, ComponentAddedEvent)
@@ -136,14 +138,30 @@ class TestDeleteComponent:
             else:
                 # Subsequent calls: return deletion events
                 return [
-                    {"type": CircuitEventType.WIRE_DELETED, "version": 4, "payload": {"wireId": "wire-1"}},
-                    {"type": CircuitEventType.WIRE_DELETED, "version": 5, "payload": {"wireId": "wire-2"}},
-                    {"type": CircuitEventType.COMPONENT_DELETED, "version": 6, "payload": {"componentId": "and-1"}},
+                    {
+                        "type": CircuitEventType.WIRE_DELETED,
+                        "version": 4,
+                        "payload": {"wireId": "wire-1"},
+                    },
+                    {
+                        "type": CircuitEventType.WIRE_DELETED,
+                        "version": 5,
+                        "payload": {"wireId": "wire-2"},
+                    },
+                    {
+                        "type": CircuitEventType.COMPONENT_DELETED,
+                        "version": 6,
+                        "payload": {"componentId": "and-1"},
+                    },
                 ]
 
-        circuit_service._event_repo.get_events_since_version.side_effect = get_events_since_version_side_effect
+        circuit_service._event_repo.get_events_since_version.side_effect = (
+            get_events_since_version_side_effect
+        )
 
-        events, state = await circuit_service.delete_component(session_code, user_id, "and-1")
+        events, state = await circuit_service.delete_component(
+            session_code, user_id, "and-1"
+        )
 
         # Should have 3 events: 2 wire deletions + 1 component deletion
         assert len(events) == 3

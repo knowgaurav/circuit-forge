@@ -172,70 +172,118 @@ class TestNandNorXorXnorGates:
     # NAND gate tests
     def test_nand_gate_0_0(self):
         """NAND gate: NOT(0 AND 0) = 1"""
-        assert self._compute_gate_output(ComponentType.NAND_2, Signal.LOW, Signal.LOW) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.NAND_2, Signal.LOW, Signal.LOW)
+            == Signal.HIGH
+        )
 
     def test_nand_gate_0_1(self):
         """NAND gate: NOT(0 AND 1) = 1"""
-        assert self._compute_gate_output(ComponentType.NAND_2, Signal.LOW, Signal.HIGH) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.NAND_2, Signal.LOW, Signal.HIGH)
+            == Signal.HIGH
+        )
 
     def test_nand_gate_1_0(self):
         """NAND gate: NOT(1 AND 0) = 1"""
-        assert self._compute_gate_output(ComponentType.NAND_2, Signal.HIGH, Signal.LOW) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.NAND_2, Signal.HIGH, Signal.LOW)
+            == Signal.HIGH
+        )
 
     def test_nand_gate_1_1(self):
         """NAND gate: NOT(1 AND 1) = 0"""
-        assert self._compute_gate_output(ComponentType.NAND_2, Signal.HIGH, Signal.HIGH) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.NAND_2, Signal.HIGH, Signal.HIGH)
+            == Signal.LOW
+        )
 
     # NOR gate tests
     def test_nor_gate_0_0(self):
         """NOR gate: NOT(0 OR 0) = 1"""
-        assert self._compute_gate_output(ComponentType.NOR_2, Signal.LOW, Signal.LOW) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.NOR_2, Signal.LOW, Signal.LOW)
+            == Signal.HIGH
+        )
 
     def test_nor_gate_0_1(self):
         """NOR gate: NOT(0 OR 1) = 0"""
-        assert self._compute_gate_output(ComponentType.NOR_2, Signal.LOW, Signal.HIGH) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.NOR_2, Signal.LOW, Signal.HIGH)
+            == Signal.LOW
+        )
 
     def test_nor_gate_1_0(self):
         """NOR gate: NOT(1 OR 0) = 0"""
-        assert self._compute_gate_output(ComponentType.NOR_2, Signal.HIGH, Signal.LOW) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.NOR_2, Signal.HIGH, Signal.LOW)
+            == Signal.LOW
+        )
 
     def test_nor_gate_1_1(self):
         """NOR gate: NOT(1 OR 1) = 0"""
-        assert self._compute_gate_output(ComponentType.NOR_2, Signal.HIGH, Signal.HIGH) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.NOR_2, Signal.HIGH, Signal.HIGH)
+            == Signal.LOW
+        )
 
     # XOR gate tests
     def test_xor_gate_0_0(self):
         """XOR gate: 0 XOR 0 = 0"""
-        assert self._compute_gate_output(ComponentType.XOR_2, Signal.LOW, Signal.LOW) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.XOR_2, Signal.LOW, Signal.LOW)
+            == Signal.LOW
+        )
 
     def test_xor_gate_0_1(self):
         """XOR gate: 0 XOR 1 = 1"""
-        assert self._compute_gate_output(ComponentType.XOR_2, Signal.LOW, Signal.HIGH) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.XOR_2, Signal.LOW, Signal.HIGH)
+            == Signal.HIGH
+        )
 
     def test_xor_gate_1_0(self):
         """XOR gate: 1 XOR 0 = 1"""
-        assert self._compute_gate_output(ComponentType.XOR_2, Signal.HIGH, Signal.LOW) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.XOR_2, Signal.HIGH, Signal.LOW)
+            == Signal.HIGH
+        )
 
     def test_xor_gate_1_1(self):
         """XOR gate: 1 XOR 1 = 0"""
-        assert self._compute_gate_output(ComponentType.XOR_2, Signal.HIGH, Signal.HIGH) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.XOR_2, Signal.HIGH, Signal.HIGH)
+            == Signal.LOW
+        )
 
     # XNOR gate tests
     def test_xnor_gate_0_0(self):
         """XNOR gate: NOT(0 XOR 0) = 1"""
-        assert self._compute_gate_output(ComponentType.XNOR_2, Signal.LOW, Signal.LOW) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.XNOR_2, Signal.LOW, Signal.LOW)
+            == Signal.HIGH
+        )
 
     def test_xnor_gate_0_1(self):
         """XNOR gate: NOT(0 XOR 1) = 0"""
-        assert self._compute_gate_output(ComponentType.XNOR_2, Signal.LOW, Signal.HIGH) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.XNOR_2, Signal.LOW, Signal.HIGH)
+            == Signal.LOW
+        )
 
     def test_xnor_gate_1_0(self):
         """XNOR gate: NOT(1 XOR 0) = 0"""
-        assert self._compute_gate_output(ComponentType.XNOR_2, Signal.HIGH, Signal.LOW) == Signal.LOW
+        assert (
+            self._compute_gate_output(ComponentType.XNOR_2, Signal.HIGH, Signal.LOW)
+            == Signal.LOW
+        )
 
     def test_xnor_gate_1_1(self):
         """XNOR gate: NOT(1 XOR 1) = 1"""
-        assert self._compute_gate_output(ComponentType.XNOR_2, Signal.HIGH, Signal.HIGH) == Signal.HIGH
+        assert (
+            self._compute_gate_output(ComponentType.XNOR_2, Signal.HIGH, Signal.HIGH)
+            == Signal.HIGH
+        )
 
 
 class TestDFlipFlop:
@@ -470,9 +518,9 @@ class TestCounter4Bit:
         engine.tick_clock("clk-1")
         engine.run()
         assert engine.pin_values.get("cnt-1:Q0") == Signal.HIGH  # bit 0 = 1
-        assert engine.pin_values.get("cnt-1:Q1") == Signal.LOW   # bit 1 = 0
-        assert engine.pin_values.get("cnt-1:Q2") == Signal.LOW   # bit 2 = 0
-        assert engine.pin_values.get("cnt-1:Q3") == Signal.LOW   # bit 3 = 0
+        assert engine.pin_values.get("cnt-1:Q1") == Signal.LOW  # bit 1 = 0
+        assert engine.pin_values.get("cnt-1:Q2") == Signal.LOW  # bit 2 = 0
+        assert engine.pin_values.get("cnt-1:Q3") == Signal.LOW  # bit 3 = 0
 
         # Tick again: HIGH -> LOW (falling edge, no change)
         engine.tick_clock("clk-1")
@@ -483,10 +531,10 @@ class TestCounter4Bit:
         # Tick again: LOW -> HIGH (rising edge) -> count = 2
         engine.tick_clock("clk-1")
         engine.run()
-        assert engine.pin_values.get("cnt-1:Q0") == Signal.LOW   # bit 0 = 0
+        assert engine.pin_values.get("cnt-1:Q0") == Signal.LOW  # bit 0 = 0
         assert engine.pin_values.get("cnt-1:Q1") == Signal.HIGH  # bit 1 = 1
-        assert engine.pin_values.get("cnt-1:Q2") == Signal.LOW   # bit 2 = 0
-        assert engine.pin_values.get("cnt-1:Q3") == Signal.LOW   # bit 3 = 0
+        assert engine.pin_values.get("cnt-1:Q2") == Signal.LOW  # bit 2 = 0
+        assert engine.pin_values.get("cnt-1:Q3") == Signal.LOW  # bit 3 = 0
 
     def test_counter_wraps_at_16(self):
         """Counter wraps from 15 back to 0."""

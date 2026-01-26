@@ -43,8 +43,10 @@ class TestSessionCreation:
 
         assert len(session.code) == 6
         assert session.code.isalnum()
-        assert session.code.isupper() or session.code.isdigit() or all(
-            c.isupper() or c.isdigit() for c in session.code
+        assert (
+            session.code.isupper()
+            or session.code.isdigit()
+            or all(c.isupper() or c.isdigit() for c in session.code)
         )
         assert creator_id is not None
         assert session.creator_participant_id == creator_id
@@ -54,7 +56,9 @@ class TestJoinSession:
     """Tests for joining sessions."""
 
     @pytest.mark.asyncio
-    async def test_join_session_creates_participant_with_student_role(self, session_service):
+    async def test_join_session_creates_participant_with_student_role(
+        self, session_service
+    ):
         """Joining a session as non-creator creates participant with STUDENT role."""
         session = Session(
             code="ABC123",
@@ -222,7 +226,9 @@ class TestColorAssignment:
         )
         session_service._session_repo.find_by_code.return_value = session
         session_service._participant_repo.find_by_id.return_value = None
-        session_service._participant_repo.get_used_colors.return_value = [CURSOR_COLORS[0]]
+        session_service._participant_repo.get_used_colors.return_value = [
+            CURSOR_COLORS[0]
+        ]
         session_service._participant_repo.create.return_value = None
         session_service._session_repo.update_activity.return_value = True
 
@@ -241,7 +247,9 @@ class TestColorAssignment:
         )
         session_service._session_repo.find_by_code.return_value = session
         session_service._participant_repo.find_by_id.return_value = None
-        session_service._participant_repo.get_used_colors.return_value = CURSOR_COLORS.copy()
+        session_service._participant_repo.get_used_colors.return_value = (
+            CURSOR_COLORS.copy()
+        )
         session_service._participant_repo.count_by_session.return_value = 8
         session_service._participant_repo.create.return_value = None
         session_service._session_repo.update_activity.return_value = True

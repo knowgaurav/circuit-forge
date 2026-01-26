@@ -34,12 +34,19 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={"state": state},
             pins=[
-                Pin(id="OUT", name="OUT", type=PinType.OUTPUT, position=Position(x=20, y=0))
+                Pin(
+                    id="OUT",
+                    name="OUT",
+                    type=PinType.OUTPUT,
+                    position=Position(x=20, y=0),
+                )
             ],
         )
 
     @staticmethod
-    def create_const_high(id: str | None = None, x: float = 100, y: float = 100) -> CircuitComponent:
+    def create_const_high(
+        id: str | None = None, x: float = 100, y: float = 100
+    ) -> CircuitComponent:
         """Create a constant HIGH component."""
         return CircuitComponent(
             id=id or f"vcc-{uuid4().hex[:8]}",
@@ -48,12 +55,19 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="OUT", name="OUT", type=PinType.OUTPUT, position=Position(x=15, y=0))
+                Pin(
+                    id="OUT",
+                    name="OUT",
+                    type=PinType.OUTPUT,
+                    position=Position(x=15, y=0),
+                )
             ],
         )
 
     @staticmethod
-    def create_const_low(id: str | None = None, x: float = 100, y: float = 100) -> CircuitComponent:
+    def create_const_low(
+        id: str | None = None, x: float = 100, y: float = 100
+    ) -> CircuitComponent:
         """Create a constant LOW component."""
         return CircuitComponent(
             id=id or f"gnd-{uuid4().hex[:8]}",
@@ -62,12 +76,19 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="OUT", name="OUT", type=PinType.OUTPUT, position=Position(x=15, y=0))
+                Pin(
+                    id="OUT",
+                    name="OUT",
+                    type=PinType.OUTPUT,
+                    position=Position(x=15, y=0),
+                )
             ],
         )
 
     @staticmethod
-    def create_and_gate(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_and_gate(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a 2-input AND gate."""
         return CircuitComponent(
             id=id or f"and-{uuid4().hex[:8]}",
@@ -76,14 +97,25 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="A", name="A", type=PinType.INPUT, position=Position(x=-30, y=-10)),
-                Pin(id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)),
-                Pin(id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)),
+                Pin(
+                    id="A",
+                    name="A",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=-10),
+                ),
+                Pin(
+                    id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)
+                ),
+                Pin(
+                    id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)
+                ),
             ],
         )
 
     @staticmethod
-    def create_or_gate(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_or_gate(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a 2-input OR gate."""
         return CircuitComponent(
             id=id or f"or-{uuid4().hex[:8]}",
@@ -92,14 +124,25 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="A", name="A", type=PinType.INPUT, position=Position(x=-30, y=-10)),
-                Pin(id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)),
-                Pin(id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)),
+                Pin(
+                    id="A",
+                    name="A",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=-10),
+                ),
+                Pin(
+                    id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)
+                ),
+                Pin(
+                    id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)
+                ),
             ],
         )
 
     @staticmethod
-    def create_not_gate(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_not_gate(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a NOT gate (inverter)."""
         return CircuitComponent(
             id=id or f"not-{uuid4().hex[:8]}",
@@ -108,13 +151,19 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="A", name="A", type=PinType.INPUT, position=Position(x=-25, y=0)),
-                Pin(id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=25, y=0)),
+                Pin(
+                    id="A", name="A", type=PinType.INPUT, position=Position(x=-25, y=0)
+                ),
+                Pin(
+                    id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=25, y=0)
+                ),
             ],
         )
 
     @staticmethod
-    def create_nand_gate(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_nand_gate(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a 2-input NAND gate."""
         return CircuitComponent(
             id=id or f"nand-{uuid4().hex[:8]}",
@@ -123,14 +172,25 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="A", name="A", type=PinType.INPUT, position=Position(x=-30, y=-10)),
-                Pin(id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)),
-                Pin(id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)),
+                Pin(
+                    id="A",
+                    name="A",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=-10),
+                ),
+                Pin(
+                    id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)
+                ),
+                Pin(
+                    id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)
+                ),
             ],
         )
 
     @staticmethod
-    def create_nor_gate(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_nor_gate(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a 2-input NOR gate."""
         return CircuitComponent(
             id=id or f"nor-{uuid4().hex[:8]}",
@@ -139,14 +199,25 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="A", name="A", type=PinType.INPUT, position=Position(x=-30, y=-10)),
-                Pin(id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)),
-                Pin(id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)),
+                Pin(
+                    id="A",
+                    name="A",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=-10),
+                ),
+                Pin(
+                    id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)
+                ),
+                Pin(
+                    id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)
+                ),
             ],
         )
 
     @staticmethod
-    def create_xor_gate(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_xor_gate(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a 2-input XOR gate."""
         return CircuitComponent(
             id=id or f"xor-{uuid4().hex[:8]}",
@@ -155,14 +226,25 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="A", name="A", type=PinType.INPUT, position=Position(x=-30, y=-10)),
-                Pin(id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)),
-                Pin(id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)),
+                Pin(
+                    id="A",
+                    name="A",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=-10),
+                ),
+                Pin(
+                    id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)
+                ),
+                Pin(
+                    id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)
+                ),
             ],
         )
 
     @staticmethod
-    def create_xnor_gate(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_xnor_gate(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a 2-input XNOR gate."""
         return CircuitComponent(
             id=id or f"xnor-{uuid4().hex[:8]}",
@@ -171,14 +253,25 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="A", name="A", type=PinType.INPUT, position=Position(x=-30, y=-10)),
-                Pin(id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)),
-                Pin(id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)),
+                Pin(
+                    id="A",
+                    name="A",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=-10),
+                ),
+                Pin(
+                    id="B", name="B", type=PinType.INPUT, position=Position(x=-30, y=10)
+                ),
+                Pin(
+                    id="Y", name="Y", type=PinType.OUTPUT, position=Position(x=30, y=0)
+                ),
             ],
         )
 
     @staticmethod
-    def create_led(id: str | None = None, x: float = 300, y: float = 100) -> CircuitComponent:
+    def create_led(
+        id: str | None = None, x: float = 300, y: float = 100
+    ) -> CircuitComponent:
         """Create a red LED."""
         return CircuitComponent(
             id=id or f"led-{uuid4().hex[:8]}",
@@ -187,12 +280,19 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="IN", name="IN", type=PinType.INPUT, position=Position(x=-15, y=0))
+                Pin(
+                    id="IN",
+                    name="IN",
+                    type=PinType.INPUT,
+                    position=Position(x=-15, y=0),
+                )
             ],
         )
 
     @staticmethod
-    def create_d_flipflop(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_d_flipflop(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a D flip-flop."""
         return CircuitComponent(
             id=id or f"dff-{uuid4().hex[:8]}",
@@ -201,15 +301,37 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="D", name="D", type=PinType.INPUT, position=Position(x=-30, y=-15)),
-                Pin(id="CLK", name="CLK", type=PinType.INPUT, position=Position(x=-30, y=15)),
-                Pin(id="Q", name="Q", type=PinType.OUTPUT, position=Position(x=30, y=-15)),
-                Pin(id="Q'", name="Q'", type=PinType.OUTPUT, position=Position(x=30, y=15)),
+                Pin(
+                    id="D",
+                    name="D",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=-15),
+                ),
+                Pin(
+                    id="CLK",
+                    name="CLK",
+                    type=PinType.INPUT,
+                    position=Position(x=-30, y=15),
+                ),
+                Pin(
+                    id="Q",
+                    name="Q",
+                    type=PinType.OUTPUT,
+                    position=Position(x=30, y=-15),
+                ),
+                Pin(
+                    id="Q'",
+                    name="Q'",
+                    type=PinType.OUTPUT,
+                    position=Position(x=30, y=15),
+                ),
             ],
         )
 
     @staticmethod
-    def create_clock(id: str | None = None, x: float = 100, y: float = 100) -> CircuitComponent:
+    def create_clock(
+        id: str | None = None, x: float = 100, y: float = 100
+    ) -> CircuitComponent:
         """Create a clock component."""
         return CircuitComponent(
             id=id or f"clk-{uuid4().hex[:8]}",
@@ -218,12 +340,19 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={"frequency": 1},
             pins=[
-                Pin(id="CLK", name="CLK", type=PinType.OUTPUT, position=Position(x=25, y=0))
+                Pin(
+                    id="CLK",
+                    name="CLK",
+                    type=PinType.OUTPUT,
+                    position=Position(x=25, y=0),
+                )
             ],
         )
 
     @staticmethod
-    def create_counter_4bit(id: str | None = None, x: float = 200, y: float = 100) -> CircuitComponent:
+    def create_counter_4bit(
+        id: str | None = None, x: float = 200, y: float = 100
+    ) -> CircuitComponent:
         """Create a 4-bit counter."""
         return CircuitComponent(
             id=id or f"cnt-{uuid4().hex[:8]}",
@@ -232,11 +361,36 @@ class ComponentFactory:
             rotation=Rotation.DEG_0,
             properties={},
             pins=[
-                Pin(id="CLK", name="CLK", type=PinType.INPUT, position=Position(x=-40, y=0)),
-                Pin(id="Q0", name="Q0", type=PinType.OUTPUT, position=Position(x=40, y=-30)),
-                Pin(id="Q1", name="Q1", type=PinType.OUTPUT, position=Position(x=40, y=-10)),
-                Pin(id="Q2", name="Q2", type=PinType.OUTPUT, position=Position(x=40, y=10)),
-                Pin(id="Q3", name="Q3", type=PinType.OUTPUT, position=Position(x=40, y=30)),
+                Pin(
+                    id="CLK",
+                    name="CLK",
+                    type=PinType.INPUT,
+                    position=Position(x=-40, y=0),
+                ),
+                Pin(
+                    id="Q0",
+                    name="Q0",
+                    type=PinType.OUTPUT,
+                    position=Position(x=40, y=-30),
+                ),
+                Pin(
+                    id="Q1",
+                    name="Q1",
+                    type=PinType.OUTPUT,
+                    position=Position(x=40, y=-10),
+                ),
+                Pin(
+                    id="Q2",
+                    name="Q2",
+                    type=PinType.OUTPUT,
+                    position=Position(x=40, y=10),
+                ),
+                Pin(
+                    id="Q3",
+                    name="Q3",
+                    type=PinType.OUTPUT,
+                    position=Position(x=40, y=30),
+                ),
             ],
         )
 

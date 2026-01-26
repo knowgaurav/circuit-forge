@@ -136,11 +136,11 @@ class TestSimulationServiceValidation:
     def test_detects_floating_input(self):
         """Detects input pins with no connection."""
         service = SimulationService()
-        
+
         # AND gate with no inputs connected
         and_gate = ComponentFactory.create_and_gate(id="and1")
         led = ComponentFactory.create_led(id="led1")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -152,9 +152,9 @@ class TestSimulationServiceValidation:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is False
         assert any(e.error_type == "FLOATING_INPUT" for e in result.errors)
 
@@ -162,9 +162,9 @@ class TestSimulationServiceValidation:
         """Valid circuit simulates without errors."""
         service = SimulationService()
         circuit = CircuitFactory.create_simple_and_circuit()
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         assert len(result.errors) == 0
 
@@ -172,9 +172,9 @@ class TestSimulationServiceValidation:
         """AND gate with VCC and GND outputs LOW."""
         service = SimulationService()
         circuit = CircuitFactory.create_simple_and_circuit()
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         # VCC (HIGH) AND GND (LOW) = LOW
         assert result.pin_states["and-1"]["Y"] == SignalState.LOW
@@ -183,9 +183,9 @@ class TestSimulationServiceValidation:
         """OR gate with VCC and GND outputs HIGH."""
         service = SimulationService()
         circuit = CircuitFactory.create_simple_or_circuit()
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         # VCC (HIGH) OR GND (LOW) = HIGH
         assert result.pin_states["or-1"]["Y"] == SignalState.HIGH
@@ -193,12 +193,12 @@ class TestSimulationServiceValidation:
     def test_detects_output_conflict(self):
         """Detects multiple outputs driving the same input pin."""
         service = SimulationService()
-        
+
         # Two VCC sources both driving the same LED input
         vcc1 = ComponentFactory.create_const_high(id="vcc1")
         vcc2 = ComponentFactory.create_const_high(id="vcc2")
         led = ComponentFactory.create_led(id="led1")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -211,9 +211,9 @@ class TestSimulationServiceValidation:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is False
         assert any(e.error_type == "OUTPUT_CONFLICT" for e in result.errors)
 
@@ -224,12 +224,12 @@ class TestSimulationServiceTopologicalSort:
     def test_evaluates_in_correct_order(self):
         """Components are evaluated in topological order."""
         service = SimulationService()
-        
+
         # Create: VCC -> NOT -> LED
         vcc = ComponentFactory.create_const_high(id="vcc1")
         not_gate = ComponentFactory.create_not_gate(id="not1")
         led = ComponentFactory.create_led(id="led1")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -242,9 +242,9 @@ class TestSimulationServiceTopologicalSort:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         # VCC=HIGH -> NOT=LOW
         assert result.pin_states["not1"]["Y"] == SignalState.LOW
@@ -252,11 +252,11 @@ class TestSimulationServiceTopologicalSort:
     def test_cycle_detection_raises_error(self):
         """Cycle in circuit raises error."""
         service = SimulationService()
-        
+
         # Create a cycle: NOT1 -> NOT2 -> NOT1 (feedback loop)
         not1 = ComponentFactory.create_not_gate(id="not1")
         not2 = ComponentFactory.create_not_gate(id="not2")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -269,9 +269,9 @@ class TestSimulationServiceTopologicalSort:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is False
         assert any(e.error_type == "CYCLE_DETECTED" for e in result.errors)
 
@@ -282,10 +282,10 @@ class TestSimulationServiceInputDevices:
     def test_const_high_outputs_high(self):
         """CONST_HIGH outputs HIGH signal."""
         service = SimulationService()
-        
+
         vcc = ComponentFactory.create_const_high(id="vcc1")
         led = ComponentFactory.create_led(id="led1")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -297,19 +297,19 @@ class TestSimulationServiceInputDevices:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         assert result.pin_states["vcc1"]["OUT"] == SignalState.HIGH
 
     def test_const_low_outputs_low(self):
         """CONST_LOW outputs LOW signal."""
         service = SimulationService()
-        
+
         gnd = ComponentFactory.create_const_low(id="gnd1")
         led = ComponentFactory.create_led(id="led1")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -321,19 +321,19 @@ class TestSimulationServiceInputDevices:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         assert result.pin_states["gnd1"]["OUT"] == SignalState.LOW
 
     def test_switch_off_outputs_low(self):
         """Switch in OFF state outputs LOW."""
         service = SimulationService()
-        
+
         switch = ComponentFactory.create_switch(id="sw1", state=False)
         led = ComponentFactory.create_led(id="led1")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -345,19 +345,19 @@ class TestSimulationServiceInputDevices:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         assert result.pin_states["sw1"]["OUT"] == SignalState.LOW
 
     def test_switch_on_outputs_high(self):
         """Switch in ON state outputs HIGH."""
         service = SimulationService()
-        
+
         switch = ComponentFactory.create_switch(id="sw1", state=True)
         led = ComponentFactory.create_led(id="led1")
-        
+
         circuit = CircuitState(
             sessionId="TEST",
             version=1,
@@ -369,8 +369,8 @@ class TestSimulationServiceInputDevices:
             annotations=[],
             updatedAt=datetime.utcnow(),
         )
-        
+
         result = service.simulate(circuit)
-        
+
         assert result.success is True
         assert result.pin_states["sw1"]["OUT"] == SignalState.HIGH

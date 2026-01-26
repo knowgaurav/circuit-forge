@@ -24,6 +24,7 @@ from app.models.session import Participant, Role, Session
 # Database Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def mock_database() -> MagicMock:
     """Create a mock AsyncIOMotorDatabase."""
@@ -48,6 +49,7 @@ def mock_collection() -> AsyncMock:
 # ============================================================================
 # Session Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def sample_session() -> Session:
@@ -78,6 +80,7 @@ def sample_participant() -> Participant:
 # ============================================================================
 # Circuit Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def sample_position() -> Position:
@@ -151,7 +154,7 @@ def sample_circuit_state(sample_switch, sample_and_gate, sample_led) -> CircuitS
         toPinId="IN",
         waypoints=[],
     )
-    
+
     return CircuitState(
         sessionId="ABC123",
         version=1,
@@ -173,8 +176,10 @@ def empty_circuit_state() -> CircuitState:
 # API Test Client
 # ============================================================================
 
+
 @pytest.fixture
 def test_client() -> TestClient:
     """Create a FastAPI test client."""
     from app.main import app
+
     return TestClient(app)
