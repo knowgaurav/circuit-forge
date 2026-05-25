@@ -250,9 +250,7 @@ class TestDuplicateWireRejection:
         switch = ComponentFactory.create_switch(id="switch-1")
         and_gate = ComponentFactory.create_and_gate(id="and-1")
 
-        existing_wire = WireFactory.create(
-            "switch-1", "OUT", "and-1", "A", id="wire-1"
-        )
+        existing_wire = WireFactory.create("switch-1", "OUT", "and-1", "A", id="wire-1")
 
         state = CircuitState(
             sessionId=session_id,
@@ -298,9 +296,7 @@ class TestInputPinAlreadyConnected:
         switch2 = ComponentFactory.create_switch(id="switch-2")
         and_gate = ComponentFactory.create_and_gate(id="and-1")
 
-        existing_wire = WireFactory.create(
-            "switch-1", "OUT", "and-1", "A", id="wire-1"
-        )
+        existing_wire = WireFactory.create("switch-1", "OUT", "and-1", "A", id="wire-1")
 
         state = CircuitState(
             sessionId=session_id,

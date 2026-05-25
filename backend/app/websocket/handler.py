@@ -152,9 +152,7 @@ class WebSocketHandler:
                         session_code, participant_id, payload
                     )
                 elif msg_type == "circuit:wire:add":
-                    await self._handle_wire_add(
-                        session_code, participant_id, payload
-                    )
+                    await self._handle_wire_add(session_code, participant_id, payload)
                 elif msg_type == "circuit:wire:delete":
                     await self._handle_wire_delete(
                         session_code, participant_id, payload
@@ -207,13 +205,9 @@ class WebSocketHandler:
             # Simulation messages (requires edit permission)
             elif msg_type.startswith("simulation:"):
                 if msg_type == "simulation:start":
-                    await self._handle_simulation_start(
-                        session_code, participant_id
-                    )
+                    await self._handle_simulation_start(session_code, participant_id)
                 elif msg_type == "simulation:stop":
-                    await self._handle_simulation_stop(
-                        session_code, participant_id
-                    )
+                    await self._handle_simulation_stop(session_code, participant_id)
                 elif msg_type == "simulation:toggle":
                     await self._handle_simulation_toggle(
                         session_code, participant_id, payload
@@ -223,9 +217,7 @@ class WebSocketHandler:
                         session_code, participant_id, payload
                     )
                 elif msg_type == "simulation:step":
-                    await self._handle_simulation_step(
-                        session_code, participant_id
-                    )
+                    await self._handle_simulation_step(session_code, participant_id)
 
         except AuthorizationException as e:
             await room_manager.send_to_participant(
@@ -273,13 +265,15 @@ class WebSocketHandler:
         events: list[dict[str, Any]],
     ) -> None:
         """Send only events newer than ``from_seq`` to a reconnecting client."""
-        await websocket.send_json({
-            "type": "sync:delta",
-            "payload": {
-                "fromSeq": from_seq,
-                "events": [self._jsonify_event(e) for e in events],
-            },
-        })
+        await websocket.send_json(
+            {
+                "type": "sync:delta",
+                "payload": {
+                    "fromSeq": from_seq,
+                    "events": [self._jsonify_event(e) for e in events],
+                },
+            }
+        )
 
     @staticmethod
     def _jsonify_event(event: dict[str, Any]) -> dict[str, Any]:
@@ -290,32 +284,34 @@ class WebSocketHandler:
             out["timestamp"] = ts.isoformat()
         return out
 
-    async def _send_sync_state(
-        self, websocket: WebSocket, session_code: str
-    ) -> None:
+    async def _send_sync_state(self, websocket: WebSocket, session_code: str) -> None:
         """Send current circuit state and participants."""
         circuit = await self._circuit_service.get_circuit_state(session_code)
         participants = await self._session_service.get_session_participants(
             session_code
         )
 
-        await websocket.send_json({
-            "type": "sync:state",
-            "payload": {
-                "circuit": circuit.model_dump(by_alias=True, mode='json'),
-                "participants": [p.model_dump(by_alias=True, mode='json') for p in participants],
-            },
-        })
+        await websocket.send_json(
+            {
+                "type": "sync:state",
+                "payload": {
+                    "circuit": circuit.model_dump(by_alias=True, mode="json"),
+                    "participants": [
+                        p.model_dump(by_alias=True, mode="json") for p in participants
+                    ],
+                },
+            }
+        )
 
-    async def _send_error(
-        self, websocket: WebSocket, code: str, message: str
-    ) -> None:
+    async def _send_error(self, websocket: WebSocket, code: str, message: str) -> None:
         """Send error message to client."""
         try:
-            await websocket.send_json({
-                "type": "error",
-                "payload": {"code": code, "message": message},
-            })
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "payload": {"code": code, "message": message},
+                }
+            )
         except Exception:
             pass
 
@@ -400,9 +396,7 @@ class WebSocketHandler:
     ) -> None:
         """Handle wire add."""
         wire = Wire.model_validate(payload["wire"])
-        event, state = await self._circuit_service.add_wire(
-            session_code, user_id, wire
-        )
+        event, state = await self._circuit_service.add_wire(session_code, user_id, wire)
 
         await room_manager.broadcast_to_room(
             session_code,

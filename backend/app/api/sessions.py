@@ -19,6 +19,7 @@ router = APIRouter()
 # Request/Response models
 class CreateSessionResponse(BaseModel):
     """Response for session creation."""
+
     code: str
     participant_id: str = Field(alias="participantId")
 
@@ -27,6 +28,7 @@ class CreateSessionResponse(BaseModel):
 
 class JoinSessionRequest(BaseModel):
     """Request to join a session."""
+
     display_name: str = Field(alias="displayName", min_length=3, max_length=20)
     participant_id: str | None = Field(default=None, alias="participantId")
 
@@ -35,11 +37,13 @@ class JoinSessionRequest(BaseModel):
 
 class JoinSessionResponse(BaseModel):
     """Response for joining a session."""
+
     participant: Participant
 
 
 class SessionInfoResponse(BaseModel):
     """Response for session info."""
+
     code: str
     exists: bool
     participant_count: int = Field(alias="participantCount")
@@ -49,17 +53,20 @@ class SessionInfoResponse(BaseModel):
 
 class ImportCircuitRequest(BaseModel):
     """Request to import a circuit."""
+
     circuit: dict[str, Any]
 
 
 class ImportCircuitResponse(BaseModel):
     """Response for circuit import."""
+
     success: bool
     version: int
 
 
 class ErrorResponse(BaseModel):
     """Error response."""
+
     error: dict[str, str]
 
 
@@ -78,13 +85,23 @@ def get_circuit_service() -> CircuitService:
 def handle_exception(e: Exception) -> None:
     """Convert app exceptions to HTTP exceptions."""
     if isinstance(e, NotFoundException):
-        raise HTTPException(status_code=404, detail={"error": {"code": e.code, "message": e.message}})
+        raise HTTPException(
+            status_code=404, detail={"error": {"code": e.code, "message": e.message}}
+        )
     elif isinstance(e, ValidationException):
-        raise HTTPException(status_code=400, detail={"error": {"code": e.code, "message": e.message}})
+        raise HTTPException(
+            status_code=400, detail={"error": {"code": e.code, "message": e.message}}
+        )
     elif isinstance(e, AppException):
-        raise HTTPException(status_code=e.status_code, detail={"error": {"code": e.code, "message": e.message}})
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"error": {"code": e.code, "message": e.message}},
+        )
     else:
-        raise HTTPException(status_code=500, detail={"error": {"code": "INTERNAL_ERROR", "message": str(e)}})
+        raise HTTPException(
+            status_code=500,
+            detail={"error": {"code": "INTERNAL_ERROR", "message": str(e)}},
+        )
 
 
 @router.post("/sessions", response_model=CreateSessionResponse)

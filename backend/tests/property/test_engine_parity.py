@@ -80,34 +80,58 @@ def _make_source(kind: str, idx: int, state: bool) -> CircuitComponent:
     cid = f"src_{idx}"
     if kind == "CONST_HIGH":
         return CircuitComponent(
-            id=cid, type=ComponentType.CONST_HIGH, position=Position(x=0, y=idx * 40),
-            rotation=Rotation.DEG_0, properties={}, pins=_OUT_PIN(),
+            id=cid,
+            type=ComponentType.CONST_HIGH,
+            position=Position(x=0, y=idx * 40),
+            rotation=Rotation.DEG_0,
+            properties={},
+            pins=_OUT_PIN(),
         )
     if kind == "CONST_LOW":
         return CircuitComponent(
-            id=cid, type=ComponentType.CONST_LOW, position=Position(x=0, y=idx * 40),
-            rotation=Rotation.DEG_0, properties={}, pins=_OUT_PIN(),
+            id=cid,
+            type=ComponentType.CONST_LOW,
+            position=Position(x=0, y=idx * 40),
+            rotation=Rotation.DEG_0,
+            properties={},
+            pins=_OUT_PIN(),
         )
     return CircuitComponent(
-        id=cid, type=ComponentType.SWITCH_TOGGLE, position=Position(x=0, y=idx * 40),
-        rotation=Rotation.DEG_0, properties={"state": state}, pins=_OUT_PIN(),
+        id=cid,
+        type=ComponentType.SWITCH_TOGGLE,
+        position=Position(x=0, y=idx * 40),
+        rotation=Rotation.DEG_0,
+        properties={"state": state},
+        pins=_OUT_PIN(),
     )
 
 
 def _make_gate(kind: str, idx: int) -> CircuitComponent:
     cid = f"gate_{idx}"
     pins = _NOT_PINS() if kind == "NOT" else _GATE_PINS_2IN()
-    ctype = {"AND_2": ComponentType.AND_2, "OR_2": ComponentType.OR_2, "NOT": ComponentType.NOT}[kind]
+    ctype = {
+        "AND_2": ComponentType.AND_2,
+        "OR_2": ComponentType.OR_2,
+        "NOT": ComponentType.NOT,
+    }[kind]
     return CircuitComponent(
-        id=cid, type=ctype, position=Position(x=200, y=idx * 40),
-        rotation=Rotation.DEG_0, properties={}, pins=pins,
+        id=cid,
+        type=ctype,
+        position=Position(x=200, y=idx * 40),
+        rotation=Rotation.DEG_0,
+        properties={},
+        pins=pins,
     )
 
 
 def _make_led(idx: int) -> CircuitComponent:
     return CircuitComponent(
-        id=f"led_{idx}", type=ComponentType.LED_RED, position=Position(x=400, y=idx * 40),
-        rotation=Rotation.DEG_0, properties={}, pins=_LED_PIN(),
+        id=f"led_{idx}",
+        type=ComponentType.LED_RED,
+        position=Position(x=400, y=idx * 40),
+        rotation=Rotation.DEG_0,
+        properties={},
+        pins=_LED_PIN(),
     )
 
 
@@ -145,21 +169,33 @@ def acyclic_circuit(draw) -> CircuitState:
             if pin.type != PinType.INPUT:
                 continue
             src = draw(st.sampled_from(sources))
-            wires.append(Wire(
-                id=f"w_{uuid4().hex[:8]}",
-                fromComponentId=src.id, fromPinId="OUT",
-                toComponentId=gate.id, toPinId=pin.id, waypoints=[],
-            ))
+            wires.append(
+                Wire(
+                    id=f"w_{uuid4().hex[:8]}",
+                    fromComponentId=src.id,
+                    fromPinId="OUT",
+                    toComponentId=gate.id,
+                    toPinId=pin.id,
+                    waypoints=[],
+                )
+            )
 
     # Wire each LED's input to a gate output if any, otherwise to a source.
-    drivers: list[tuple[str, str]] = [(g.id, "Y") for g in gates] + [(s.id, "OUT") for s in sources]
+    drivers: list[tuple[str, str]] = [(g.id, "Y") for g in gates] + [
+        (s.id, "OUT") for s in sources
+    ]
     for led in leds:
         cid, pid = draw(st.sampled_from(drivers))
-        wires.append(Wire(
-            id=f"w_{uuid4().hex[:8]}",
-            fromComponentId=cid, fromPinId=pid,
-            toComponentId=led.id, toPinId="IN", waypoints=[],
-        ))
+        wires.append(
+            Wire(
+                id=f"w_{uuid4().hex[:8]}",
+                fromComponentId=cid,
+                fromPinId=pid,
+                toComponentId=led.id,
+                toPinId="IN",
+                waypoints=[],
+            )
+        )
 
     return CircuitState(
         sessionId="parity",
@@ -185,8 +221,11 @@ def _frontend_output(circuit: CircuitState) -> dict[str, object]:
     payload = circuit.model_dump_json(by_alias=True)
     proc = subprocess.run(
         ["npx", "--no-install", "tsx", HARNESS, "-"],
-        input=payload, capture_output=True, text=True,
-        cwd=str(FRONTEND_DIR), timeout=30,
+        input=payload,
+        capture_output=True,
+        text=True,
+        cwd=str(FRONTEND_DIR),
+        timeout=30,
     )
     if proc.returncode != 0:
         raise RuntimeError(f"frontend harness failed: {proc.stderr}")

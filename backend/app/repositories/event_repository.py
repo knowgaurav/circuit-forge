@@ -78,8 +78,7 @@ class EventRepository:
             await self._events.insert_one(doc)
         except DuplicateKeyError as exc:
             raise EventDuplicateError(
-                f"Event seq={event.seq} for session {event.session_id} "
-                f"already exists"
+                f"Event seq={event.seq} for session {event.session_id} already exists"
             ) from exc
 
     # ------------------------------------------------------------------
@@ -90,9 +89,9 @@ class EventRepository:
         self, session_id: str, seq: int
     ) -> list[dict[str, Any]]:
         """Get all events for a session with seq strictly greater than ``seq``."""
-        cursor = self._events.find(
-            {"sessionId": session_id, "seq": {"$gt": seq}}
-        ).sort("seq", 1)
+        cursor = self._events.find({"sessionId": session_id, "seq": {"$gt": seq}}).sort(
+            "seq", 1
+        )
 
         events: list[dict[str, Any]] = []
         async for doc in cursor:
@@ -173,9 +172,7 @@ class EventRepository:
     async def get_latest_snapshot(self, session_id: str) -> dict[str, Any] | None:
         """Get the most recent snapshot for a session."""
         cursor = (
-            self._snapshots.find({"sessionId": session_id})
-            .sort("seq", -1)
-            .limit(1)
+            self._snapshots.find({"sessionId": session_id}).sort("seq", -1).limit(1)
         )
         async for doc in cursor:
             doc.pop("_id", None)

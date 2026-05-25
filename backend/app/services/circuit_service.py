@@ -149,7 +149,8 @@ class CircuitService:
         events: list[CircuitEvent] = []
 
         connected_wires = [
-            w for w in state.wires
+            w
+            for w in state.wires
             if w.from_component_id == component_id or w.to_component_id == component_id
         ]
 
@@ -451,9 +452,7 @@ class CircuitService:
                 code="INVALID_WIRE",
             )
 
-        to_pin = next(
-            (p for p in to_component.pins if p.id == wire.to_pin_id), None
-        )
+        to_pin = next((p for p in to_component.pins if p.id == wire.to_pin_id), None)
         if to_pin is None:
             raise ValidationException(
                 message=f"Target pin '{wire.to_pin_id}' not found",
@@ -487,9 +486,7 @@ class CircuitService:
             state = await self.get_circuit_state(session_id)
             await self._event_repo.save_snapshot(session_id, seq, state)
 
-    def _push_undo(
-        self, session_id: str, actor_id: str, event: CircuitEvent
-    ) -> None:
+    def _push_undo(self, session_id: str, actor_id: str, event: CircuitEvent) -> None:
         """Push an event to the undo stack (capped at 50)."""
         self._undo_stacks[session_id][actor_id].append(event)
         if len(self._undo_stacks[session_id][actor_id]) > 50:
@@ -519,9 +516,7 @@ class CircuitService:
                 seq=seq,
                 actorId=actor_id,
                 timestamp=datetime.utcnow(),
-                payload=ComponentDeletedPayload(
-                    componentId=event.payload.component.id
-                ),
+                payload=ComponentDeletedPayload(componentId=event.payload.component.id),
             )
 
         if isinstance(event, ComponentDeletedEvent):
@@ -624,9 +619,7 @@ class CircuitService:
                     and e.get("payload", {}).get("annotation", {}).get("id")
                     == event.payload.annotation_id
                 ):
-                    annotation = Annotation.model_validate(
-                        e["payload"]["annotation"]
-                    )
+                    annotation = Annotation.model_validate(e["payload"]["annotation"])
                     return AnnotationAddedEvent(
                         sessionId=session_id,
                         seq=seq,
@@ -638,9 +631,7 @@ class CircuitService:
 
         return None
 
-    def _recreate_event_with_seq(
-        self, event: CircuitEvent, seq: int
-    ) -> CircuitEvent:
+    def _recreate_event_with_seq(self, event: CircuitEvent, seq: int) -> CircuitEvent:
         """Recreate an event with a new seq number (used for redo)."""
         event_dict = event.model_dump(by_alias=True)
         event_dict["seq"] = seq

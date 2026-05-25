@@ -37,8 +37,12 @@ SESSION_ID = "RC0001"
 
 
 class _FakeCursor:
-    def __init__(self, docs: list[dict[str, Any]], sort_field: str | None = None,
-                 reverse: bool = False) -> None:
+    def __init__(
+        self,
+        docs: list[dict[str, Any]],
+        sort_field: str | None = None,
+        reverse: bool = False,
+    ) -> None:
         self._docs = list(docs)
         if sort_field is not None:
             self._docs.sort(key=lambda d: d.get(sort_field, 0), reverse=reverse)
@@ -67,7 +71,9 @@ class _FakeCollection:
         self._docs: list[dict[str, Any]] = []
         self._unique: list[tuple[str, ...]] = []
 
-    async def create_index(self, keys, unique: bool = False, name: str | None = None) -> str:
+    async def create_index(
+        self, keys, unique: bool = False, name: str | None = None
+    ) -> str:
         if unique:
             field_names = tuple(k[0] if isinstance(k, tuple) else k for k in keys)
             self._unique.append(field_names)
@@ -79,9 +85,7 @@ class _FakeCollection:
             for existing in self._docs:
                 existing_value = tuple(existing.get(field) for field in key_tuple)
                 if existing_value == value:
-                    raise DuplicateKeyError(
-                        f"duplicate key on {key_tuple}: {value}"
-                    )
+                    raise DuplicateKeyError(f"duplicate key on {key_tuple}: {value}")
         self._docs.append(doc)
 
     def find(self, query: dict[str, Any]) -> _FakeCursor:
@@ -92,11 +96,15 @@ class _FakeCollection:
                     for op, op_val in expected.items():
                         if op == "$gt" and not (actual is not None and actual > op_val):
                             return False
-                        if op == "$gte" and not (actual is not None and actual >= op_val):
+                        if op == "$gte" and not (
+                            actual is not None and actual >= op_val
+                        ):
                             return False
                         if op == "$lt" and not (actual is not None and actual < op_val):
                             return False
-                        if op == "$lte" and not (actual is not None and actual <= op_val):
+                        if op == "$lte" and not (
+                            actual is not None and actual <= op_val
+                        ):
                             return False
                 else:
                     if actual != expected:
@@ -108,8 +116,11 @@ class _FakeCollection:
     async def delete_many(self, query: dict[str, Any]) -> Any:
         before = len(self._docs)
         self._docs = [
-            d for d in self._docs
-            if not all(d.get(k) == v for k, v in query.items() if not isinstance(v, dict))
+            d
+            for d in self._docs
+            if not all(
+                d.get(k) == v for k, v in query.items() if not isinstance(v, dict)
+            )
         ]
 
         class _Result:

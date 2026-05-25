@@ -57,7 +57,9 @@ class _FakeCollection:
         self._unique_keys: list[tuple[str, ...]] = []
         self._sort_key = sort_key
 
-    async def create_index(self, keys, unique: bool = False, name: str | None = None) -> str:
+    async def create_index(
+        self, keys, unique: bool = False, name: str | None = None
+    ) -> str:
         if unique:
             field_names = tuple(k[0] if isinstance(k, tuple) else k for k in keys)
             self._unique_keys.append(field_names)
@@ -69,9 +71,7 @@ class _FakeCollection:
             for existing in self._docs:
                 existing_value = tuple(existing.get(field) for field in key_tuple)
                 if existing_value == value:
-                    raise DuplicateKeyError(
-                        f"duplicate key on {key_tuple}: {value}"
-                    )
+                    raise DuplicateKeyError(f"duplicate key on {key_tuple}: {value}")
         self._docs.append(doc)
 
     def find(self, query: dict[str, Any]) -> _FakeCursor:
@@ -82,11 +82,15 @@ class _FakeCollection:
                     for op, op_val in expected.items():
                         if op == "$gt" and not (actual is not None and actual > op_val):
                             return False
-                        if op == "$gte" and not (actual is not None and actual >= op_val):
+                        if op == "$gte" and not (
+                            actual is not None and actual >= op_val
+                        ):
                             return False
                         if op == "$lt" and not (actual is not None and actual < op_val):
                             return False
-                        if op == "$lte" and not (actual is not None and actual <= op_val):
+                        if op == "$lte" and not (
+                            actual is not None and actual <= op_val
+                        ):
                             return False
                 else:
                     if actual != expected:
@@ -98,7 +102,9 @@ class _FakeCollection:
 
     async def delete_many(self, query: dict[str, Any]) -> Any:
         before = len(self._docs)
-        self._docs = [d for d in self._docs if any(d.get(k) != v for k, v in query.items())]
+        self._docs = [
+            d for d in self._docs if any(d.get(k) != v for k, v in query.items())
+        ]
 
         class _Result:
             deleted_count = before - len(self._docs)
@@ -141,14 +147,18 @@ class TestSeqEnforcement:
     """A.3: append rejects out-of-order or duplicate seq."""
 
     @pytest.mark.asyncio
-    async def test_two_events_with_same_seq_raises_duplicate(self, repo: EventRepository) -> None:
+    async def test_two_events_with_same_seq_raises_duplicate(
+        self, repo: EventRepository
+    ) -> None:
         await repo.append_event(_make_event(seq=1))
 
         with pytest.raises(EventDuplicateError):
             await repo.append_event(_make_event(seq=1))
 
     @pytest.mark.asyncio
-    async def test_seq_less_than_latest_raises_order_error(self, repo: EventRepository) -> None:
+    async def test_seq_less_than_latest_raises_order_error(
+        self, repo: EventRepository
+    ) -> None:
         await repo.append_event(_make_event(seq=1))
         await repo.append_event(_make_event(seq=2))
 
