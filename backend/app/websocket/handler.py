@@ -42,8 +42,16 @@ class WebSocketHandler:
         websocket: WebSocket,
         session_code: str,
         participant_id: str,
+        last_seen_seq: int | None = None,
     ) -> None:
-        """Handle a WebSocket connection lifecycle."""
+        """Handle a WebSocket connection lifecycle.
+
+        If ``last_seen_seq`` is provided AND the latest snapshot's seq is
+        less than or equal to it, we send a ``sync:delta`` carrying just the
+        events with seq > ``last_seen_seq``. Otherwise we fall back to the
+        full ``sync:state`` snapshot. The protocol is documented in
+        ``docs/adr/0001-collaboration-consistency.md``.
+        """
         self._get_services()
 
         # Validate session and participant
@@ -67,8 +75,8 @@ class WebSocketHandler:
             session_code, participant_id
         )
 
-        # Send initial state
-        await self._send_sync_state(websocket, session_code)
+        # Decide between delta and snapshot reply
+        await self._send_initial_sync(websocket, session_code, last_seen_seq)
 
         # Broadcast participant joined
         await room_manager.broadcast_to_room(
@@ -229,6 +237,58 @@ class WebSocketHandler:
                 participant_id,
                 {"type": "error", "payload": {"code": e.code, "message": e.message}},
             )
+
+    async def _send_initial_sync(
+        self,
+        websocket: WebSocket,
+        session_code: str,
+        last_seen_seq: int | None,
+    ) -> None:
+        """Pick between sync:delta and sync:state for a new connection.
+
+        - If the client provided ``last_seen_seq`` and the latest snapshot's
+          seq is ``<= last_seen_seq`` (so we can build the delta from events
+          alone, without dropping anything), we send the delta of events
+          with seq > ``last_seen_seq``.
+        - Otherwise we send the full ``sync:state`` snapshot.
+        """
+        if last_seen_seq is not None:
+            snapshot = await self._circuit_service._event_repo.get_latest_snapshot(
+                session_code
+            )
+            snapshot_seq = snapshot["seq"] if snapshot else 0
+            if snapshot_seq <= last_seen_seq:
+                events = await self._circuit_service._event_repo.get_events_since_seq(
+                    session_code, last_seen_seq
+                )
+                await self._send_sync_delta(websocket, last_seen_seq, events)
+                return
+
+        await self._send_sync_state(websocket, session_code)
+
+    async def _send_sync_delta(
+        self,
+        websocket: WebSocket,
+        from_seq: int,
+        events: list[dict[str, Any]],
+    ) -> None:
+        """Send only events newer than ``from_seq`` to a reconnecting client."""
+        await websocket.send_json({
+            "type": "sync:delta",
+            "payload": {
+                "fromSeq": from_seq,
+                "events": [self._jsonify_event(e) for e in events],
+            },
+        })
+
+    @staticmethod
+    def _jsonify_event(event: dict[str, Any]) -> dict[str, Any]:
+        """Convert a raw event document to JSON-serializable form."""
+        out = dict(event)
+        ts = out.get("timestamp")
+        if hasattr(ts, "isoformat"):
+            out["timestamp"] = ts.isoformat()
+        return out
 
     async def _send_sync_state(
         self, websocket: WebSocket, session_code: str
@@ -749,7 +809,7 @@ class WebSocketHandler:
         if not engine:
             return
 
-        engine.step()
+        engine.run()
 
         await room_manager.broadcast_to_room(
             session_code,

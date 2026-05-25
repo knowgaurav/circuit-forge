@@ -54,16 +54,18 @@ class DatabaseManager:
             [("sessionCode", 1), ("id", 1)], unique=True
         )
 
-        # Events collection indexes
-        await self.database.events.create_index("sessionCode")
+        # Events collection indexes (sessionId + seq is the new field naming;
+        # see app/events/schema.py and EventRepository.append_event for the
+        # write-path enforcement that pairs with this unique index).
+        await self.database.events.create_index("sessionId")
         await self.database.events.create_index(
-            [("sessionCode", 1), ("version", 1)], unique=True
+            [("sessionId", 1), ("seq", 1)],
+            unique=True,
+            name="events_sessionId_seq_unique",
         )
 
         # Snapshots collection indexes
-        await self.database.snapshots.create_index(
-            [("sessionCode", 1), ("version", -1)]
-        )
+        await self.database.snapshots.create_index([("sessionId", 1), ("seq", -1)])
 
     def get_database(self) -> AsyncIOMotorDatabase:
         """Get database instance."""

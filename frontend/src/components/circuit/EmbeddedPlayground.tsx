@@ -8,7 +8,7 @@ import { SimulationOverlay } from './SimulationOverlay';
 import { IconButton, Tooltip } from '@/components/ui';
 import { createComponentInstance, ComponentDefinition } from '@/constants/components';
 import { useCircuitStore, useUIStore, Tool } from '@/stores';
-import type { SimulationResult } from '@/services/simulation';
+import type { SimulationResult } from '@/features/simulation';
 import type { Position, CircuitComponent, Wire } from '@/types';
 
 interface EmbeddedPlaygroundProps {

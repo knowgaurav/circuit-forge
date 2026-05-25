@@ -5,7 +5,7 @@
  */
 
 import type { CircuitComponent, Pin } from '@/types';
-import type { SignalState } from '@/services/simulation';
+import type { SignalState } from '@/features/simulation';
 import { getComponentDefinition } from '@/constants/components';
 import {
     // Base utilities

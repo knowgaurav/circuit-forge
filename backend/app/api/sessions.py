@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket
 from pydantic import BaseModel, Field
 
 from app.core.database import db_manager
@@ -210,6 +210,15 @@ async def websocket_endpoint(
     websocket: WebSocket,
     code: str,
     participant_id: str,
+    last_seen_seq: int | None = Query(default=None),
 ) -> None:
-    """WebSocket endpoint for real-time collaboration."""
-    await ws_handler.handle_connection(websocket, code.upper(), participant_id)
+    """WebSocket endpoint for real-time collaboration.
+
+    Clients reconnecting after a disconnect can pass ``last_seen_seq`` to
+    request a delta sync (``sync:delta``) instead of a full snapshot
+    (``sync:state``). See :class:`app.websocket.handler.WebSocketHandler` and
+    ``docs/adr/0001-collaboration-consistency.md`` for the protocol details.
+    """
+    await ws_handler.handle_connection(
+        websocket, code.upper(), participant_id, last_seen_seq=last_seen_seq
+    )

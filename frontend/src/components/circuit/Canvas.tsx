@@ -8,7 +8,7 @@ import {
     createComponentInstance,
     getComponentDefinition,
 } from '@/constants/components';
-import type { SimulationResult } from '@/services/simulation';
+import type { SimulationResult } from '@/features/simulation';
 import {
     drawGrid,
     drawComponent,

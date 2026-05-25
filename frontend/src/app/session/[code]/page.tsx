@@ -50,7 +50,7 @@ import { useCloseGuard, useSessionRecovery } from '@/hooks';
 import { api } from '@/services/api';
 import { WebSocketClient } from '@/services/websocket';
 import { exportAsPng, exportAsJson, importFromJson } from '@/services/export';
-import type { SimulationResult } from '@/services/simulation';
+import type { SimulationResult } from '@/features/simulation';
 import type { ServerMessage, Position, Annotation, Participant } from '@/types';
 
 export default function SessionPage() {
@@ -163,6 +163,38 @@ export default function SessionPage() {
                 case 'sync:state':
                     circuitStore.setCircuitState(message.payload.circuit);
                     sessionStore.setParticipants(message.payload.participants);
+                    break;
+                case 'sync:delta':
+                    // Apply each event the server replayed since lastSeenSeq.
+                    for (const event of message.payload.events) {
+                        switch (event.type) {
+                            case 'COMPONENT_ADDED':
+                                circuitStore.addComponent(event.payload.component);
+                                break;
+                            case 'COMPONENT_MOVED':
+                                circuitStore.moveComponent(
+                                    event.payload.componentId,
+                                    event.payload.position
+                                );
+                                break;
+                            case 'COMPONENT_DELETED':
+                                circuitStore.deleteComponent(event.payload.componentId);
+                                break;
+                            case 'WIRE_ADDED':
+                                circuitStore.addWire(event.payload.wire);
+                                break;
+                            case 'WIRE_DELETED':
+                                circuitStore.deleteWire(event.payload.wireId);
+                                break;
+                            case 'ANNOTATION_ADDED':
+                                circuitStore.addAnnotation(event.payload.annotation);
+                                break;
+                            case 'ANNOTATION_DELETED':
+                                circuitStore.deleteAnnotation(event.payload.annotationId);
+                                break;
+                        }
+                        circuitStore.updateVersion(event.seq);
+                    }
                     break;
                 case 'circuit:component:added':
                     circuitStore.addComponent(message.payload.component);
@@ -685,7 +717,7 @@ export default function SessionPage() {
             wsClient?.disconnect();
             router.push('/');
         },
-        onLeaveCancelled: () => {},
+        onLeaveCancelled: () => { },
     });
 
     const pendingRequests = editRequests.filter((r) => r.status === 'pending');
@@ -713,8 +745,8 @@ export default function SessionPage() {
                             {isConnected
                                 ? 'Connected'
                                 : isReconnecting
-                                  ? 'Reconnecting...'
-                                  : 'Disconnected'}
+                                    ? 'Reconnecting...'
+                                    : 'Disconnected'}
                         </Badge>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                             Session: {code}
@@ -972,11 +1004,10 @@ export default function SessionPage() {
                                             <button
                                                 key={percent}
                                                 onClick={() => handleZoomPreset(percent)}
-                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                                    Math.round(uiStore.zoom * 100) === percent
-                                                        ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                                        : 'text-gray-700 dark:text-gray-200'
-                                                }`}
+                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${Math.round(uiStore.zoom * 100) === percent
+                                                    ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                    : 'text-gray-700 dark:text-gray-200'
+                                                    }`}
                                             >
                                                 {percent}%
                                             </button>
@@ -1229,11 +1260,10 @@ export default function SessionPage() {
                                                 {[2, 4, 8].map((width) => (
                                                     <button
                                                         key={width}
-                                                        className={`flex h-8 w-8 items-center justify-center rounded border ${
-                                                            uiStore.strokeWidth === width
-                                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                                                                : 'border-gray-200 dark:border-gray-600'
-                                                        }`}
+                                                        className={`flex h-8 w-8 items-center justify-center rounded border ${uiStore.strokeWidth === width
+                                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                                                            : 'border-gray-200 dark:border-gray-600'
+                                                            }`}
                                                         onClick={() =>
                                                             uiStore.setStrokeWidth(
                                                                 width as 2 | 4 | 8
@@ -1260,7 +1290,7 @@ export default function SessionPage() {
             </div>
 
             {/* Name Modal */}
-            <Modal isOpen={showNameModal} onClose={() => {}} title="Enter Your Name" size="sm">
+            <Modal isOpen={showNameModal} onClose={() => { }} title="Enter Your Name" size="sm">
                 <form onSubmit={handleJoinWithName} className="space-y-4">
                     <Input
                         label="Display Name"

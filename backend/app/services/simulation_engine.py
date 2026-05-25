@@ -1,394 +1,200 @@
-"""Event-driven circuit simulation engine."""
-
-import heapq
-from collections.abc import Callable
+"""Topological-sort circuit simulation engine. See docs/simulator.md."""
 from dataclasses import dataclass, field
 from enum import Enum
-
+from typing import Any
 from app.models.circuit import CircuitComponent, CircuitState, Wire
 
 
 class Signal(str, Enum):
-    """Signal values for circuit simulation."""
-    HIGH = "1"
-    LOW = "0"
-    Z = "Z"  # High impedance
-    X = "X"  # Unknown/conflict
-
-
-@dataclass(order=True)
-class Event:
-    """Simulation event at a specific time."""
-    time: int
-    seq: int = field(default=0, compare=True)
-    component_id: str = field(default="", compare=False)
-    pin_id: str = field(default="", compare=False)
-    value: Signal = field(default=Signal.X, compare=False)
+    HIGH, LOW, X = "1", "0", "X"
+H, L, X = Signal.HIGH, Signal.LOW, Signal.X
 
 
 @dataclass
 class ComponentState:
-    """Runtime state for a component."""
     outputs: dict[str, Signal] = field(default_factory=dict)
-    internal: dict[str, any] = field(default_factory=dict)
+    internal: dict[str, Any] = field(default_factory=dict)
+
+
+_SOURCE = {"CONST_HIGH", "CONST_LOW", "VCC_5V", "VCC_3V3", "GROUND", "SWITCH_TOGGLE", "SWITCH_PUSH"}
+_STATEFUL = {"SR_LATCH", "D_FLIPFLOP", "JK_FLIPFLOP", "T_FLIPFLOP", "COUNTER_4BIT", "SHIFT_REGISTER_8BIT", "CLOCK"}
+_SEG = {0: "ABCDEF", 1: "BC", 2: "ABDEG", 3: "ABCDG", 4: "BCFG", 5: "ACDFG", 6: "ACDEFG", 7: "ABC", 8: "ABCDEFG", 9: "ABCDFG"}
+def _and(vs): return L if L in vs else (X if X in vs else H)
+def _or(vs): return H if H in vs else (X if X in vs else L)
+def _not(s): return L if s == H else H if s == L else X
+def _xor(a, b): return X if X in (a, b) else (H if a != b else L)
+def _outs_x(c): return {p.id: X for p in c.pins if p.type.value == "output"}
+
+
+def _bits(inp, pre, n):
+    out = 0
+    for i in range(n):
+        v = inp.get(f"{pre}{i}", X)
+        if v == X: return None
+        if v == H: out |= 1 << i
+    return out
 
 
 class SimulationEngine:
-    """Event-driven circuit simulation engine."""
-
-    def __init__(self):
-        self.time = 0
-        self.events: list[Event] = []
-        self.seq = 0
+    def __init__(self) -> None:
         self.components: dict[str, CircuitComponent] = {}
         self.wires: list[Wire] = []
         self.states: dict[str, ComponentState] = {}
-        self.pin_values: dict[str, Signal] = {}  # "comp:pin" -> value
-        self.connections: dict[str, list[str]] = {}  # "from_comp:from_pin" -> ["to_comp:to_pin", ...]
-        self.listeners: dict[str, Callable] = {}  # Callbacks for state changes
-
+        self.pin_values: dict[str, Signal] = {}
+        self._driver: dict[str, str] = {}
     def load_circuit(self, circuit: CircuitState) -> None:
-        """Load a circuit for simulation."""
         self.components = {c.id: c for c in circuit.components}
-        self.wires = circuit.wires
+        self.wires = list(circuit.wires)
         self.states = {c.id: ComponentState() for c in circuit.components}
         self.pin_values = {}
-        self.connections = {}
-        self.events = []
-        self.time = 0
-        self.seq = 0
+        self._driver = {f"{w.to_component_id}:{w.to_pin_id}": f"{w.from_component_id}:{w.from_pin_id}" for w in self.wires}
+        self.run()
 
-        # Build connection map
-        for wire in self.wires:
-            from_key = f"{wire.from_component_id}:{wire.from_pin_id}"
-            to_key = f"{wire.to_component_id}:{wire.to_pin_id}"
-            if from_key not in self.connections:
-                self.connections[from_key] = []
-            self.connections[from_key].append(to_key)
-
-        # Initialize all components
-        for comp in circuit.components:
-            self._init_component(comp)
-
-    def _init_component(self, comp: CircuitComponent) -> None:
-        """Initialize a component's outputs."""
-        props = comp.properties
-        state = self.states[comp.id]
-
-        if comp.type.value in ("CONST_HIGH", "VCC_5V", "VCC_3V3"):
-            state.outputs["OUT"] = Signal.HIGH
-        elif comp.type.value in ("CONST_LOW", "GROUND"):
-            state.outputs["OUT"] = Signal.LOW
-        elif comp.type.value == "SWITCH_TOGGLE":
-            state.outputs["OUT"] = Signal.HIGH if props.get("state") else Signal.LOW
-        elif comp.type.value == "SWITCH_PUSH":
-            state.outputs["OUT"] = Signal.HIGH if props.get("pressed") or props.get("state") else Signal.LOW
-        elif comp.type.value == "CLOCK":
-            state.outputs["CLK"] = Signal.LOW
-            state.internal["phase"] = 0
-        else:
-            # Default outputs to LOW for gates
-            for pin in comp.pins:
-                if pin.type.value == "output":
-                    state.outputs[pin.id] = Signal.LOW
-
-        # Set initial pin values
-        for pin_id, value in state.outputs.items():
-            self.pin_values[f"{comp.id}:{pin_id}"] = value
-
-    def schedule(self, delay: int, component_id: str, pin_id: str, value: Signal) -> None:
-        """Schedule a signal change event."""
-        event = Event(
-            time=self.time + delay,
-            seq=self.seq,
-            component_id=component_id,
-            pin_id=pin_id,
-            value=value,
-        )
-        self.seq += 1
-        heapq.heappush(self.events, event)
-
-    def step(self) -> bool:
-        """Process the next event. Returns False if no events."""
-        if not self.events:
-            return False
-
-        event = heapq.heappop(self.events)
-        self.time = event.time
-
-        # Update pin value
-        pin_key = f"{event.component_id}:{event.pin_id}"
-        old_value = self.pin_values.get(pin_key, Signal.X)
-        if old_value == event.value:
-            return True  # No change
-
-        self.pin_values[pin_key] = event.value
-        self.states[event.component_id].outputs[event.pin_id] = event.value
-
-        # Propagate to connected inputs
-        for to_key in self.connections.get(pin_key, []):
-            to_comp_id, to_pin_id = to_key.split(":")
-            self.pin_values[to_key] = event.value
-            self._evaluate_component(to_comp_id)
-
-        return True
-
-    def run(self, max_steps: int = 10000) -> None:
-        """Run simulation until no more events or max steps reached."""
-        steps = 0
-        while self.step() and steps < max_steps:
-            steps += 1
-
-    def run_until(self, end_time: int) -> None:
-        """Run simulation until a specific time."""
-        while self.events and self.events[0].time <= end_time:
-            self.step()
-        self.time = end_time
-
-    def set_input(self, component_id: str, value: bool) -> None:
-        """Set an input device state (switch, button)."""
-        comp = self.components.get(component_id)
-        if not comp:
-            return
-
-        signal = Signal.HIGH if value else Signal.LOW
-
-        if comp.type.value in ("SWITCH_TOGGLE", "SWITCH_PUSH"):
-            self.schedule(0, component_id, "OUT", signal)
+    def run(self) -> None:
+        self._refresh_sources()
+        order, in_cycle = self._topo()
+        for cid in order:
+            c = self.components[cid]
+            self._publish(cid, self._compute_outputs(c, self._inputs(c), self.states[cid]))
+        for cid in in_cycle:
+            self._publish(cid, _outs_x(self.components[cid]))
+        for cid, c in self.components.items():
+            if c.type.value in _STATEFUL and c.type.value != "CLOCK":
+                st = self.states[cid]
+                self._tick(c, self._inputs(c), st)
+                self._publish(cid, self._stateful_outs(c, st))
+    evaluate = run
 
     def toggle_switch(self, component_id: str) -> None:
-        """Toggle a switch component."""
-        comp = self.components.get(component_id)
-        if not comp or comp.type.value != "SWITCH_TOGGLE":
-            return
+        c = self.components.get(component_id)
+        if c and c.type.value == "SWITCH_TOGGLE":
+            c.properties["state"] = not bool(c.properties.get("state"))
+            self.run()
 
-        current = self.pin_values.get(f"{component_id}:OUT", Signal.LOW)
-        new_value = Signal.LOW if current == Signal.HIGH else Signal.HIGH
-        self.schedule(0, component_id, "OUT", new_value)
+    def set_input(self, component_id: str, value: bool) -> None:
+        c = self.components.get(component_id)
+        if c is None: return
+        if c.type.value == "SWITCH_TOGGLE": c.properties["state"] = bool(value)
+        elif c.type.value == "SWITCH_PUSH": c.properties["pressed"] = c.properties["state"] = bool(value)
+        self.run()
 
     def tick_clock(self, component_id: str) -> None:
-        """Advance a clock by one tick."""
-        comp = self.components.get(component_id)
-        if not comp or comp.type.value != "CLOCK":
-            return
-
-        state = self.states[component_id]
-        current = self.pin_values.get(f"{component_id}:CLK", Signal.LOW)
-        new_value = Signal.LOW if current == Signal.HIGH else Signal.HIGH
-        state.internal["phase"] = (state.internal.get("phase", 0) + 1) % 2
-        self.schedule(0, component_id, "CLK", new_value)
-
-    def _get_input(self, component_id: str, pin_id: str) -> Signal:
-        """Get the signal value at an input pin."""
-        pin_key = f"{component_id}:{pin_id}"
-
-        # Find wire driving this input
-        for from_key, to_keys in self.connections.items():
-            if pin_key in to_keys:
-                return self.pin_values.get(from_key, Signal.X)
-
-        return Signal.X  # Floating input
-
-    def _get_inputs(self, component_id: str) -> dict[str, Signal]:
-        """Get all input signals for a component."""
-        comp = self.components[component_id]
-        inputs = {}
-        for pin in comp.pins:
-            if pin.type.value == "input":
-                inputs[pin.id] = self._get_input(component_id, pin.id)
-        return inputs
-
-    def _evaluate_component(self, component_id: str) -> None:
-        """Evaluate a component and schedule output changes."""
-        comp = self.components.get(component_id)
-        if not comp:
-            return
-
-        inputs = self._get_inputs(component_id)
-        state = self.states[component_id]
-        outputs = self._compute_outputs(comp, inputs, state)
-
-        for pin_id, value in outputs.items():
-            current = state.outputs.get(pin_id, Signal.X)
-            if value != current:
-                self.schedule(1, component_id, pin_id, value)  # 1 tick delay
-
-    def _compute_outputs(
-        self, comp: CircuitComponent, inputs: dict[str, Signal], state: ComponentState
-    ) -> dict[str, Signal]:
-        """Compute output values for a component."""
-        t = comp.type.value
-
-        # Logic gates
-        if t in ("AND_2", "AND_3", "AND_4"):
-            return {"Y": self._and(list(inputs.values()))}
-        if t in ("OR_2", "OR_3", "OR_4"):
-            return {"Y": self._or(list(inputs.values()))}
-        if t == "NOT":
-            return {"Y": self._not(inputs.get("A", Signal.X))}
-        if t == "BUFFER":
-            return {"Y": inputs.get("A", Signal.X)}
-        if t in ("NAND_2", "NAND_3"):
-            return {"Y": self._not(self._and(list(inputs.values())))}
-        if t in ("NOR_2", "NOR_3"):
-            return {"Y": self._not(self._or(list(inputs.values())))}
-        if t == "XOR_2":
-            vals = list(inputs.values())
-            return {"Y": self._xor(vals[0], vals[1]) if len(vals) == 2 else Signal.X}
-        if t == "XNOR_2":
-            vals = list(inputs.values())
-            return {"Y": self._not(self._xor(vals[0], vals[1])) if len(vals) == 2 else Signal.X}
-
-        # Combinational
-        if t == "MUX_2TO1":
-            sel = inputs.get("S", Signal.LOW)
-            if sel == Signal.HIGH:
-                return {"Y": inputs.get("B", Signal.X)}
-            return {"Y": inputs.get("A", Signal.X)}
-
-        if t == "DECODER_2TO4":
-            a0 = 1 if inputs.get("A0", Signal.LOW) == Signal.HIGH else 0
-            a1 = 1 if inputs.get("A1", Signal.LOW) == Signal.HIGH else 0
-            sel = a0 + (a1 * 2)
-            return {
-                "Y0": Signal.HIGH if sel == 0 else Signal.LOW,
-                "Y1": Signal.HIGH if sel == 1 else Signal.LOW,
-                "Y2": Signal.HIGH if sel == 2 else Signal.LOW,
-                "Y3": Signal.HIGH if sel == 3 else Signal.LOW,
-            }
-
-        # Sequential
-        if t == "SR_LATCH":
-            s = inputs.get("S", Signal.LOW)
-            r = inputs.get("R", Signal.LOW)
-            q = state.internal.get("Q", Signal.LOW)
-            if s == Signal.HIGH and r == Signal.HIGH:
-                q = Signal.X
-            elif s == Signal.HIGH:
-                q = Signal.HIGH
-            elif r == Signal.HIGH:
-                q = Signal.LOW
-            state.internal["Q"] = q
-            return {"Q": q, "Q'": self._not(q)}
-
-        if t == "D_FLIPFLOP":
-            d = inputs.get("D", Signal.LOW)
-            clk = inputs.get("CLK", Signal.LOW)
-            prev_clk = state.internal.get("prev_clk", Signal.LOW)
-            q = state.internal.get("Q", Signal.LOW)
-
-            if prev_clk == Signal.LOW and clk == Signal.HIGH:  # Rising edge
-                q = d
-                state.internal["Q"] = q
-            state.internal["prev_clk"] = clk
-            return {"Q": q, "Q'": self._not(q)}
-
-        if t == "JK_FLIPFLOP":
-            j = inputs.get("J", Signal.LOW)
-            k = inputs.get("K", Signal.LOW)
-            clk = inputs.get("CLK", Signal.LOW)
-            prev_clk = state.internal.get("prev_clk", Signal.LOW)
-            q = state.internal.get("Q", Signal.LOW)
-
-            if prev_clk == Signal.LOW and clk == Signal.HIGH:  # Rising edge
-                if j == Signal.HIGH and k == Signal.HIGH:
-                    q = self._not(q)
-                elif j == Signal.HIGH:
-                    q = Signal.HIGH
-                elif k == Signal.HIGH:
-                    q = Signal.LOW
-                state.internal["Q"] = q
-            state.internal["prev_clk"] = clk
-            return {"Q": q, "Q'": self._not(q)}
-
-        if t == "COUNTER_4BIT":
-            clk = inputs.get("CLK", Signal.LOW)
-            prev_clk = state.internal.get("prev_clk", Signal.LOW)
-            count = state.internal.get("count", 0)
-
-            if prev_clk == Signal.LOW and clk == Signal.HIGH:
-                count = (count + 1) % 16
-                state.internal["count"] = count
-            state.internal["prev_clk"] = clk
-            return {
-                "Q0": Signal.HIGH if (count & 1) else Signal.LOW,
-                "Q1": Signal.HIGH if (count & 2) else Signal.LOW,
-                "Q2": Signal.HIGH if (count & 4) else Signal.LOW,
-                "Q3": Signal.HIGH if (count & 8) else Signal.LOW,
-            }
-
-        if t == "SHIFT_REGISTER_8BIT":
-            si = inputs.get("SI", Signal.LOW)
-            clk = inputs.get("CLK", Signal.LOW)
-            prev_clk = state.internal.get("prev_clk", Signal.LOW)
-            reg = state.internal.get("reg", 0)
-
-            if prev_clk == Signal.LOW and clk == Signal.HIGH:
-                bit = 1 if si == Signal.HIGH else 0
-                reg = ((reg << 1) | bit) & 0xFF
-                state.internal["reg"] = reg
-            state.internal["prev_clk"] = clk
-            return {f"Q{i}": Signal.HIGH if (reg & (1 << i)) else Signal.LOW for i in range(8)}
-
-        # Junction
-        if t == "JUNCTION":
-            v = inputs.get("IN", Signal.Z)
-            return {"OUT1": v, "OUT2": v}
-
-        return {}
-
-    def _and(self, signals: list[Signal]) -> Signal:
-        if any(s == Signal.X for s in signals):
-            return Signal.X
-        if all(s == Signal.HIGH for s in signals):
-            return Signal.HIGH
-        return Signal.LOW
-
-    def _or(self, signals: list[Signal]) -> Signal:
-        if any(s == Signal.X for s in signals):
-            return Signal.X
-        if any(s == Signal.HIGH for s in signals):
-            return Signal.HIGH
-        return Signal.LOW
-
-    def _not(self, signal: Signal) -> Signal:
-        if signal == Signal.HIGH:
-            return Signal.LOW
-        if signal == Signal.LOW:
-            return Signal.HIGH
-        return Signal.X
-
-    def _xor(self, a: Signal, b: Signal) -> Signal:
-        if a == Signal.X or b == Signal.X:
-            return Signal.X
-        if (a == Signal.HIGH) != (b == Signal.HIGH):
-            return Signal.HIGH
-        return Signal.LOW
+        c = self.components.get(component_id)
+        if c is None or c.type.value != "CLOCK": return
+        st = self.states[component_id]
+        st.internal["CLK"] = H if st.internal.get("CLK", L) == L else L
+        self.run()
 
     def get_wire_states(self) -> dict[str, str]:
-        """Get all wire states for frontend."""
-        result = {}
-        for wire in self.wires:
-            from_key = f"{wire.from_component_id}:{wire.from_pin_id}"
-            result[wire.id] = self.pin_values.get(from_key, Signal.X).value
-        return result
+        return {w.id: self.pin_values.get(f"{w.from_component_id}:{w.from_pin_id}", X).value for w in self.wires}
 
     def get_pin_states(self) -> dict[str, dict[str, str]]:
-        """Get all pin states grouped by component."""
-        result = {}
-        for key, value in self.pin_values.items():
-            comp_id, pin_id = key.split(":")
-            if comp_id not in result:
-                result[comp_id] = {}
-            result[comp_id][pin_id] = value.value
-        return result
+        out: dict[str, dict[str, str]] = {}
+        for k, s in self.pin_values.items():
+            cid, pid = k.split(":", 1)
+            out.setdefault(cid, {})[pid] = s.value
+        return out
+    def _publish(self, cid, outs):
+        st = self.states[cid]
+        for pid, sig in outs.items():
+            st.outputs[pid] = sig
+            self.pin_values[f"{cid}:{pid}"] = sig
 
-    def get_component_states(self) -> dict[str, dict]:
-        """Get internal state for all components (for sequential elements)."""
-        return {
-            comp_id: {
-                "outputs": {k: v.value for k, v in state.outputs.items()},
-                "internal": state.internal,
-            }
-            for comp_id, state in self.states.items()
-        }
+    def _inputs(self, c):
+        return {p.id: self.pin_values.get(self._driver.get(f"{c.id}:{p.id}", ""), X) for p in c.pins if p.type.value == "input"}
+
+    def _refresh_sources(self) -> None:
+        for cid, c in self.components.items():
+            t, st, pr = c.type.value, self.states[cid], c.properties
+            if t in ("CONST_HIGH", "VCC_5V", "VCC_3V3"): self._publish(cid, {"OUT": H})
+            elif t in ("CONST_LOW", "GROUND"): self._publish(cid, {"OUT": L})
+            elif t == "SWITCH_TOGGLE": self._publish(cid, {"OUT": H if pr.get("state") else L})
+            elif t == "SWITCH_PUSH": self._publish(cid, {"OUT": H if (pr.get("pressed") or pr.get("state")) else L})
+            elif t == "CLOCK": self._publish(cid, {"CLK": st.internal.setdefault("CLK", L)})
+            elif t in _STATEFUL: self._publish(cid, self._stateful_outs(c, st))
+
+    def _stateful_outs(self, c, st):
+        t = c.type.value
+        if t in ("SR_LATCH", "D_FLIPFLOP", "JK_FLIPFLOP", "T_FLIPFLOP"):
+            q = st.internal.get("Q", L); return {"Q": q, "Q'": _not(q)}
+        if t == "COUNTER_4BIT":
+            n = st.internal.get("count", 0); return {f"Q{i}": H if (n >> i) & 1 else L for i in range(4)}
+        if t == "SHIFT_REGISTER_8BIT":
+            r = st.internal.get("reg", 0); return {f"Q{i}": H if (r >> i) & 1 else L for i in range(8)}
+        return {}
+
+    def _topo(self):
+        comb = {c.id for c in self.components.values() if c.type.value not in _SOURCE and c.type.value not in _STATEFUL}
+        adj: dict[str, list[str]] = {cid: [] for cid in comb}
+        indeg = {cid: 0 for cid in comb}
+        for w in self.wires:
+            if w.from_component_id in comb and w.to_component_id in comb:
+                adj[w.from_component_id].append(w.to_component_id)
+                indeg[w.to_component_id] += 1
+        q = [cid for cid, d in indeg.items() if d == 0]
+        order: list[str] = []
+        while q:
+            cur = q.pop(0); order.append(cur)
+            for nxt in adj[cur]:
+                indeg[nxt] -= 1
+                if indeg[nxt] == 0: q.append(nxt)
+        return order, [cid for cid in comb if cid not in order]
+
+    def _tick(self, c, inp, st):
+        t = c.type.value
+        if t == "SR_LATCH":
+            s, r = inp.get("S", L), inp.get("R", L)
+            st.internal["Q"] = X if s == H and r == H else H if s == H else L if r == H else st.internal.get("Q", L)
+            return
+        clk = inp.get("CLK", L)
+        rising = st.internal.get("prev_clk", L) == L and clk == H
+        st.internal["prev_clk"] = clk
+        if not rising: return
+        q = st.internal.get("Q", L)
+        if t == "D_FLIPFLOP": st.internal["Q"] = inp.get("D", L)
+        elif t == "JK_FLIPFLOP":
+            j, k = inp.get("J", L), inp.get("K", L)
+            st.internal["Q"] = _not(q) if j == H and k == H else H if j == H else L if k == H else q
+        elif t == "T_FLIPFLOP":
+            if inp.get("T", L) == H: st.internal["Q"] = _not(q)
+        elif t == "COUNTER_4BIT":
+            st.internal["count"] = (st.internal.get("count", 0) + 1) % 16
+        elif t == "SHIFT_REGISTER_8BIT":
+            si = 1 if inp.get("SI", L) == H else 0
+            st.internal["reg"] = ((st.internal.get("reg", 0) << 1) | si) & 0xFF
+
+    def _compute_outputs(self, comp, inputs, state):
+        t, vs = comp.type.value, list(inputs.values())
+        a, b = inputs.get("A", X), inputs.get("B", X)
+        if t.startswith("AND_"): return {"Y": _and(vs)}
+        if t.startswith("OR_"): return {"Y": _or(vs)}
+        if t.startswith("NAND_"): return {"Y": _not(_and(vs))}
+        if t.startswith("NOR_"): return {"Y": _not(_or(vs))}
+        if t == "NOT": return {"Y": _not(a)}
+        if t == "BUFFER": return {"Y": a}
+        if t == "XOR_2": return {"Y": _xor(a, b)}
+        if t == "XNOR_2": return {"Y": _not(_xor(a, b))}
+        if t == "MUX_2TO1":
+            sel = inputs.get("S", X)
+            return {"Y": X if sel == X else (a if sel == L else b)}
+        if t == "DECODER_2TO4":
+            n = _bits(inputs, "A", 2)
+            return {f"Y{i}": X if n is None else (H if i == n else L) for i in range(4)}
+        if t == "JUNCTION":
+            v = inputs.get("IN", X)
+            return {p.id: v for p in comp.pins if p.type.value == "output"}
+        if t == "ADDER_4BIT":
+            ai, bi = _bits(inputs, "A", 4), _bits(inputs, "B", 4)
+            if ai is None or bi is None: return _outs_x(comp)
+            s = ai + bi
+            return {**{f"S{i}": H if (s >> i) & 1 else L for i in range(4)}, "Cout": H if s > 15 else L}
+        if t == "COMPARATOR_4BIT":
+            ai, bi = _bits(inputs, "A", 4), _bits(inputs, "B", 4)
+            if ai is None or bi is None: return _outs_x(comp)
+            return {"A>B": H if ai > bi else L, "A=B": H if ai == bi else L, "A<B": H if ai < bi else L}
+        if t == "BCD_TO_7SEG":
+            n = _bits(inputs, "D", 4)
+            if n is None: return _outs_x(comp)
+            segs = _SEG.get(n % 10, "")
+            return {p.id: H if p.id.upper() in segs else L for p in comp.pins if p.type.value == "output"}
+        return {p.id: inputs.get(p.id, X) for p in comp.pins if p.type.value == "output"}

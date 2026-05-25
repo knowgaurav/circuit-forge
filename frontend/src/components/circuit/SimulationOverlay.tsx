@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Play, Pause, RotateCcw, AlertCircle, X } from 'lucide-react';
 import { Button, Badge, Tooltip } from '@/components/ui';
 import { useCircuitStore } from '@/stores';
-import { simulationEngine, type SimulationResult, type SignalState } from '@/services/simulation';
+import { simulate, type SimulationResult, type SignalState } from '@/features/simulation';
 
 interface SimulationOverlayProps {
     canSimulate: boolean; // true if user can run simulation (teacher or student with edit access)
@@ -96,7 +96,7 @@ export function SimulationOverlay({
             updatedAt: new Date().toISOString(),
         };
 
-        const simResult = simulationEngine.simulate(circuitState);
+        const simResult = simulate(circuitState);
         setResult(simResult);
         onSimulationResult?.(simResult);
 

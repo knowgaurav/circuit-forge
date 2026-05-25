@@ -18,6 +18,11 @@ from app.repositories.session_repository import SessionRepository
 
 logger = get_logger()
 
+# Snapshot policy: a snapshot is taken every SNAPSHOT_INTERVAL events. The
+# trigger lives in CircuitService._maybe_create_snapshot; this constant lives
+# here so that snapshot policy is owned by the session/snapshot layer.
+SNAPSHOT_INTERVAL = 50
+
 # Cursor colors for participants (8 distinct colors)
 CURSOR_COLORS = [
     "#FF5733",  # Red-Orange
