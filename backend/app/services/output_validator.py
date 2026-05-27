@@ -1,9 +1,25 @@
 """Output validation for prompt injection protection."""
 
 import re
+from dataclasses import dataclass
 from typing import Any
 
 from app.models.prompt_guard import OutputValidationResult
+from app.services.component_registry import ComponentRegistry
+
+
+@dataclass(frozen=True)
+class ValidationCheck:
+    """Outcome of a single registry-aware validation step.
+
+    Used by the agent orchestrator to translate a failed check into a
+    structured tool error result that the LLM can recover from. ``error_code``
+    and ``details`` are populated only when ``is_valid`` is False.
+    """
+
+    is_valid: bool
+    error_code: str | None
+    details: str | None
 
 
 class OutputValidator:
@@ -33,11 +49,16 @@ class OutputValidator:
         (r"hacked|pwned|compromised", "attack_indicator"),
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, *, registry: ComponentRegistry | None = None) -> None:
         self.anomaly_patterns = [
             (re.compile(pattern, re.IGNORECASE), name)
             for pattern, name in self.ANOMALY_PATTERNS
         ]
+        # ``registry`` is keyword-only and defaults to None so existing
+        # callers (course/level validators) keep working untouched. The agent
+        # orchestrator passes a real registry; the registry-aware methods
+        # below raise if it's missing rather than silently no-op.
+        self._registry = registry
 
     def validate(self, output: dict[str, Any] | None, raw_content: str | None = None) -> OutputValidationResult:
         """Validate LLM output for potential information leakage."""
@@ -195,3 +216,44 @@ class OutputValidator:
             anomalies.append("suspicious_description")
 
         return anomalies
+
+    # ------------------------------------------------------------------
+    # Registry-aware checks (B.10)
+    # ------------------------------------------------------------------
+
+    def validate_component_against_registry(
+        self, component_type: str
+    ) -> ValidationCheck:
+        """Reject a component_type the LLM hallucinated."""
+        if self._registry is None:
+            raise RuntimeError("registry not configured")
+
+        if self._registry.get_component(component_type) is None:
+            return ValidationCheck(
+                is_valid=False,
+                error_code="INVALID_COMPONENT_TYPE",
+                details=(
+                    f"component_type '{component_type}' is not in the registry"
+                ),
+            )
+        return ValidationCheck(is_valid=True, error_code=None, details=None)
+
+    def validate_pin_names_against_registry(
+        self, component_type: str, pin_names: list[str]
+    ) -> ValidationCheck:
+        """Reject any pin name that isn't on the component's registry definition."""
+        if self._registry is None:
+            raise RuntimeError("registry not configured")
+
+        valid_names = set(self._registry.get_pin_names(component_type))
+        for name in pin_names:
+            if name not in valid_names:
+                return ValidationCheck(
+                    is_valid=False,
+                    error_code="INVALID_PIN_NAME",
+                    details=(
+                        f"pin '{name}' is not defined on component_type "
+                        f"'{component_type}'"
+                    ),
+                )
+        return ValidationCheck(is_valid=True, error_code=None, details=None)
