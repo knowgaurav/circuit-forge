@@ -55,6 +55,7 @@ export function Canvas({
     const components = useCircuitStore((s) => s.components);
     const wires = useCircuitStore((s) => s.wires);
     const annotations = useCircuitStore((s) => s.annotations);
+    const replay = useCircuitStore((s) => s.replay);
     const remoteCursors = useSessionStore((s) => s.remoteCursors);
     const remoteSelections = useSessionStore((s) => s.remoteSelections);
     const currentParticipant = useSessionStore((s) => s.currentParticipant);
@@ -271,6 +272,7 @@ export function Canvas({
     );
 
     const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {
+        if (replay) return;
         const rect = canvasRef.current?.getBoundingClientRect();
         if (!rect) return;
 
