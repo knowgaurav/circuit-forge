@@ -19,6 +19,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel
 
+from app.exceptions.base import NotFoundException
 from app.models.circuit import (
     CircuitComponent,
     ComponentType,
@@ -32,6 +33,8 @@ from app.services.agent.schemas import (
     AddComponentResult,
     GetCircuitStateArgs,
     GetCircuitStateResult,
+    RemoveComponentArgs,
+    RemoveComponentResult,
     SimulateArgs,
     SimulateResult,
 )
@@ -166,6 +169,22 @@ async def add_component(
     return AddComponentResult(component_id=component.id, seq=event.seq)
 
 
+async def remove_component(
+    args: RemoveComponentArgs, *, deps: ToolDeps
+) -> RemoveComponentResult:
+    """Delete a component (cascading its wires) and return the resulting seq."""
+    try:
+        events, _state = await deps.circuit_service.delete_component(
+            args.session_id, args.actor_id, args.component_id
+        )
+    except NotFoundException as exc:
+        raise ToolError("COMPONENT_NOT_FOUND", str(exc)) from exc
+
+    # ``delete_component`` emits wire-delete events first and the
+    # component-delete event last; the LLM cares about the final seq.
+    return RemoveComponentResult(seq=events[-1].seq)
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -175,4 +194,5 @@ TOOLS: dict[str, ToolFn] = {
     "get_circuit_state": get_circuit_state,
     "simulate": simulate,
     "add_component": add_component,
+    "remove_component": remove_component,
 }

@@ -19,6 +19,7 @@ from app.models.circuit import Position
 from app.services.agent.schemas import (
     AddComponentArgs,
     GetCircuitStateArgs,
+    RemoveComponentArgs,
     SimulateArgs,
 )
 from app.services.agent.tools import (
@@ -27,6 +28,7 @@ from app.services.agent.tools import (
     ToolError,
     add_component,
     get_circuit_state,
+    remove_component,
     simulate,
 )
 from app.services.circuit_service import CircuitService
@@ -306,6 +308,56 @@ async def test_add_component_unknown_type_raises_tool_error() -> None:
 
 
 # ---------------------------------------------------------------------------
+# remove_component
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_remove_component_returns_seq_and_drops_component() -> None:
+    deps, circuit_service = _make_deps()
+    add_result = await add_component(
+        AddComponentArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            component_type="AND_2",
+            label="U1",
+            position=Position(x=0, y=0),
+        ),
+        deps=deps,
+    )
+
+    remove_result = await remove_component(
+        RemoveComponentArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            component_id=add_result.component_id,
+        ),
+        deps=deps,
+    )
+
+    assert remove_result.seq > add_result.seq
+    state = await circuit_service.get_circuit_state(SESSION_ID)
+    assert all(c.id != add_result.component_id for c in state.components)
+
+
+@pytest.mark.asyncio
+async def test_remove_component_missing_raises_tool_error() -> None:
+    deps, _circuit_service = _make_deps()
+
+    with pytest.raises(ToolError) as exc:
+        await remove_component(
+            RemoveComponentArgs(
+                session_id=SESSION_ID,
+                actor_id=ACTOR_ID,
+                component_id="does-not-exist",
+            ),
+            deps=deps,
+        )
+
+    assert exc.value.code == "COMPONENT_NOT_FOUND"
+
+
+# ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
@@ -314,3 +366,4 @@ def test_tools_registry_contains_get_circuit_state_and_simulate() -> None:
     assert "get_circuit_state" in TOOLS
     assert "simulate" in TOOLS
     assert "add_component" in TOOLS
+    assert "remove_component" in TOOLS
