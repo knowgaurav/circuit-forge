@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import components, courses, health, sessions
+from app.api import agent, components, courses, health, sessions
 from app.core.config import settings
 from app.core.database import db_manager
 from app.core.logger import get_logger
@@ -63,4 +63,5 @@ app.add_middleware(
 app.include_router(health.router, tags=["Health"])
 app.include_router(sessions.router, prefix="/api", tags=["Sessions"])
 app.include_router(courses.router, prefix="/api", tags=["Courses"])
+app.include_router(agent.router, prefix="/api", tags=["Agent"])
 app.include_router(components.router, tags=["Components"])
