@@ -15,13 +15,17 @@ from uuid import uuid4
 import pytest
 from pymongo.errors import DuplicateKeyError
 
+from app.models.circuit import Position
 from app.services.agent.schemas import (
+    AddComponentArgs,
     GetCircuitStateArgs,
     SimulateArgs,
 )
 from app.services.agent.tools import (
     TOOLS,
     ToolDeps,
+    ToolError,
+    add_component,
     get_circuit_state,
     simulate,
 )
@@ -254,6 +258,54 @@ async def test_simulate_advances_clock_each_tick() -> None:
 
 
 # ---------------------------------------------------------------------------
+# add_component
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_add_component_creates_event_and_returns_seq() -> None:
+    deps, circuit_service = _make_deps()
+
+    result = await add_component(
+        AddComponentArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            component_type="AND_2",
+            label="U1",
+            position=Position(x=42, y=84),
+        ),
+        deps=deps,
+    )
+
+    assert result.seq == 1
+    state = await circuit_service.get_circuit_state(SESSION_ID)
+    assert any(c.id == result.component_id for c in state.components)
+    placed = next(c for c in state.components if c.id == result.component_id)
+    assert placed.position.x == 42
+    assert placed.position.y == 84
+    assert {p.id for p in placed.pins} == {"A", "B", "Y"}
+
+
+@pytest.mark.asyncio
+async def test_add_component_unknown_type_raises_tool_error() -> None:
+    deps, _circuit_service = _make_deps()
+
+    with pytest.raises(ToolError) as exc:
+        await add_component(
+            AddComponentArgs(
+                session_id=SESSION_ID,
+                actor_id=ACTOR_ID,
+                component_type="NOT_A_REAL_GATE",
+                label="U1",
+                position=Position(x=0, y=0),
+            ),
+            deps=deps,
+        )
+
+    assert exc.value.code == "UNKNOWN_COMPONENT_TYPE"
+
+
+# ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
@@ -261,3 +313,4 @@ async def test_simulate_advances_clock_each_tick() -> None:
 def test_tools_registry_contains_get_circuit_state_and_simulate() -> None:
     assert "get_circuit_state" in TOOLS
     assert "simulate" in TOOLS
+    assert "add_component" in TOOLS

@@ -15,11 +15,21 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Awaitable, Callable
+from uuid import uuid4
 
 from pydantic import BaseModel
 
-from app.models.circuit import ComponentType
+from app.models.circuit import (
+    CircuitComponent,
+    ComponentType,
+    Pin,
+    PinType,
+    Position,
+    Rotation,
+)
 from app.services.agent.schemas import (
+    AddComponentArgs,
+    AddComponentResult,
     GetCircuitStateArgs,
     GetCircuitStateResult,
     SimulateArgs,
@@ -71,6 +81,28 @@ class ToolError(Exception):
 # ---------------------------------------------------------------------------
 
 
+def _registry_pins(registry: ComponentRegistry, component_type: str) -> list[Pin]:
+    """Map a registry component definition's pins to ``Pin`` instances."""
+    definition = registry.get_component(component_type)
+    if definition is None:
+        raise ToolError(
+            "UNKNOWN_COMPONENT_TYPE",
+            f"component_type '{component_type}' is not registered",
+        )
+
+    pins: list[Pin] = []
+    for pin_def in definition.pins:
+        pins.append(
+            Pin(
+                id=pin_def.name,
+                name=pin_def.name,
+                type=PinType.INPUT if pin_def.type == "input" else PinType.OUTPUT,
+                position=Position(x=pin_def.position["x"], y=pin_def.position["y"]),
+            )
+        )
+    return pins
+
+
 async def get_circuit_state(
     args: GetCircuitStateArgs, *, deps: ToolDeps
 ) -> GetCircuitStateResult:
@@ -107,6 +139,33 @@ async def simulate(args: SimulateArgs, *, deps: ToolDeps) -> SimulateResult:
     )
 
 
+async def add_component(
+    args: AddComponentArgs, *, deps: ToolDeps
+) -> AddComponentResult:
+    """Create a new component from the registry definition and persist it."""
+    definition = deps.component_registry.get_component(args.component_type)
+    if definition is None:
+        raise ToolError(
+            "UNKNOWN_COMPONENT_TYPE",
+            f"component_type '{args.component_type}' is not registered",
+        )
+
+    pins = _registry_pins(deps.component_registry, args.component_type)
+    component = CircuitComponent(
+        id=str(uuid4()),
+        type=ComponentType(args.component_type),
+        position=args.position,
+        rotation=Rotation.DEG_0,
+        properties=dict(definition.properties),
+        pins=pins,
+    )
+
+    event, _state = await deps.circuit_service.add_component(
+        args.session_id, args.actor_id, component
+    )
+    return AddComponentResult(component_id=component.id, seq=event.seq)
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -115,4 +174,5 @@ async def simulate(args: SimulateArgs, *, deps: ToolDeps) -> SimulateResult:
 TOOLS: dict[str, ToolFn] = {
     "get_circuit_state": get_circuit_state,
     "simulate": simulate,
+    "add_component": add_component,
 }
