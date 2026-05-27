@@ -91,6 +91,12 @@ class SimulationEngine:
         self._driver: dict[str, str] = {}
 
     def load_circuit(self, circuit: CircuitState) -> None:
+        """Wire the circuit into internal graph state and run one evaluation pass.
+
+        Builds ``_driver`` from the wire list and resets ``states`` /
+        ``pin_values``. Always followed by an immediate ``run`` so callers
+        receive a fully populated pin map without a second call.
+        """
         self.components = {c.id: c for c in circuit.components}
         self.wires = list(circuit.wires)
         self.states = {c.id: ComponentState() for c in circuit.components}
@@ -102,6 +108,38 @@ class SimulationEngine:
         self.run()
 
     def run(self) -> None:
+        """One full evaluation pass over the circuit.
+
+        Walks the combinational graph in topological order, then commits
+        stateful updates. Concretely, for the toy circuit::
+
+            SWITCH_TOGGLE -+
+                           +--> AND_2 --> LED
+            CONST_HIGH ----+
+
+        the steps are:
+
+        1. ``_refresh_sources`` publishes outputs for every source and
+           stateful node. ``SWITCH_TOGGLE`` emits H or L based on its
+           ``state`` property; ``CONST_HIGH`` emits H. The LED has no inputs
+           wired yet, but it is combinational so it shows up in the topo order.
+        2. ``_topo`` returns the combinational nodes in dependency order
+           (``[AND_2, LED]`` here, since AND_2 has zero in-edges from other
+           combinational nodes — its inputs come from sources).
+        3. For each combinational node, ``_inputs`` looks up its driver pins
+           in ``pin_values`` (``H`` and ``H`` for the AND), and
+           ``_compute_outputs`` returns the truth-table result (``H``).
+           ``_publish`` writes that into ``pin_values`` so downstream nodes
+           in the same pass see it. The LED's input pin then reads ``H``.
+        4. Any combinational nodes left out of the topo order (cycles) get
+           all outputs set to ``X``.
+        5. Stateful non-clock nodes call ``_tick`` to commit any rising-edge
+           transitions, then re-publish so their freshly updated outputs are
+           visible by the next ``run``.
+
+        ``evaluate`` is an alias kept so newer callers can use the more
+        intention-revealing name.
+        """
         self._refresh_sources()
         order, in_cycle = self._topo()
         for cid in order:
@@ -136,6 +174,33 @@ class SimulationEngine:
         self.run()
 
     def tick_clock(self, component_id: str) -> None:
+        """Advance a CLOCK component by one half-period and re-evaluate.
+
+        The clock's ``CLK`` internal level is flipped (``L -> H`` is a rising
+        edge, ``H -> L`` is falling). ``run`` then re-publishes the new clock
+        level into ``pin_values``, and the stateful-update loop inside ``run``
+        calls ``_tick`` for every flip-flop / counter / shift register whose
+        ``CLK`` input is wired to this clock. ``_tick`` compares ``prev_clk``
+        against the new ``CLK`` and only commits a state change on a rising
+        edge.
+
+        Worked example — single D flip-flop with ``D`` tied high::
+
+            tick_clock(clk_id)  # CLK: L -> H
+              run()
+                _refresh_sources():  CLK pin = H, FF outputs Q=L (previous)
+                _topo + _compute:    no combinational change
+                _tick(FF):           prev_clk=L, CLK=H -> rising; Q := D = H
+                re-publish FF:       Q=H, Q'=L now visible
+
+            tick_clock(clk_id)  # CLK: H -> L
+              run()
+                _refresh_sources():  CLK pin = L, FF outputs Q=H (current)
+                _tick(FF):           prev_clk=H, CLK=L -> falling; no change
+
+        SR_LATCH is the one stateful component that ignores ``CLK`` — it is
+        level-sensitive, see ``_tick``.
+        """
         c = self.components.get(component_id)
         if c is None or c.type.value != "CLOCK":
             return
@@ -201,6 +266,11 @@ class SimulationEngine:
         return {}
 
     def _topo(self):
+        # Kahn's algorithm restricted to combinational components. Sources and
+        # stateful nodes are intentionally excluded: their outputs are already
+        # in `pin_values` from `_refresh_sources`, so combinational nodes that
+        # consume them have one fewer in-edge to wait on. Anything left with
+        # non-zero in-degree at the end is part of a cycle and gets X'd out.
         comb = {
             c.id
             for c in self.components.values()
@@ -226,6 +296,7 @@ class SimulationEngine:
     def _tick(self, c, inp, st):
         t = c.type.value
         if t == "SR_LATCH":
+            # SR_LATCH is level-sensitive, not edge-triggered; it has no CLK.
             s, r = inp.get("S", L), inp.get("R", L)
             st.internal["Q"] = (
                 X
@@ -238,6 +309,9 @@ class SimulationEngine:
             )
             return
         clk = inp.get("CLK", L)
+        # Rising-edge detection: previous CLK was L, current is H. `prev_clk`
+        # must always be updated, even on falling edges, so the next pass sees
+        # the correct previous level.
         rising = st.internal.get("prev_clk", L) == L and clk == H
         st.internal["prev_clk"] = clk
         if not rising:
@@ -260,6 +334,14 @@ class SimulationEngine:
             st.internal["reg"] = ((st.internal.get("reg", 0) << 1) | si) & 0xFF
 
     def _compute_outputs(self, comp, inputs, state):
+        """Per-component combinational truth table.
+
+        Pin layouts (which inputs/outputs a component exposes) are defined in
+        ``component_registry``. This method only knows the *semantics*: given
+        a pin -> Signal map, what does the output pin map look like? All
+        branches return ``Signal.X`` for any unknown input unless the
+        three-valued dominance rule lets them commit early (e.g. ``0 AND X``).
+        """
         t, vs = comp.type.value, list(inputs.values())
         a, b = inputs.get("A", X), inputs.get("B", X)
         if t.startswith("AND_"):
@@ -280,11 +362,16 @@ class SimulationEngine:
             return {"Y": _not(_xor(a, b))}
         if t == "MUX_2TO1":
             sel = inputs.get("S", X)
+            # S=L picks A, S=H picks B; X on select forces X (we do not peek
+            # at A and B to see if they happen to agree).
             return {"Y": X if sel == X else (a if sel == L else b)}
         if t == "DECODER_2TO4":
+            # 2-bit address A0,A1 -> exactly one of Y0..Y3 is H, others L.
+            # Any X on address forces all outputs X (see component_registry).
             n = _bits(inputs, "A", 2)
             return {f"Y{i}": X if n is None else (H if i == n else L) for i in range(4)}
         if t == "JUNCTION":
+            # Wire fan-out helper: copy IN to every output pin.
             v = inputs.get("IN", X)
             return {p.id: v for p in comp.pins if p.type.value == "output"}
         if t == "ADDER_4BIT":
@@ -297,6 +384,8 @@ class SimulationEngine:
                 "Cout": H if s > 15 else L,
             }
         if t == "COMPARATOR_4BIT":
+            # Three exclusive outputs: A>B, A=B, A<B. Any X on either operand
+            # makes all three X via _outs_x.
             ai, bi = _bits(inputs, "A", 4), _bits(inputs, "B", 4)
             if ai is None or bi is None:
                 return _outs_x(comp)
@@ -306,6 +395,8 @@ class SimulationEngine:
                 "A<B": H if ai < bi else L,
             }
         if t == "BCD_TO_7SEG":
+            # Decode 4-bit BCD to segments A..G; pins are looked up by id from
+            # component_registry, so a..g lowercase pins map to A..G segments.
             n = _bits(inputs, "D", 4)
             if n is None:
                 return _outs_x(comp)
@@ -315,6 +406,8 @@ class SimulationEngine:
                 for p in comp.pins
                 if p.type.value == "output"
             }
+        # Fallback for sinks / passthroughs (LED, display pins, etc.): copy
+        # input value of the same pin id, X if not connected.
         return {
             p.id: inputs.get(p.id, X) for p in comp.pins if p.type.value == "output"
         }
