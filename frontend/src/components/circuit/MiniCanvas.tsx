@@ -4,7 +4,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import type { CircuitComponent, Wire, CircuitBlueprint } from '@/types';
 import { getComponentDefinition } from '@/constants/components';
 import { loadCircuitFromBlueprint } from '@/services/blueprintLoader';
-import { simulationEngine, type SimulationResult } from '@/services/simulation';
+import { simulate, type SimulationResult } from '@/features/simulation';
 import { Play, Pause, RotateCcw, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { drawComponent, drawWire, drawGrid } from './drawingUtils';
 
@@ -71,7 +71,7 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                 annotations: [],
                 updatedAt: new Date().toISOString(),
             };
-            const result = simulationEngine.simulate(circuitState);
+            const result = simulate(circuitState);
             setSimulationResult(result);
         }
     }, [components, wires, isSimulating]);
@@ -254,13 +254,13 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                                 prev.map((c) =>
                                     c.id === comp.id
                                         ? {
-                                              ...c,
-                                              properties: {
-                                                  ...c.properties,
-                                                  [`sw${switchIdx}`]:
-                                                      !c.properties[`sw${switchIdx}`],
-                                              },
-                                          }
+                                            ...c,
+                                            properties: {
+                                                ...c.properties,
+                                                [`sw${switchIdx}`]:
+                                                    !c.properties[`sw${switchIdx}`],
+                                            },
+                                        }
                                         : c
                                 )
                             );
@@ -273,13 +273,13 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                             prev.map((c) =>
                                 c.id === comp.id
                                     ? {
-                                          ...c,
-                                          properties: {
-                                              ...c.properties,
-                                              value:
-                                                  (((c.properties.value as number) ?? 0) + 1) % 16,
-                                          },
-                                      }
+                                        ...c,
+                                        properties: {
+                                            ...c.properties,
+                                            value:
+                                                (((c.properties.value as number) ?? 0) + 1) % 16,
+                                        },
+                                    }
                                     : c
                             )
                         );
@@ -292,12 +292,12 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                             const updated = prev.map((c) =>
                                 c.id === comp.id
                                     ? {
-                                          ...c,
-                                          properties: {
-                                              ...c.properties,
-                                              state: !c.properties.state,
-                                          },
-                                      }
+                                        ...c,
+                                        properties: {
+                                            ...c.properties,
+                                            state: !c.properties.state,
+                                        },
+                                    }
                                     : c
                             );
 

@@ -30,6 +30,7 @@ export class WebSocketClient {
     private isIntentionalClose = false;
     private cursorThrottleTimeout: NodeJS.Timeout | null = null;
     private lastCursorPosition: Position | null = null;
+    private lastSeenSeq: number | null = null;
 
     // Leader/follower mode support
     private mode: ConnectionMode = 'leader';
@@ -70,18 +71,37 @@ export class WebSocketClient {
         return this.tabId;
     }
 
-    connect(sessionCode: string, participantId: string): void {
+    connect(
+        sessionCode: string,
+        participantId: string,
+        options: { lastSeenSeq?: number } = {}
+    ): void {
         this.sessionCode = sessionCode;
         this.participantId = participantId;
         this.isIntentionalClose = false;
         this.reconnectAttempts = 0;
+        this.lastSeenSeq = options.lastSeenSeq ?? null;
         this.createConnection();
+    }
+
+    /**
+     * Update the last-seen seq the next reconnect attempt should request.
+     * Call this whenever the client successfully applies events so that a
+     * subsequent reconnection can resume with a delta sync rather than a
+     * full snapshot.
+     */
+    setLastSeenSeq(seq: number): void {
+        this.lastSeenSeq = seq;
     }
 
     private createConnection(): void {
         // Include trace_id in WebSocket URL for correlation
         const traceId = getSessionTraceId();
-        const url = `${WS_URL}/${this.sessionCode}/${this.participantId}?trace_id=${traceId}`;
+        const params = new URLSearchParams({ trace_id: traceId });
+        if (this.lastSeenSeq !== null) {
+            params.set('last_seen_seq', String(this.lastSeenSeq));
+        }
+        const url = `${WS_URL}/${this.sessionCode}/${this.participantId}?${params.toString()}`;
 
         try {
             this.ws = new WebSocket(url);

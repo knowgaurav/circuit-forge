@@ -5,7 +5,7 @@
  */
 
 import type { Position, Wire, CircuitComponent } from '@/types';
-import type { SignalState } from '@/services/simulation';
+import type { SignalState } from '@/features/simulation';
 import { getWireStyle } from '@/components/circuit/SimulationOverlay';
 
 /**

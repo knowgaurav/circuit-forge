@@ -23,7 +23,7 @@ import { IconButton, Tooltip, Button, ThemeToggle } from '@/components/ui';
 import { Canvas } from '@/components/circuit';
 import { useCircuitStore, useUIStore } from '@/stores';
 import { getTemplateById, type Template } from '@/constants/templates';
-import { simulationEngine, type SimulationResult } from '@/services/simulation';
+import { simulate, type SimulationResult } from '@/features/simulation';
 
 type Mode = 'learning' | 'implementation';
 
@@ -225,7 +225,7 @@ export default function TemplateDetailPage() {
             return comp;
         });
 
-        const result = simulationEngine.simulate({
+        const result = simulate({
             sessionId: '',
             version: 0,
             schemaVersion: '1.0.0',
@@ -342,11 +342,10 @@ export default function TemplateDetailPage() {
                     <div className="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
                         <button
                             onClick={() => router.push(`/templates/${templateId}?mode=learning`)}
-                            className={`rounded px-3 py-1 text-sm ${
-                                mode === 'learning'
-                                    ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
-                                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
-                            }`}
+                            className={`rounded px-3 py-1 text-sm ${mode === 'learning'
+                                ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
+                                : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                                }`}
                         >
                             <BookOpen className="mr-1 inline h-4 w-4" />
                             Learn
@@ -355,11 +354,10 @@ export default function TemplateDetailPage() {
                             onClick={() =>
                                 router.push(`/templates/${templateId}?mode=implementation`)
                             }
-                            className={`rounded px-3 py-1 text-sm ${
-                                mode === 'implementation'
-                                    ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
-                                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
-                            }`}
+                            className={`rounded px-3 py-1 text-sm ${mode === 'implementation'
+                                ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
+                                : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                                }`}
                         >
                             <Wrench className="mr-1 inline h-4 w-4" />
                             Build
@@ -511,23 +509,21 @@ export default function TemplateDetailPage() {
                                             <button
                                                 key={step.id}
                                                 onClick={() => setCurrentStepIndex(index)}
-                                                className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                                                    index === currentStepIndex
-                                                        ? 'border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/30'
-                                                        : completedSteps.has(step.id)
-                                                          ? 'border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-900/30'
-                                                          : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
-                                                }`}
+                                                className={`w-full rounded-lg border p-3 text-left transition-colors ${index === currentStepIndex
+                                                    ? 'border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/30'
+                                                    : completedSteps.has(step.id)
+                                                        ? 'border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-900/30'
+                                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <div
-                                                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                                                            completedSteps.has(step.id)
-                                                                ? 'bg-green-500 text-white'
-                                                                : index === currentStepIndex
-                                                                  ? 'bg-blue-500 text-white'
-                                                                  : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                                                        }`}
+                                                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${completedSteps.has(step.id)
+                                                            ? 'bg-green-500 text-white'
+                                                            : index === currentStepIndex
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                                                            }`}
                                                     >
                                                         {completedSteps.has(step.id) ? (
                                                             <Check className="h-3 w-3" />
@@ -671,11 +667,10 @@ export default function TemplateDetailPage() {
                                             <button
                                                 key={percent}
                                                 onClick={() => handleZoomPreset(percent)}
-                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                                    Math.round(uiStore.zoom * 100) === percent
-                                                        ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                                        : 'text-gray-700 dark:text-gray-200'
-                                                }`}
+                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${Math.round(uiStore.zoom * 100) === percent
+                                                    ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                    : 'text-gray-700 dark:text-gray-200'
+                                                    }`}
                                             >
                                                 {percent}%
                                             </button>

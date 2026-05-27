@@ -1,9 +1,19 @@
 /**
  * @file types.ts
- * @description Type definitions for simulation module
+ * @description Type definitions for the topo-sort simulation engine.
  * @module features/simulation
  */
 
+export type Signal = '0' | '1' | 'X';
+
+export const HIGH: Signal = '1';
+export const LOW: Signal = '0';
+export const X: Signal = 'X';
+
+/**
+ * Legacy 4-valued signal kept for the validation/result layer that older
+ * UI consumers still expect. New code should use `Signal` directly.
+ */
 export type SignalState = 'HIGH' | 'LOW' | 'UNDEFINED' | 'ERROR';
 
 export interface SimulationError {
@@ -20,7 +30,8 @@ export interface SimulationResult {
     errors: SimulationError[];
 }
 
-export interface FlipFlopOutput {
-    q: SignalState;
-    qBar: SignalState;
+export function toLegacy(s: Signal): SignalState {
+    if (s === '1') return 'HIGH';
+    if (s === '0') return 'LOW';
+    return 'UNDEFINED';
 }
