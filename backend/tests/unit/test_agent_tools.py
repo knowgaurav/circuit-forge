@@ -15,15 +15,19 @@ from uuid import uuid4
 import pytest
 from pymongo.errors import DuplicateKeyError
 
-from app.services.agent.schemas import GetCircuitStateArgs
+from app.services.agent.schemas import (
+    GetCircuitStateArgs,
+    SimulateArgs,
+)
 from app.services.agent.tools import (
     TOOLS,
     ToolDeps,
     get_circuit_state,
+    simulate,
 )
 from app.services.circuit_service import CircuitService
 from app.services.component_registry import ComponentRegistry
-from app.services.simulation_engine import SimulationEngine
+from app.services.simulation_engine import Signal, SimulationEngine
 from tests.factories import ComponentFactory, WireFactory
 
 
@@ -200,9 +204,60 @@ async def test_get_circuit_state_returns_components_and_wires() -> None:
 
 
 # ---------------------------------------------------------------------------
+# simulate
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_simulate_evaluates_circuit_with_zero_ticks() -> None:
+    deps, circuit_service = _make_deps()
+    sw_id, and_id, _led_id = await _seed_switch_and_led(circuit_service, switch_state=True)
+
+    result = await simulate(
+        SimulateArgs(session_id=SESSION_ID, ticks=0), deps=deps
+    )
+
+    # Switch is HIGH, ground feeds AND.B LOW -> AND.Y is LOW.
+    assert result.pin_states[sw_id]["OUT"] == Signal.HIGH
+    assert result.pin_states[and_id]["Y"] == Signal.LOW
+    assert result.errors == []
+
+
+@pytest.mark.asyncio
+async def test_simulate_advances_clock_each_tick() -> None:
+    deps, circuit_service = _make_deps()
+
+    clock = ComponentFactory.create_clock(id="clk-1")
+    dff = ComponentFactory.create_d_flipflop(id="dff-1")
+    high = ComponentFactory.create_const_high(id="hi-1")
+
+    for comp in (clock, dff, high):
+        await circuit_service.add_component(SESSION_ID, ACTOR_ID, comp)
+
+    await circuit_service.add_wire(
+        SESSION_ID, ACTOR_ID,
+        WireFactory.create(clock.id, "CLK", dff.id, "CLK"),
+    )
+    await circuit_service.add_wire(
+        SESSION_ID, ACTOR_ID,
+        WireFactory.create(high.id, "OUT", dff.id, "D"),
+    )
+
+    # ticks=0 — clock starts LOW, no edges yet, Q stays LOW.
+    zero = await simulate(SimulateArgs(session_id=SESSION_ID, ticks=0), deps=deps)
+    assert zero.pin_states[dff.id]["Q"] == Signal.LOW
+
+    # ticks=1 — one half-period flips CLK to HIGH, that's a rising edge that
+    # latches D=HIGH into Q.
+    one = await simulate(SimulateArgs(session_id=SESSION_ID, ticks=1), deps=deps)
+    assert one.pin_states[dff.id]["Q"] == Signal.HIGH
+
+
+# ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
 
-def test_tools_registry_contains_get_circuit_state() -> None:
+def test_tools_registry_contains_get_circuit_state_and_simulate() -> None:
     assert "get_circuit_state" in TOOLS
+    assert "simulate" in TOOLS

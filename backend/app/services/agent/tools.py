@@ -18,9 +18,12 @@ from typing import Awaitable, Callable
 
 from pydantic import BaseModel
 
+from app.models.circuit import ComponentType
 from app.services.agent.schemas import (
     GetCircuitStateArgs,
     GetCircuitStateResult,
+    SimulateArgs,
+    SimulateResult,
 )
 from app.services.circuit_service import CircuitService
 from app.services.component_registry import ComponentRegistry
@@ -79,6 +82,31 @@ async def get_circuit_state(
     )
 
 
+async def simulate(args: SimulateArgs, *, deps: ToolDeps) -> SimulateResult:
+    """Evaluate the circuit and optionally advance clocks ``ticks`` times.
+
+    Returns pin/wire signal maps as the engine reports them. ``errors`` is
+    always empty: the engine surfaces error states implicitly via
+    :class:`Signal.X` (floating, cycle, conflict).
+    """
+    state = await deps.circuit_service.get_circuit_state(args.session_id)
+    engine = deps.simulation_engine_factory()
+    engine.load_circuit(state)
+    engine.evaluate()
+
+    if args.ticks > 0:
+        clock_ids = [c.id for c in state.components if c.type == ComponentType.CLOCK]
+        for _ in range(args.ticks):
+            for cid in clock_ids:
+                engine.tick_clock(cid)
+
+    return SimulateResult(
+        pin_states=engine.get_pin_states(),  # type: ignore[arg-type]
+        wire_states=engine.get_wire_states(),  # type: ignore[arg-type]
+        errors=[],
+    )
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -86,4 +114,5 @@ async def get_circuit_state(
 
 TOOLS: dict[str, ToolFn] = {
     "get_circuit_state": get_circuit_state,
+    "simulate": simulate,
 }
