@@ -38,70 +38,61 @@ The actual gaps:
 
 ---
 
-## Story 0 — Simulator Rewrite (Foundation)
+## Execution Model — Parallel Lanes
 
-**Why:** Two simulators that can disagree make every other property test untrustworthy. The backend's discrete-event model is unused complexity. Topological sort over a graph where stateful primitives are sources is the right algorithm for an educational simulator.
+Each story is split into **lanes** so multiple sub-agents can work concurrently without stepping on each other.
 
-### Algorithm spec
+A lane:
+- Owns a fixed file scope. No two active lanes write the same file.
+- Lives on its own worktree + branch off the `system-design-improvement` integration branch.
+- Closes a specific subset of tasks from the story table.
+- Has a stated **entry condition** (what must already be on integration before it starts).
 
-- **Combinational nodes** (AND/OR/NOT/NAND/NOR/XOR/XNOR/BUFFER, MUX, decoders, adders, comparators) are pure functions of their input pins
-- **Stateful nodes** (D/JK/T flip-flops, SR_LATCH, counter, shift register, clock) hold internal state. Their *outputs* are sources in the topo graph (reflect previous state). Their `tick()` runs separately on clock edge
-- **Three-valued logic** stays: `0 | 1 | X`. Correct dominance: `0 AND X = 0`, `1 OR X = 1`
-- **One pass per evaluation:** topo-sort combinational nodes once, evaluate in order, write pin states
-- **Combinational cycle detected** = error, return `X` for the cycle nodes
+### Worktree & branch convention
 
-### Tasks
+- Integration worktree: `circuit-forge-system-design/` on branch `system-design-improvement`
+- Lane worktree: `circuit-forge-<lane-id>/` on branch `<lane-id>` (e.g. `circuit-forge-storyA-snapshots/` on `storyA-snapshots`)
 
-| # | Task | File | Verify |
-|---|------|------|--------|
-| 0.1 | Write simulator spec | `docs/simulator.md` | One page, includes 3-valued truth tables and combinational vs stateful component list |
-| 0.2 | Rewrite backend engine | `backend/app/services/simulation_engine.py` | <= 200 LOC; existing `tests/unit/test_simulation_engine.py` passes; all gate truth tables match |
-| 0.3 | Update `simulation_service.py` to call new engine API | `backend/app/services/simulation_service.py` | `tests/unit/test_simulation_service.py` passes |
-| 0.4 | Rewrite frontend engine | `frontend/src/features/simulation/engine.ts` (new) + slim existing evaluators | Frontend simulation tests pass |
-| 0.5 | Migrate `services/simulation.ts` consumers, then delete the file | grep usages across `frontend/src/` | No broken imports; `npm run typecheck` clean |
-| 0.6 | Cross-engine parity test | `backend/tests/property/test_engine_parity.py` | 500 Hypothesis examples; backend and frontend produce identical pin states for the same circuit + inputs |
-| 0.7 | Frontend parity harness | `frontend/scripts/dump-engine-output.ts` (CLI) | Backend test invokes via subprocess and compares JSON output |
+Create a lane:
+```
+git -C circuit-forge worktree add -b <lane-id> ../circuit-forge-<lane-id> system-design-improvement
+```
 
-### Checkpoints
-- ✅ **C0.A** All existing simulation unit tests still pass against the new backend engine
-- ✅ **C0.B** Backend engine LOC reduced to <= 200, frontend simulation module total <= 500 LOC
-- ✅ **C0.C** Parity test green at 500 examples, deadline=None
-- ✅ **C0.D** No remaining references to the old discrete-event API (`Event`, `heapq`, `step()`, `run_until()`, per-gate delays)
+Drop a lane after merge:
+```
+git -C circuit-forge worktree remove ../circuit-forge-<lane-id>
+git -C circuit-forge branch -d <lane-id>
+```
 
-### Effort: ~1 week
+### Merge protocol
+
+1. Lane finishes its checkpoint locally (commits, no push).
+2. Rebase lane on `system-design-improvement`.
+3. Run full backend + frontend test suite on the rebased lane.
+4. Fast-forward `system-design-improvement` to the lane head.
+5. Remove lane worktree + branch.
+
+One PR per **story** (not per lane) opens against `main` once the story's checkpoints are all green on integration.
+
+### Per-lane working agreement (read this before writing code)
+
+- Touch only files in your lane's **Allowed files** list. If a task forces you outside it, stop and re-scope.
+- Add tests with the feature. No follow-up "tests PR".
+- One commit per task ID. Commit message: `<task-id>: <summary>` (e.g. `A.4: snapshot every N events`).
+- Wait for your **Entry condition** to be satisfied before starting. Don't preemptively branch off stale main.
+- If a lane needs a contract another lane is still defining, that contract lands as its own tiny PR first (see Story B contracts lane).
 
 ---
 
-## Story A — Consistency Model & Determinism
+## Story 0 — Simulator Rewrite (Foundation) ✅ Done
 
-**Why:** Event-sourced collaborative state with live simulation is the unique part of CircuitForge. Specifying and verifying it is more impressive than wrapping it in cloud services. DET has no equivalent.
+Shipped in PR #6 (commit `52738b4`). Engine, parity test, and `docs/simulator.md` live on `main`. Inter-story API surface captured in `.kiro/specs/system-design-improvement/contracts.md`.
 
-### Tasks
+---
 
-| # | Task | File | Verify |
-|---|------|------|--------|
-| A.1 | Write consistency ADR | `docs/adr/0001-collaboration-consistency.md` | One page covering: host-authoritative ordering, monotonic seq per session, reconnect protocol, why not CRDT, why not LWW-only, what we give up |
-| A.2 | Lock event schema | `backend/app/events/schema.py` | Discriminated `CircuitEvent` union; required `seq`, `session_id`, `actor_id`, `timestamp`; no speculative `Optional` fields |
-| A.3 | Add `seq` enforcement at write path | `backend/app/repositories/event_repository.py` | Append rejects out-of-order or duplicate seq; unit test covers both |
-| A.4 | Define snapshot policy | `backend/app/services/session_service.py` (or new `snapshot_service.py`) | Snapshot every N events (config, default 50); unit test: snapshot + replay delta == full replay |
-| A.5 | Reconnect protocol implementation | `backend/app/websocket/handler.py` | Client sends `last_seen_seq`; server replies with delta or fresh snapshot; integration test |
-| A.6 | Frontend reconnect handling | `frontend/src/services/websocket.ts` + relevant store | On reconnect, applies delta or replaces state from snapshot; Vitest covers both branches |
-| A.7 | Hypothesis determinism test | `backend/tests/property/test_determinism.py` | Strategy generates random valid event sequences; property: simulating the same log twice yields identical pin states; 1000 examples |
-| A.8 | Order-invariance property | same file | Property: applying events as one batch vs one-by-one yields identical final state |
-| A.9 | Integration test: kill + reconnect | `backend/tests/integration/test_reconnect.py` | Apply N events, drop WS, reconnect with `last_seq=K`, assert state matches |
+## Story A — Consistency Model & Determinism ✅ Done
 
-### Out of scope
-- CRDTs (we document why not, we don't build one)
-- Multi-region / cross-host failover (separate story below if you pick it)
-
-### Checkpoints
-- ✅ **CA.A** ADR merged, reviewed against an actual reconnect scenario
-- ✅ **CA.B** Event schema is the single source of truth (delete any duplicated event types in services)
-- ✅ **CA.C** Determinism property green at 1000 examples
-- ✅ **CA.D** Reconnect integration test green
-- ✅ **CA.E** Snapshot reconstruction is O(snapshot_size + delta), benchmarked once and noted in the ADR
-
-### Effort: ~1.5 weeks
+Shipped in PR #6 (commit `52738b4`). ADR at `docs/adr/0001-collaboration-consistency.md`, event schema at `backend/app/events/schema.py`, snapshot service inside `backend/app/services/session_service.py`, reconnect protocol in `backend/app/websocket/handler.py` + `frontend/src/services/websocket.ts`, determinism + reconnect tests under `backend/tests/`.
 
 ---
 
@@ -139,6 +130,17 @@ The actual gaps:
 - ✅ **CB.B** Orchestrator unit tests cover: budget exhaustion, validation-failure retry, max-iteration abort
 - ✅ **CB.C** Trace UI renders a real ReAct turn end-to-end (record a 30s screencap)
 - ✅ **CB.D** Output validator catches a hallucinated pin name in a unit test (regression for the demo)
+
+### Lanes
+
+| Lane ID | Tasks | Allowed files | Entry condition |
+|---|---|---|---|
+| `storyB-contracts` | B.9 (schema-only slice) | `backend/app/services/agent/schemas.py` (new) — the Pydantic args/result models for all six tools | Story A merged |
+| `storyB-tools` | B.3–B.8, B.10 | `backend/app/services/agent/tools.py`, `backend/app/services/output_validator.py` (extension only), unit tests for each tool | `storyB-contracts` merged |
+| `storyB-orchestrator` | B.1, B.2, B.11, B.12 | `backend/app/services/agent/orchestrator.py`, `backend/app/services/agent/context.py`, `backend/app/api/agent.py`, repository extension for trace persistence, orchestrator unit tests | `storyB-contracts` merged |
+| `storyB-ui` | B.13, B.14 | `frontend/src/components/agent/AgentTrace.tsx`, `frontend/src/features/agent/AgentPanel.tsx`, their tests | `storyB-orchestrator` merged (needs the API shape locked) |
+
+Run order: contracts → (tools ‖ orchestrator) → UI. Contracts is one small commit, then tools and orchestrator both proceed against the locked schema.
 
 ### Effort: ~1.5 weeks
 
@@ -178,6 +180,15 @@ The actual gaps:
 - ✅ **CC.C** Property test green: replay correctness across random logs
 - ✅ **CC.D** Demo recorded: scrub through a session, branch from a midpoint, edit the branch (60s screencap)
 
+### Lanes
+
+| Lane ID | Tasks | Allowed files | Entry condition |
+|---|---|---|---|
+| `storyC-backend` | C.1, C.2, C.6 (server side), C.7, C.8, C.9 | `backend/app/api/sessions.py`, `backend/app/services/session_service.py` (replay additions only), `backend/tests/integration/test_replay.py`, `backend/tests/property/test_replay.py`, `docs/replay.md` | Story A merged |
+| `storyC-ui` | C.3, C.4, C.5, C.6 (client button) | `frontend/src/features/replay/Timeline.tsx`, `frontend/src/stores/replayStore.ts`, canvas read-only mode (call out the exact files in the lane brief), branch button component, their tests | `storyC-backend` merged (needs `GET …/events` and `POST …/branch` shapes) |
+
+Run order: backend → UI. Story C runs in parallel with all of Story B.
+
 ### Effort: ~1 week
 
 ---
@@ -197,14 +208,37 @@ Reasons:
 
 ## Implementation Order & Timeline
 
+Stories 0 and A are merged. Stories B and C run in parallel from here.
+
+### Remaining story-level order
+
 | Order | Story | Effort | Why this order |
 |-------|-------|--------|----------------|
-| 1 | Story 0 — Simulator Rewrite | 1 week | Without a clean engine, every later property test tests the wrong thing |
-| 2 | Story A — Consistency & Determinism | 1.5 weeks | Locks the event-sourcing foundation; Story B and C both depend on it |
-| 3 | Story C — Time-Travel Debugger | 1 week | Fast win on top of A. Builds momentum and gives an immediate differentiator |
-| 4 | Story B — ReAct Agent | 1.5 weeks | Last because it's the most variable in scope; if time runs short, ship a subset of tools |
+| ~~1~~ | ~~Story 0 — Simulator Rewrite~~ | ~~1 week~~ | ✅ Done (PR #6) |
+| ~~2~~ | ~~Story A — Consistency & Determinism~~ | ~~1.5 weeks~~ | ✅ Done (PR #6) |
+| 3a | Story C — Time-Travel Debugger | 1 week | Runs in parallel with B |
+| 3b | Story B — ReAct Agent | 1.5 weeks | Runs in parallel with C |
 
-**Total: ~5 weeks. Cost: $0/mo.**
+Wall-clock remaining: **~1.5 weeks** with B and C overlapped.
+
+### Concurrency view (remaining)
+
+```
+Week 1                    Week 1.5
+┌──────────────────────────────────────┐
+│ Story B (1.5w)                       │
+│ ├ contracts                          │
+│ ├ tools  ─┐                          │
+│ ├ orch   ─┴──┐                       │
+│ └ ui ────────┘                       │
+├──────────────────────────────────────┤
+│ Story C (1w)                         │
+│ ├ backend ─┐                         │
+│ └ ui ──────┘                         │
+└──────────────────────────────────────┘
+```
+
+**Cost: $0/mo.**
 
 Each story ends with: green tests, a one-page doc/ADR, and a recordable demo.
 
@@ -244,3 +278,41 @@ Per `AGENTS.md`:
 - No new abstractions until the second concrete need appears.
 - Every commit ties to one task ID above. Every PR closes one or more checkpoints.
 - Tests get added with the feature, not as a separate phase.
+
+---
+
+## Lane Brief Template
+
+Use this verbatim when handing a lane to a sub-agent. Fill the placeholders from the lane row.
+
+```
+You are working in worktree <worktree-path>, branch <lane-id>.
+
+Spec: .kiro/specs/system-design-improvement/plan.md
+Story: <Story 0 | A | B | C>
+Tasks to close: <comma-separated task IDs>
+
+Allowed files (touch nothing else):
+- <file 1>
+- <file 2>
+- ...
+
+Forbidden:
+- Files outside the allowed list.
+- Improving adjacent code, comments, or formatting.
+- Adding TODOs.
+- Speculative `Optional` fields.
+
+Success criteria (loop until all green):
+- All "Verify" entries for your task IDs are satisfied.
+- Existing tests pass: `<backend cmd>` and `<frontend cmd>` as relevant.
+- Story-level checkpoints your tasks contribute to are closed.
+
+Commits:
+- One commit per task ID. Message: "<task-id>: <summary>".
+- Do not push. Do not open a PR.
+
+When done:
+- Print the list of commits and a one-line status per success criterion.
+- Stop. The integration step is human-driven.
+```
