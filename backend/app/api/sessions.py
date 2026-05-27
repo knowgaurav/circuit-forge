@@ -239,3 +239,37 @@ async def websocket_endpoint(
     await ws_handler.handle_connection(
         websocket, code.upper(), participant_id, last_seen_seq=last_seen_seq
     )
+
+
+# ---------------------------------------------------------------------------
+# Story C — Time-travel surface
+# ---------------------------------------------------------------------------
+
+
+class EventsListResponse(BaseModel):
+    """Response for the events listing endpoint."""
+
+    events: list[dict[str, Any]]
+    snapshot: dict[str, Any] | None
+
+
+@router.get("/sessions/{code}/events", response_model=EventsListResponse)
+async def list_session_events(
+    code: str,
+    from_seq: int = Query(default=0, ge=0),
+    to_seq: int | None = Query(default=None, ge=0),
+    session_service: SessionService = Depends(get_session_service),
+) -> EventsListResponse:
+    """List events in ``(from_seq, to_seq]`` plus the snapshot at-or-before ``from_seq``.
+
+    The client uses this to render a replay window without ever replaying from
+    seq 0: load ``snapshot.state``, apply ``events`` in order. ``to_seq``
+    defaults to the latest known seq for the session.
+    """
+    try:
+        events, snapshot = await session_service.get_events_slice(
+            code.upper(), from_seq, to_seq
+        )
+        return EventsListResponse(events=events, snapshot=snapshot)
+    except Exception as e:
+        handle_exception(e)

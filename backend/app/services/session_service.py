@@ -3,6 +3,7 @@
 import secrets
 import string
 from datetime import datetime, timedelta
+from typing import Any
 from uuid import uuid4
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -257,3 +258,78 @@ class SessionService:
         if len(name) < 3 or len(name) > 20:
             return False
         return all(c.isalnum() or c == " " for c in name)
+
+    # ------------------------------------------------------------------
+    # Time-travel surface (Story C — replay + branch)
+    # ------------------------------------------------------------------
+
+    async def get_events_slice(
+        self,
+        session_id: str,
+        from_seq: int,
+        to_seq: int | None = None,
+    ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+        """Return events with from_seq < seq <= to_seq plus the snapshot at or
+        before ``from_seq``.
+
+        When ``to_seq`` is ``None`` the slice runs to the latest known seq.
+        Used by ``GET /api/sessions/{code}/events`` so a replay client can
+        reconstruct any state in the requested window without replaying from
+        seq 0: load the snapshot, then apply the events in order.
+        """
+        await self.get_session(session_id)
+        upper = (
+            to_seq
+            if to_seq is not None
+            else await self._event_repo.get_latest_seq(session_id)
+        )
+        snapshot = await self._event_repo.get_snapshot_at_or_before_seq(
+            session_id, from_seq
+        )
+        events = await self._event_repo.get_events_in_range(
+            session_id, from_seq, upper
+        )
+        return events, snapshot
+
+    async def get_state_at(self, session_id: str, seq: int) -> CircuitState:
+        """Reconstruct the circuit state as it was at ``seq``.
+
+        O(SNAPSHOT_INTERVAL + delta): pulls the latest snapshot whose seq is
+        <= ``seq`` and replays only the events from ``snapshot_seq + 1`` up to
+        ``seq``. Replay logic is delegated to
+        :meth:`CircuitService._apply_event` so the snapshot rebuild and the
+        live ``get_circuit_state`` path stay byte-identical.
+        """
+        snapshot = await self._event_repo.get_snapshot_at_or_before_seq(
+            session_id, seq
+        )
+
+        if snapshot:
+            state = CircuitState.model_validate(snapshot["state"])
+            start_seq = snapshot["seq"]
+        else:
+            state = CircuitState.create_empty(session_id)
+            start_seq = 0
+
+        if seq > start_seq:
+            events = await self._event_repo.get_events_in_range(
+                session_id, start_seq, seq
+            )
+            for event_data in events:
+                state = self._apply_event_to_state(state, event_data)
+
+        return state
+
+    @staticmethod
+    def _apply_event_to_state(
+        state: CircuitState, event_data: dict[str, Any]
+    ) -> CircuitState:
+        """Apply a single stored event document to ``state``.
+
+        Thin pass-through to :meth:`CircuitService._apply_event` so replay and
+        live state reconstruction share one code path. ``CircuitService`` is
+        instantiated bare (without a DB) because ``_apply_event`` is pure.
+        """
+        from app.services.circuit_service import CircuitService
+
+        return CircuitService.__new__(CircuitService)._apply_event(state, event_data)
