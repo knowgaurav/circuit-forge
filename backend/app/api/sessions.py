@@ -253,6 +253,15 @@ class EventsListResponse(BaseModel):
     snapshot: dict[str, Any] | None
 
 
+class BranchSessionResponse(BaseModel):
+    """Response for the branch endpoint."""
+
+    code: str
+    participant_id: str = Field(alias="participantId")
+
+    model_config = {"populate_by_name": True}
+
+
 @router.get("/sessions/{code}/events", response_model=EventsListResponse)
 async def list_session_events(
     code: str,
@@ -271,5 +280,28 @@ async def list_session_events(
             code.upper(), from_seq, to_seq
         )
         return EventsListResponse(events=events, snapshot=snapshot)
+    except Exception as e:
+        handle_exception(e)
+
+
+@router.post("/sessions/{code}/branch", response_model=BranchSessionResponse)
+async def branch_session(
+    code: str,
+    from_seq: int = Query(..., ge=0),
+    session_service: SessionService = Depends(get_session_service),
+) -> BranchSessionResponse:
+    """Create a new session pre-seeded with the source state at ``from_seq``.
+
+    The branch starts with a single seq=0 snapshot of the replayed source
+    state and an empty event log. New edits start at seq=1 in the branch and
+    do not affect the source session.
+    """
+    try:
+        new_session, participant_id = await session_service.branch_session(
+            code.upper(), from_seq
+        )
+        return BranchSessionResponse(
+            code=new_session.code, participantId=participant_id
+        )
     except Exception as e:
         handle_exception(e)

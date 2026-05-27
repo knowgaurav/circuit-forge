@@ -320,6 +320,31 @@ class SessionService:
 
         return state
 
+    async def branch_session(
+        self, source_session_id: str, from_seq: int
+    ) -> tuple[Session, str]:
+        """Create a new session pre-seeded with the source state at ``from_seq``.
+
+        The new session starts with a single seq=0 snapshot containing the
+        replayed state; no events are copied. New edits in the branch start at
+        seq=1, isolated from the source's history.
+        """
+        state_at_seq = await self.get_state_at(source_session_id, from_seq)
+
+        new_session, creator_id = await self.create_session()
+
+        # Re-anchor the snapshot's session_id to the new code so a future
+        # ``get_circuit_state`` on the branch reports the right session.
+        state_at_seq.session_id = new_session.code
+        state_at_seq.version = 0
+        # ``create_session`` writes an empty seq=0 snapshot for every new
+        # session. Replace it with the branched state so the new session boots
+        # at the source's state-at-seq instead of an empty board.
+        await self._event_repo.delete_snapshots_by_session(new_session.code)
+        await self._event_repo.save_snapshot(new_session.code, 0, state_at_seq)
+
+        return new_session, creator_id
+
     @staticmethod
     def _apply_event_to_state(
         state: CircuitState, event_data: dict[str, Any]
