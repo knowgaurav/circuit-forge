@@ -33,14 +33,22 @@ from app.services.agent.schemas import (
     AddComponentResult,
     GetCircuitStateArgs,
     GetCircuitStateResult,
+    PinRef,
     RemoveComponentArgs,
     RemoveComponentResult,
     SimulateArgs,
     SimulateResult,
+    ValidateCircuitArgs,
+    ValidateCircuitResult,
+    WireRef,
 )
 from app.services.circuit_service import CircuitService
 from app.services.component_registry import ComponentRegistry
-from app.services.simulation_engine import SimulationEngine
+from app.services.simulation_engine import (
+    _SOURCE as _SIM_SOURCE,
+    _STATEFUL as _SIM_STATEFUL,
+    SimulationEngine,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -104,6 +112,52 @@ def _registry_pins(registry: ComponentRegistry, component_type: str) -> list[Pin
             )
         )
     return pins
+
+
+def _is_combinational(component_type: str) -> bool:
+    """A component participates in combinational cycle analysis when it is
+    neither a source (constants/switches/clock) nor a stateful element."""
+    return component_type not in _SIM_SOURCE and component_type not in _SIM_STATEFUL
+
+
+def _tarjan_sccs(
+    nodes: list[str], adj: dict[str, list[str]]
+) -> list[list[str]]:
+    """Tarjan's strongly connected components."""
+    index = 0
+    stack: list[str] = []
+    indices: dict[str, int] = {}
+    lowlink: dict[str, int] = {}
+    on_stack: set[str] = set()
+    sccs: list[list[str]] = []
+
+    def strongconnect(v: str) -> None:
+        nonlocal index
+        indices[v] = index
+        lowlink[v] = index
+        index += 1
+        stack.append(v)
+        on_stack.add(v)
+        for w in adj.get(v, []):
+            if w not in indices:
+                strongconnect(w)
+                lowlink[v] = min(lowlink[v], lowlink[w])
+            elif w in on_stack:
+                lowlink[v] = min(lowlink[v], indices[w])
+        if lowlink[v] == indices[v]:
+            component: list[str] = []
+            while True:
+                w = stack.pop()
+                on_stack.remove(w)
+                component.append(w)
+                if w == v:
+                    break
+            sccs.append(component)
+
+    for v in nodes:
+        if v not in indices:
+            strongconnect(v)
+    return sccs
 
 
 async def get_circuit_state(
@@ -185,6 +239,66 @@ async def remove_component(
     return RemoveComponentResult(seq=events[-1].seq)
 
 
+async def validate_circuit(
+    args: ValidateCircuitArgs, *, deps: ToolDeps
+) -> ValidateCircuitResult:
+    """Surface structural problems: floating inputs, output conflicts, cycles."""
+    state = await deps.circuit_service.get_circuit_state(args.session_id)
+
+    # Build incoming-wire index keyed by (to_component_id, to_pin_id).
+    incoming: dict[tuple[str, str], list[str]] = {}
+    for wire in state.wires:
+        incoming.setdefault(
+            (wire.to_component_id, wire.to_pin_id), []
+        ).append(wire.id)
+
+    # Floating inputs: every input pin on a non-source component without an
+    # incoming wire. Constants/grounds are sources by definition.
+    floating: list[PinRef] = []
+    for component in state.components:
+        if component.type.value in _SIM_SOURCE:
+            continue
+        for pin in component.pins:
+            if pin.type != PinType.INPUT:
+                continue
+            if (component.id, pin.id) not in incoming:
+                floating.append(PinRef(component_id=component.id, pin_id=pin.id))
+
+    # Output conflicts: any input pin driven by more than one wire.
+    conflicts: list[WireRef] = []
+    for wire_ids in incoming.values():
+        if len(wire_ids) > 1:
+            for wire_id in wire_ids:
+                conflicts.append(WireRef(wire_id=wire_id))
+
+    # Combinational cycles: SCCs (size > 1 or self-loop) over the subgraph
+    # induced by combinational components. Stateful elements break cycles.
+    comb_ids = [
+        c.id for c in state.components if _is_combinational(c.type.value)
+    ]
+    comb_set = set(comb_ids)
+    adj: dict[str, list[str]] = {cid: [] for cid in comb_ids}
+    for wire in state.wires:
+        if (
+            wire.from_component_id in comb_set
+            and wire.to_component_id in comb_set
+        ):
+            adj[wire.from_component_id].append(wire.to_component_id)
+
+    cycles: list[list[str]] = []
+    for scc in _tarjan_sccs(comb_ids, adj):
+        if len(scc) > 1:
+            cycles.append(scc)
+        elif len(scc) == 1 and scc[0] in adj.get(scc[0], []):
+            cycles.append(scc)
+
+    return ValidateCircuitResult(
+        floating_inputs=floating,
+        output_conflicts=conflicts,
+        combinational_cycles=cycles,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -195,4 +309,5 @@ TOOLS: dict[str, ToolFn] = {
     "simulate": simulate,
     "add_component": add_component,
     "remove_component": remove_component,
+    "validate_circuit": validate_circuit,
 }

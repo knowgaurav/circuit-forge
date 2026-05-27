@@ -21,6 +21,7 @@ from app.services.agent.schemas import (
     GetCircuitStateArgs,
     RemoveComponentArgs,
     SimulateArgs,
+    ValidateCircuitArgs,
 )
 from app.services.agent.tools import (
     TOOLS,
@@ -30,6 +31,7 @@ from app.services.agent.tools import (
     get_circuit_state,
     remove_component,
     simulate,
+    validate_circuit,
 )
 from app.services.circuit_service import CircuitService
 from app.services.component_registry import ComponentRegistry
@@ -358,6 +360,64 @@ async def test_remove_component_missing_raises_tool_error() -> None:
 
 
 # ---------------------------------------------------------------------------
+# validate_circuit
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_validate_circuit_finds_floating_input() -> None:
+    deps, circuit_service = _make_deps()
+
+    sw = ComponentFactory.create_switch(id="sw-1", state=False)
+    and_gate = ComponentFactory.create_and_gate(id="and-1")
+    for comp in (sw, and_gate):
+        await circuit_service.add_component(SESSION_ID, ACTOR_ID, comp)
+
+    # Wire only AND.A; AND.B is left floating.
+    await circuit_service.add_wire(
+        SESSION_ID, ACTOR_ID,
+        WireFactory.create(sw.id, "OUT", and_gate.id, "A"),
+    )
+
+    result = await validate_circuit(
+        ValidateCircuitArgs(session_id=SESSION_ID), deps=deps
+    )
+
+    floating = {(p.component_id, p.pin_id) for p in result.floating_inputs}
+    assert (and_gate.id, "B") in floating
+    assert (and_gate.id, "A") not in floating
+    assert result.output_conflicts == []
+    assert result.combinational_cycles == []
+
+
+@pytest.mark.asyncio
+async def test_validate_circuit_detects_combinational_cycle() -> None:
+    deps, circuit_service = _make_deps()
+
+    not1 = ComponentFactory.create_not_gate(id="not-1")
+    not2 = ComponentFactory.create_not_gate(id="not-2")
+    for comp in (not1, not2):
+        await circuit_service.add_component(SESSION_ID, ACTOR_ID, comp)
+
+    # not1.Y -> not2.A -> not2.Y -> not1.A. Pure combinational loop.
+    await circuit_service.add_wire(
+        SESSION_ID, ACTOR_ID,
+        WireFactory.create(not1.id, "Y", not2.id, "A"),
+    )
+    await circuit_service.add_wire(
+        SESSION_ID, ACTOR_ID,
+        WireFactory.create(not2.id, "Y", not1.id, "A"),
+    )
+
+    result = await validate_circuit(
+        ValidateCircuitArgs(session_id=SESSION_ID), deps=deps
+    )
+
+    assert len(result.combinational_cycles) == 1
+    assert set(result.combinational_cycles[0]) == {not1.id, not2.id}
+
+
+# ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
@@ -367,3 +427,4 @@ def test_tools_registry_contains_get_circuit_state_and_simulate() -> None:
     assert "simulate" in TOOLS
     assert "add_component" in TOOLS
     assert "remove_component" in TOOLS
+    assert "validate_circuit" in TOOLS
