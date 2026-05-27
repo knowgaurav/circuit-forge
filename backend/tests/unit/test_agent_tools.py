@@ -18,6 +18,7 @@ from pymongo.errors import DuplicateKeyError
 from app.models.circuit import Position
 from app.services.agent.schemas import (
     AddComponentArgs,
+    ExplainSignalPathArgs,
     GetCircuitStateArgs,
     RemoveComponentArgs,
     SimulateArgs,
@@ -28,6 +29,7 @@ from app.services.agent.tools import (
     ToolDeps,
     ToolError,
     add_component,
+    explain_signal_path,
     get_circuit_state,
     remove_component,
     simulate,
@@ -418,13 +420,63 @@ async def test_validate_circuit_detects_combinational_cycle() -> None:
 
 
 # ---------------------------------------------------------------------------
+# explain_signal_path
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_explain_signal_path_traces_reachable_path() -> None:
+    deps, circuit_service = _make_deps()
+    sw_id, and_id, led_id = await _seed_switch_and_led(circuit_service)
+
+    result = await explain_signal_path(
+        ExplainSignalPathArgs(
+            session_id=SESSION_ID, from_id=sw_id, to_id=led_id
+        ),
+        deps=deps,
+    )
+
+    assert result.reachable is True
+    visited = {step.component_id for step in result.path}
+    assert sw_id in visited
+    assert and_id in visited
+    assert led_id in visited
+
+
+@pytest.mark.asyncio
+async def test_explain_signal_path_unreachable_returns_empty() -> None:
+    deps, circuit_service = _make_deps()
+
+    sw = ComponentFactory.create_switch(id="sw-orphan")
+    led = ComponentFactory.create_led(id="led-orphan")
+    for comp in (sw, led):
+        await circuit_service.add_component(SESSION_ID, ACTOR_ID, comp)
+    # No wire between them.
+
+    result = await explain_signal_path(
+        ExplainSignalPathArgs(
+            session_id=SESSION_ID, from_id=sw.id, to_id=led.id
+        ),
+        deps=deps,
+    )
+
+    assert result.reachable is False
+    assert result.path == []
+
+
+# ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
 
-def test_tools_registry_contains_get_circuit_state_and_simulate() -> None:
-    assert "get_circuit_state" in TOOLS
-    assert "simulate" in TOOLS
-    assert "add_component" in TOOLS
-    assert "remove_component" in TOOLS
-    assert "validate_circuit" in TOOLS
+def test_tools_registry_has_exact_six_entries() -> None:
+    expected = {
+        "get_circuit_state",
+        "simulate",
+        "add_component",
+        "remove_component",
+        "validate_circuit",
+        "explain_signal_path",
+    }
+    assert set(TOOLS.keys()) == expected
+    assert len(TOOLS) == 6

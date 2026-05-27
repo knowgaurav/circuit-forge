@@ -13,8 +13,9 @@ module never imports the global ``db_manager``.
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
-from typing import Awaitable, Callable
+from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
 from pydantic import BaseModel
@@ -31,8 +32,11 @@ from app.models.circuit import (
 from app.services.agent.schemas import (
     AddComponentArgs,
     AddComponentResult,
+    ExplainSignalPathArgs,
+    ExplainSignalPathResult,
     GetCircuitStateArgs,
     GetCircuitStateResult,
+    PathStep,
     PinRef,
     RemoveComponentArgs,
     RemoveComponentResult,
@@ -47,6 +51,7 @@ from app.services.component_registry import ComponentRegistry
 from app.services.simulation_engine import (
     _SOURCE as _SIM_SOURCE,
     _STATEFUL as _SIM_STATEFUL,
+    Signal,
     SimulationEngine,
 )
 
@@ -299,6 +304,76 @@ async def validate_circuit(
     )
 
 
+async def explain_signal_path(
+    args: ExplainSignalPathArgs, *, deps: ToolDeps
+) -> ExplainSignalPathResult:
+    """BFS forward across wires from ``from_id`` until ``to_id`` is reached.
+
+    The returned path interleaves output pins of the source component and
+    input pins of the next component along each wire, with the signal value
+    captured from a fresh simulation pass.
+    """
+    state = await deps.circuit_service.get_circuit_state(args.session_id)
+    component_ids = {c.id for c in state.components}
+
+    if args.from_id not in component_ids or args.to_id not in component_ids:
+        return ExplainSignalPathResult(path=[], reachable=False)
+
+    # Forward BFS over components, tracking which wire produced each visit.
+    parent_wire: dict[str, Any] = {args.from_id: None}
+    queue: deque[str] = deque([args.from_id])
+    while queue:
+        cur = queue.popleft()
+        if cur == args.to_id:
+            break
+        for wire in state.wires:
+            if wire.from_component_id != cur:
+                continue
+            if wire.to_component_id in parent_wire:
+                continue
+            parent_wire[wire.to_component_id] = wire
+            queue.append(wire.to_component_id)
+
+    if args.to_id not in parent_wire:
+        return ExplainSignalPathResult(path=[], reachable=False)
+
+    # Reconstruct the chain of wires from from_id → to_id.
+    wires_chain: list[Any] = []
+    node = args.to_id
+    while node != args.from_id:
+        wire = parent_wire[node]
+        wires_chain.append(wire)
+        node = wire.from_component_id
+    wires_chain.reverse()
+
+    engine = deps.simulation_engine_factory()
+    engine.load_circuit(state)
+    engine.evaluate()
+    pin_values = engine.pin_values
+
+    def _signal_at(component_id: str, pin_id: str) -> Signal:
+        return pin_values.get(f"{component_id}:{pin_id}", Signal.X)
+
+    path: list[PathStep] = []
+    for wire in wires_chain:
+        path.append(
+            PathStep(
+                component_id=wire.from_component_id,
+                pin_id=wire.from_pin_id,
+                signal=_signal_at(wire.from_component_id, wire.from_pin_id),
+            )
+        )
+        path.append(
+            PathStep(
+                component_id=wire.to_component_id,
+                pin_id=wire.to_pin_id,
+                signal=_signal_at(wire.to_component_id, wire.to_pin_id),
+            )
+        )
+
+    return ExplainSignalPathResult(path=path, reachable=True)
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -310,4 +385,5 @@ TOOLS: dict[str, ToolFn] = {
     "add_component": add_component,
     "remove_component": remove_component,
     "validate_circuit": validate_circuit,
+    "explain_signal_path": explain_signal_path,
 }
