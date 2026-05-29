@@ -153,16 +153,20 @@
 @layer components {
     /* ---- Instrument panel surfaces (formerly "glass") ---- */
     .glass {
-        @apply border-border/70 bg-surface/80 border backdrop-blur-md;
+        border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        background-color: color-mix(in srgb, var(--surface) 82%, transparent);
+        backdrop-filter: blur(12px);
     }
 
     .glass-card {
-        @apply bg-surface/90 rounded-xl border border-border shadow-glass backdrop-blur-sm;
+        @apply rounded-xl border border-border shadow-glass;
+        background-color: var(--surface);
         transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .glass-card:hover {
-        @apply border-primary/40 -translate-y-0.5 shadow-glow;
+        @apply -translate-y-0.5 shadow-glow;
+        border-color: color-mix(in srgb, var(--primary) 40%, transparent);
     }
 
     /* ---- Signal gradient text (support both legacy class names) ---- */
