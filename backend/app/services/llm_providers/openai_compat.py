@@ -1,0 +1,168 @@
+"""OpenAI and OpenAI-compatible providers (OpenAI, OpenRouter, OhMyGPT).
+
+Why this module exists separately
+---------------------------------
+A whole family of providers speaks the OpenAI chat-completions format, so a
+single strategy handles all of them — the only differences are the base URL,
+the key prefix, and a couple of provider-specific quirks:
+
+* ``openai`` uses ``max_completion_tokens`` instead of ``max_tokens`` for its
+  newer models.
+* ``openrouter`` wants two extra headers (``HTTP-Referer``, ``X-Title``).
+* ``ohmygpt`` uses the same format with no key prefix.
+
+The response handler is robust about JSON: if ``content`` isn't valid JSON it
+tries to pull the first ``{...}`` block out of the text before giving up.
+
+Example
+-------
+    strategy = OpenAICompatibleStrategy(
+        provider_id="openai",
+        base_url="https://api.openai.com/v1/chat/completions",
+        key_prefix="sk-",
+    )
+    resp = await strategy.call(api_key, LLMRequest(model="gpt-4o-mini", ...))
+    # resp.content -> parsed JSON dict (or None), resp.tool_calls -> list
+"""
+
+import json
+import logging
+import re
+from typing import Any
+
+import httpx
+
+from .base import LLMProviderStrategy
+from .errors import (
+    AuthenticationError,
+    ProviderUnavailableError,
+    QuotaExceededError,
+    RateLimitError,
+)
+from .types import LLMRequest, LLMResponse
+
+logger = logging.getLogger(__name__)
+
+
+class OpenAICompatibleStrategy(LLMProviderStrategy):
+    """Strategy for OpenAI and OpenAI-compatible APIs (OHMYGPT, MEGALLM, AGENTROUTER, OPENROUTER)."""
+
+    def __init__(self, provider_id: str, base_url: str, key_prefix: str = ""):
+        self.provider_id = provider_id
+        self.base_url = base_url
+        self.key_prefix = key_prefix
+
+    def validate_key_format(self, api_key: str) -> tuple[bool, str]:
+        """Validate OpenAI-style API key format."""
+        if not api_key or len(api_key) < 10:
+            return False, f"API key is too short for {self.provider_id}"
+        if self.key_prefix and not api_key.startswith(self.key_prefix):
+            return False, f"API key for {self.provider_id} should start with '{self.key_prefix}'"
+        return True, ""
+
+    async def call(self, api_key: str, request: LLMRequest) -> LLMResponse:
+        """Make API call using OpenAI chat completions format."""
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+        # Add OpenRouter-specific headers if needed
+        if self.provider_id == "openrouter":
+            headers["HTTP-Referer"] = "https://circuitforge.app"
+            headers["X-Title"] = "CircuitForge"
+
+        payload: dict[str, Any] = {
+            "model": request.model,
+            "messages": request.messages,
+            "temperature": request.temperature,
+        }
+
+        # Use max_completion_tokens for newer OpenAI models, max_tokens for others
+        if self.provider_id == "openai":
+            payload["max_completion_tokens"] = request.max_tokens
+        else:
+            payload["max_tokens"] = request.max_tokens
+
+        if request.tools:
+            payload["tools"] = request.tools
+            payload["tool_choice"] = "auto"
+
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                has_tools = bool(request.tools)
+                masked_key = self._mask_key(api_key)
+                logger.info(f"Making request to {self.provider_id}: {self.base_url}")
+                logger.info(f"  Model: {request.model}, Tools: {has_tools}, API Key: {masked_key}")
+                response = await client.post(
+                    self.base_url,
+                    headers=headers,
+                    json=payload,
+                )
+                logger.info(f"Response status: {response.status_code}")
+
+                if response.status_code == 401:
+                    logger.error(f"Authentication failed for {self.provider_id}: {response.text}")
+                    raise AuthenticationError(self.provider_id)
+                elif response.status_code == 429:
+                    retry_after = response.headers.get("retry-after")
+                    error_body = response.text
+                    logger.warning(f"Rate limit hit for {self.provider_id}: {error_body}")
+                    raise RateLimitError(self.provider_id, int(retry_after) if retry_after else None)
+                elif response.status_code == 402:
+                    raise QuotaExceededError(self.provider_id)
+                elif response.status_code == 403:
+                    logger.error(f"Forbidden for {self.provider_id}: {response.text}")
+                    raise AuthenticationError(self.provider_id, "Access forbidden - check your API key permissions")
+                elif response.status_code >= 500:
+                    raise ProviderUnavailableError(self.provider_id)
+                elif response.status_code >= 400:
+                    logger.error(f"Error {response.status_code} from {self.provider_id}: {response.text}")
+
+                response.raise_for_status()
+                result = response.json()
+
+                message = result["choices"][0]["message"]
+                usage = result.get("usage", {})
+
+                # Extract tool calls if present
+                tool_calls = []
+                if "tool_calls" in message and message["tool_calls"]:
+                    tool_calls = message["tool_calls"]
+
+                # Parse content as JSON if possible
+                content = None
+                raw_content = message.get("content", "")
+                logger.info(f"Raw response from {self.provider_id} (first 500 chars): {raw_content[:500] if raw_content else 'EMPTY'}")
+                if raw_content:
+                    try:
+                        content = json.loads(raw_content)
+                    except json.JSONDecodeError:
+                        # Try to extract JSON from response
+                        json_match = re.search(r'\{[\s\S]*\}', raw_content)
+                        if json_match:
+                            try:
+                                content = json.loads(json_match.group())
+                            except json.JSONDecodeError:
+                                logger.warning(f"Failed to parse JSON from response: {json_match.group()[:200]}")
+                        else:
+                            logger.warning(f"No JSON found in response")
+
+                return LLMResponse(
+                    content=content,
+                    tool_calls=tool_calls,
+                    token_usage=usage.get("total_tokens", 0),
+                    finish_reason=result["choices"][0].get("finish_reason", "stop"),
+                    raw_content=raw_content,
+                )
+
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP error from {self.provider_id}: {e}")
+            if e.response.status_code == 401:
+                raise AuthenticationError(self.provider_id)
+            elif e.response.status_code == 429:
+                raise RateLimitError(self.provider_id)
+            raise ProviderUnavailableError(self.provider_id)
+        except httpx.RequestError as e:
+            logger.error(f"Request error to {self.provider_id}: {e}")
+            raise ProviderUnavailableError(self.provider_id)
