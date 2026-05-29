@@ -56,6 +56,7 @@ class LLMService(GenerationMixin, ToolCallMixin, BlueprintFixerMixin):
         provider_id: str,
         api_key: str,
         model: str,
+        location: str = "global",
     ) -> dict[str, Any]:
         """Test API key validity with a minimal request.
 
@@ -63,6 +64,7 @@ class LLMService(GenerationMixin, ToolCallMixin, BlueprintFixerMixin):
             provider_id: LLM provider ID
             api_key: User's API key
             model: Model to test
+            location: Vertex AI location/region (Google provider)
 
         Returns:
             Dict with success status and any error message
@@ -84,7 +86,10 @@ class LLMService(GenerationMixin, ToolCallMixin, BlueprintFixerMixin):
         )
 
         try:
-            response = await provider.call(api_key, request)
+            if provider_id == "google":
+                response = await provider.call(api_key, request, location=location)
+            else:
+                response = await provider.call(api_key, request)
             return {
                 "success": True,
                 "message": "Connection successful",

@@ -57,6 +57,7 @@ class GenerationMixin:
         max_tokens: int = 4000,
         base_url: str | None = None,
         bridge_token: str | None = None,
+        location: str = "global",
     ) -> tuple[CoursePlan, int]:
         """Generate a course plan using user's API key.
 
@@ -69,6 +70,7 @@ class GenerationMixin:
             max_tokens: Max tokens for response
             base_url: Tunnel URL for local LLM
             bridge_token: Bridge token for local LLM
+            location: Vertex AI location/region (Google provider)
 
         Returns:
             Tuple of (CoursePlan, token_usage)
@@ -107,7 +109,7 @@ class GenerationMixin:
 
         result = await self._call_with_tools(
             provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-            base_url=base_url, bridge_token=bridge_token,
+            base_url=base_url, bridge_token=bridge_token, location=location,
         )
 
         content = result["content"]
@@ -167,6 +169,7 @@ class GenerationMixin:
         max_tokens: int = 4000,
         base_url: str | None = None,
         bridge_token: str | None = None,
+        location: str = "global",
     ) -> tuple[TheorySection, PracticalSection, int]:
         """Generate content for a specific level using user's API key.
 
@@ -180,6 +183,7 @@ class GenerationMixin:
             max_tokens: Max tokens for response
             base_url: Tunnel URL for local LLM
             bridge_token: Bridge token for local LLM
+            location: Vertex AI location/region (Google provider)
 
         Returns:
             Tuple of (TheorySection, PracticalSection, token_usage)
@@ -230,7 +234,7 @@ class GenerationMixin:
         provider = self._get_provider(provider_id)
         result = await self._call_with_tools(
             provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-            base_url=base_url, bridge_token=bridge_token,
+            base_url=base_url, bridge_token=bridge_token, location=location,
         )
 
         content = result["content"]

@@ -61,6 +61,7 @@ class ToolCallMixin:
         max_tokens: int,
         base_url: str | None = None,
         bridge_token: str | None = None,
+        location: str = "global",
     ) -> dict[str, Any]:
         """Make LLM call with tool support."""
         messages: list[dict[str, Any]] = [
@@ -73,6 +74,7 @@ class ToolCallMixin:
 
         # Check if this is a local provider
         is_local = provider.provider_id == "local"
+        is_google = provider.provider_id == "google"
 
         while tool_calls_count < self.MAX_TOOL_CALLS:
             request = LLMRequest(
@@ -84,9 +86,12 @@ class ToolCallMixin:
             )
 
             try:
-                # For local provider, pass base_url and bridge_token
+                # For local provider, pass base_url and bridge_token;
+                # for google, pass the Vertex AI location.
                 if is_local:
                     response = await provider.call(api_key, request, base_url=base_url, bridge_token=bridge_token)
+                elif is_google:
+                    response = await provider.call(api_key, request, location=location)
                 else:
                     response = await provider.call(api_key, request)
             except (RateLimitError, QuotaExceededError, ProviderUnavailableError):
@@ -97,13 +102,13 @@ class ToolCallMixin:
                 logger.warning(f"Auth error during tool call (may be unsupported tools): {e}, trying fallback mode")
                 return await self._call_fallback(
                     provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-                    base_url=base_url, bridge_token=bridge_token,
+                    base_url=base_url, bridge_token=bridge_token, location=location,
                 )
             except Exception as e:
                 logger.warning(f"Tool calling failed: {e}, trying fallback mode")
                 return await self._call_fallback(
                     provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-                    base_url=base_url, bridge_token=bridge_token,
+                    base_url=base_url, bridge_token=bridge_token, location=location,
                 )
 
             total_tokens += response.token_usage
@@ -156,14 +161,14 @@ class ToolCallMixin:
                     logger.warning(f"Model returned no parseable JSON content, trying fallback mode")
                     return await self._call_fallback(
                         provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-                        base_url=base_url, bridge_token=bridge_token,
+                        base_url=base_url, bridge_token=bridge_token, location=location,
                     )
 
         # If we exhausted tool calls without getting content, try fallback
         logger.warning(f"Exceeded max tool calls without valid content, trying fallback mode")
         return await self._call_fallback(
             provider, api_key, system_prompt, user_prompt, model, temperature, max_tokens,
-            base_url=base_url, bridge_token=bridge_token,
+            base_url=base_url, bridge_token=bridge_token, location=location,
         )
 
     async def _call_fallback(
@@ -177,6 +182,7 @@ class ToolCallMixin:
         max_tokens: int,
         base_url: str | None = None,
         bridge_token: str | None = None,
+        location: str = "global",
     ) -> dict[str, Any]:
         """Fallback to non-tool mode with component info embedded in prompt."""
         # Get component info to embed in prompt (use JSON, not TOON, for parsing)
@@ -219,10 +225,13 @@ Do NOT use markdown code blocks. Start your response with { and end with }.
             max_tokens=max_tokens,
         )
 
-        # For local provider, pass base_url and bridge_token
+        # For local provider, pass base_url and bridge_token;
+        # for google, pass the Vertex AI location.
         is_local = provider.provider_id == "local"
         if is_local:
             response = await provider.call(api_key, request, base_url=base_url, bridge_token=bridge_token)
+        elif provider.provider_id == "google":
+            response = await provider.call(api_key, request, location=location)
         else:
             response = await provider.call(api_key, request)
 

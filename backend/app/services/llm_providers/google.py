@@ -1,4 +1,4 @@
-"""Google Gemini provider.
+"""Google Gemini provider (Vertex AI in express mode).
 
 Why this module exists separately
 ---------------------------------
@@ -10,7 +10,13 @@ translates to and from the common shape:
 * The system prompt is a top-level ``systemInstruction``.
 * Tools are ``functionDeclarations``; tool calls come back as
   ``functionCall`` parts and results go back as ``functionResponse`` parts.
-* The API key goes in the URL query string, not a header.
+* The express-mode API key goes in the ``x-goog-api-key`` header.
+
+This targets the **Vertex AI** ``generateContent`` endpoint using an express
+mode API key (not the AI Studio ``generativelanguage.googleapis.com``
+endpoint). The user supplies a ``location``: it selects the regional host
+``{location}-aiplatform.googleapis.com``; when it is empty or ``"global"`` the
+global host ``aiplatform.googleapis.com`` is used instead.
 
 As with the other providers, tool calls are normalized back to OpenAI shape
 in the returned :class:`LLMResponse`.
@@ -35,10 +41,23 @@ logger = logging.getLogger(__name__)
 
 
 class GoogleStrategy(LLMProviderStrategy):
-    """Strategy for Google Gemini API."""
+    """Strategy for the Google Gemini API on Vertex AI (express mode)."""
 
     provider_id = "google"
-    BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+    GLOBAL_HOST = "aiplatform.googleapis.com"
+
+    def _build_url(self, model: str, location: str) -> str:
+        """Build the Vertex AI generateContent URL for the given location.
+
+        An empty location or ``"global"`` uses the global host; any other
+        value selects the matching regional host.
+        """
+        location = location.strip().lower()
+        if location and location != "global":
+            host = f"{location}-{self.GLOBAL_HOST}"
+        else:
+            host = self.GLOBAL_HOST
+        return f"https://{host}/v1/publishers/google/models/{model}:generateContent"
 
     def validate_key_format(self, api_key: str) -> tuple[bool, str]:
         """Validate Google API key format."""
@@ -103,12 +122,13 @@ class GoogleStrategy(LLMProviderStrategy):
 
         return system_instruction, contents
 
-    async def call(self, api_key: str, request: LLMRequest) -> LLMResponse:
-        """Make API call using Google generateContent format."""
-        url = f"{self.BASE_URL}/{request.model}:generateContent?key={api_key}"
+    async def call(self, api_key: str, request: LLMRequest, location: str = "global") -> LLMResponse:
+        """Make API call using Vertex AI generateContent format (express mode)."""
+        url = self._build_url(request.model, location)
 
         headers = {
             "Content-Type": "application/json",
+            "x-goog-api-key": api_key,
         }
 
         system_instruction, contents = self._convert_messages_to_google(request.messages)

@@ -60,6 +60,7 @@ async def generate_plan(
             max_tokens=request.llm_config.max_tokens,
             base_url=request.llm_config.base_url,
             bridge_token=request.llm_config.bridge_token,
+            location=request.llm_config.location,
         )
         return GeneratePlanResponse(coursePlan=course_plan)
     except Exception as e:
@@ -81,6 +82,7 @@ async def test_connection(
             provider_id=request.provider,
             api_key=request.api_key,
             model=request.model,
+            location=request.location,
         )
         return TestConnectionResponse(
             success=result["success"],

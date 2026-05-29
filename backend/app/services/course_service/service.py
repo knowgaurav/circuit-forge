@@ -49,12 +49,14 @@ class CourseService(GenerationMixin, EnrollmentMixin, ValidationMixin):
         provider_id: str,
         api_key: str,
         model: str,
+        location: str = "global",
     ) -> dict[str, Any]:
         """Test API key validity with a minimal request."""
         return await llm_service.test_connection(
             provider_id=provider_id,
             api_key=api_key,
             model=model,
+            location=location,
         )
 
     async def get_course_plan(self, plan_id: str) -> CoursePlan | None:

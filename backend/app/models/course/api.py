@@ -30,6 +30,8 @@ class LLMConfig(BaseModel):
     # Local LLM specific fields
     base_url: str | None = Field(default=None, alias="baseUrl", description="Tunnel URL for local LLM")
     bridge_token: str | None = Field(default=None, alias="bridgeToken", description="Bridge token for local LLM")
+    # Google Vertex AI specific field (express mode)
+    location: str = Field(default="global", description="Vertex AI location/region (e.g. 'us-central1', 'global')")
 
     model_config = {"populate_by_name": True}
 
@@ -52,6 +54,7 @@ class TestConnectionRequest(BaseModel):
     provider: str = Field(description="LLM provider ID")
     api_key: str = Field(alias="apiKey", min_length=10)
     model: str = Field(description="Model to test")
+    location: str = Field(default="global", description="Vertex AI location/region (Google provider)")
 
     model_config = {"populate_by_name": True}
 

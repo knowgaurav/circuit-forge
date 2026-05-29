@@ -49,6 +49,7 @@ class GenerationMixin:
         max_tokens: int = 4000,
         base_url: str | None = None,
         bridge_token: str | None = None,
+        location: str = "global",
     ) -> CoursePlan:
         """Generate a new course plan for the given topic using user's API key.
 
@@ -62,6 +63,7 @@ class GenerationMixin:
             max_tokens: Max tokens for response
             base_url: Tunnel URL for local LLM
             bridge_token: Bridge token for local LLM
+            location: Vertex AI location/region (Google provider)
         """
         enrich_context(operation="create_course", course_topic=topic)
         logger.info(f"Generating course plan for topic: {topic} using {provider_id}/{model}")
@@ -76,6 +78,7 @@ class GenerationMixin:
             max_tokens=max_tokens,
             base_url=base_url,
             bridge_token=bridge_token,
+            location=location,
         )
         course_plan.creator_participant_id = participant_id
 
@@ -106,6 +109,7 @@ class GenerationMixin:
         max_tokens: int = 4000,
         base_url: str | None = None,
         bridge_token: str | None = None,
+        location: str = "global",
     ) -> LevelContent | None:
         """Get level content, generating if needed using user's API key."""
         course_plan = await self.course_plan_repo.get_by_id(course_plan_id)
@@ -150,6 +154,7 @@ class GenerationMixin:
                 max_tokens=max_tokens,
                 base_url=base_url,
                 bridge_token=bridge_token,
+                location=location,
             )
 
             # Save content

@@ -71,6 +71,7 @@ async def generate_level_content(
             max_tokens=request.llm_config.max_tokens,
             base_url=request.llm_config.base_url,
             bridge_token=request.llm_config.bridge_token,
+            location=request.llm_config.location,
         )
 
         is_generating = (
