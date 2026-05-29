@@ -65,13 +65,13 @@ google_key_strategy = st.text(
 # Strategy for model names
 model_strategy = st.sampled_from(
     [
-        "gpt-4o",
-        "gpt-4-turbo",
-        "gpt-3.5-turbo",
-        "claude-3-5-sonnet-20241022",
-        "claude-3-opus-20240229",
-        "gemini-1.5-pro",
-        "gemini-1.5-flash",
+        "gpt-5.5",
+        "gpt-5.4",
+        "gpt-5.4-mini",
+        "claude-opus-4-8",
+        "claude-sonnet-4-6",
+        "gemini-3.1-pro-preview",
+        "gemini-3.5-flash",
     ]
 )
 
