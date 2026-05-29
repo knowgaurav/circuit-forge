@@ -60,9 +60,9 @@ describe('WebSocketClient', () => {
 
                         // Should have forwarded the action
                         expect(forwardedActions.length).toBe(1);
-                        expect(forwardedActions[0].actionType).toBe(actionType);
-                        expect(forwardedActions[0].type).toBe('action');
-                        expect(typeof forwardedActions[0].timestamp).toBe('number');
+                        expect(forwardedActions[0]!.actionType).toBe(actionType);
+                        expect(forwardedActions[0]!.type).toBe('action');
+                        expect(typeof forwardedActions[0]!.timestamp).toBe('number');
                     }
                 ),
                 { numRuns: 50 }
@@ -135,7 +135,7 @@ describe('WebSocketClient', () => {
                     });
 
                     expect(forwardedActions.length).toBe(1);
-                    expect(forwardedActions[0].sourceTabId).toBe(tabId);
+                    expect(forwardedActions[0]!.sourceTabId).toBe(tabId);
                 }),
                 { numRuns: 50 }
             );

@@ -202,10 +202,6 @@ describe('TabSyncManager', () => {
                     const manager1 = new TabSyncManager();
                     const manager2 = new TabSyncManager();
 
-                    // Get tab IDs
-                    const tabId1 = manager1.getTabId();
-                    const tabId2 = manager2.getTabId();
-
                     // Initialize both - first one becomes leader
                     manager1.initialize(sessionCode, 'participant-1');
 

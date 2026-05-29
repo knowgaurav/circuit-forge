@@ -29,7 +29,11 @@ class ApiClient {
      * Set the current session code for request tracing.
      */
     setSessionCode(code: string | undefined): void {
-        this.sessionCode = code;
+        if (code === undefined) {
+            delete this.sessionCode;
+        } else {
+            this.sessionCode = code;
+        }
     }
 
     private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
