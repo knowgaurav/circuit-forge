@@ -2,147 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * CircuitForge — "Drafting Table" design system
+ * Engineering-instrument aesthetic: charcoal base, signal-lime + amber accents,
+ * blueprint grids and phosphor-style glow. Light mode = warm drafting vellum.
+ */
+
 @layer base {
     :root {
-        /* Brand Foundation */
-        --brand-hue: 215;
-        /* Deep Blue */
-        --brand-saturation: 90%;
-        --brand-lightness: 50%;
+        /* ---- Light Mode: Drafting Vellum ---- */
+        --background: #f4f3ec;
+        /* warm vellum paper */
+        --foreground: #15180f;
+        /* drafting ink */
 
-        /* Light Mode Palette */
-        --background: #ffffff;
-        --foreground: #0f172a;
-        /* Slate 900 */
-
-        /* Primary Action */
-        --primary: #0ea5e9;
-        /* Sky 500 */
-        --primary-hover: #0284c7;
-        /* Sky 600 */
-        --primary-foreground: #ffffff;
+        /* Primary Action — circuit green (darkened for contrast on light) */
+        --primary: #4d7c0f;
+        --primary-hover: #3f6a0a;
+        --primary-foreground: #f4f3ec;
 
         /* Secondary Action */
-        --secondary: #f1f5f9;
-        /* Slate 100 */
-        --secondary-foreground: #334155;
-        /* Slate 700 */
+        --secondary: #e7e6db;
+        --secondary-foreground: #2e3326;
 
-        /* Accents */
-        --accent: #3b82f6;
-        /* Blue 500 */
+        /* Accent — power-rail amber */
+        --accent: #b8690a;
         --accent-foreground: #ffffff;
 
         /* Surfaces */
-        --surface: #ffffff;
-        --surface-secondary: #f8fafc;
-        /* Slate 50 */
-        --surface-tertiary: #f1f5f9;
-        /* Slate 100 */
+        --surface: #fbfaf4;
+        --surface-secondary: #efeee4;
+        --surface-tertiary: #e6e4d8;
         --surface-elevated: #ffffff;
 
         /* Borders */
-        --border: #e2e8f0;
-        /* Slate 200 */
-        --border-subtle: #f8fafc;
-        /* Slate 50 */
-        --border-strong: #cbd5e1;
-        /* Slate 300 */
+        --border: #d8d6c7;
+        --border-subtle: #ece9dc;
+        --border-strong: #bdbaa6;
 
         /* Text */
-        --text-secondary: #475569;
-        /* Slate 600 */
-        --text-muted: #94a3b8;
-        /* Slate 400 */
-        --text-inverse: #ffffff;
+        --text-secondary: #4a4f3f;
+        --text-muted: #828573;
+        --text-inverse: #f4f3ec;
 
         /* Status */
-        --success: #22c55e;
+        --success: #4d7c0f;
         --success-foreground: #ffffff;
-        --warning: #f59e0b;
+        --warning: #b45309;
         --warning-foreground: #ffffff;
-        --error: #ef4444;
+        --error: #c0392b;
         --error-foreground: #ffffff;
 
-        /* Circuit Specific */
-        --canvas-bg: #f8fafc;
-        /* Slate 50 */
-        --canvas-grid: #e2e8f0;
-        /* Slate 200 */
-        --canvas-border: #cbd5e1;
-        --circuit-node: #3b82f6;
-        --wire-active: #22c55e;
-        --wire-inactive: #94a3b8;
+        /* Circuit canvas */
+        --canvas-bg: #f6f5ee;
+        --canvas-grid: #dedcce;
+        --canvas-border: #bdbaa6;
+        --circuit-node: #4d7c0f;
+        --wire-active: #4d7c0f;
+        --wire-inactive: #b0b1a0;
+
+        --grid-line: rgba(21, 24, 15, 0.06);
     }
 
     html.dark {
-        /* Dark Mode Palette (Rich, Deep Blue/Black) */
-        --background: #020617;
-        /* Slate 950 essentially */
-        --foreground: #f8fafc;
-        /* Slate 50 */
+        /* ---- Dark Mode: Engineering Charcoal + Signal ---- */
+        --background: #0a0c0a;
+        /* near-black, faint green-neutral cast */
+        --foreground: #e7eae3;
+        /* warm off-white */
 
-        /* Primary Action */
-        --primary: #0ea5e9;
-        /* Sky 500 - keeps pop in dark mode */
-        --primary-hover: #38bdf8;
-        /* Sky 400 - lighter on hover in dark */
-        --primary-foreground: #ffffff;
+        /* Primary Action — signal lime (logic HIGH / active wire) */
+        --primary: #b6f23a;
+        --primary-hover: #c8ff52;
+        --primary-foreground: #0a0c0a;
 
         /* Secondary Action */
-        --secondary: #1e293b;
-        /* Slate 800 */
-        --secondary-foreground: #f1f5f9;
-        /* Slate 100 */
+        --secondary: #1a1f1a;
+        --secondary-foreground: #d7ddd2;
 
-        /* Accents */
-        --accent: #60a5fa;
-        /* Blue 400 */
-        --accent-foreground: #ffffff;
+        /* Accent — power-rail amber */
+        --accent: #f5a524;
+        --accent-foreground: #1a1206;
 
         /* Surfaces */
-        --surface: #0f172a;
-        /* Slate 900 */
-        --surface-secondary: #1e293b;
-        /* Slate 800 */
-        --surface-tertiary: #334155;
-        /* Slate 700 */
-        --surface-elevated: #1e293b;
-        /* Good for modals */
+        --surface: #101410;
+        --surface-secondary: #161b16;
+        --surface-tertiary: #1d231d;
+        --surface-elevated: #191e19;
 
         /* Borders */
-        --border: #1e293b;
-        /* Slate 800 */
-        --border-subtle: #0f172a;
-        --border-strong: #334155;
-        /* Slate 700 */
+        --border: #242b24;
+        --border-subtle: #171c17;
+        --border-strong: #354034;
 
         /* Text */
-        --text-secondary: #cbd5e1;
-        /* Slate 300 */
-        --text-muted: #64748b;
-        /* Slate 500 */
-        --text-inverse: #020617;
+        --text-secondary: #aab3a4;
+        --text-muted: #6f7a6b;
+        --text-inverse: #0a0c0a;
 
-        /* Status - Slightly desaturated/lighter for dark mode readability */
-        --success: #4ade80;
-        --warning: #fbbf24;
-        --error: #f87171;
+        /* Status */
+        --success: #8fe388;
+        --warning: #f5c451;
+        --error: #ff6b5e;
 
-        /* Circuit Specific */
-        --canvas-bg: #0f172a;
-        --canvas-grid: #1e293b;
-        --canvas-border: #334155;
-        --circuit-node: #60a5fa;
-        --wire-active: #4ade80;
-        --wire-inactive: #475569;
+        /* Circuit canvas */
+        --canvas-bg: #0c0f0c;
+        --canvas-grid: #1a211a;
+        --canvas-border: #354034;
+        --circuit-node: #b6f23a;
+        --wire-active: #b6f23a;
+        --wire-inactive: #475247;
+
+        --grid-line: rgba(182, 242, 58, 0.05);
     }
 }
 
 @layer base {
     body {
         @apply bg-background text-foreground antialiased;
-        font-feature-settings: 'ss01', 'ss02', 'cv01', 'cv02';
+        font-feature-settings: 'ss01', 'cv01';
     }
 
     ::selection {
@@ -172,36 +150,100 @@
     }
 }
 
-/* Glassmorphism Utilities */
 @layer components {
+    /* ---- Instrument panel surfaces (formerly "glass") ---- */
     .glass {
-        @apply border border-white/10 bg-white/70 backdrop-blur-md dark:border-white/5 dark:bg-slate-900/70;
+        @apply border-border/70 bg-surface/80 border backdrop-blur-md;
     }
 
     .glass-card {
-        @apply border border-white/20 bg-white/40 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        @apply bg-surface/90 rounded-xl border border-border shadow-glass backdrop-blur-sm;
+        transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .glass-card:hover {
-        @apply -translate-y-1 border-sky-500/30 bg-white/60 shadow-glass-sm dark:bg-slate-900/60;
+        @apply border-primary/40 -translate-y-0.5 shadow-glow;
     }
 
-    /* Gradient Text */
-    .text-gradient {
-        @apply bg-gradient-brand bg-clip-text text-transparent;
+    /* ---- Signal gradient text (support both legacy class names) ---- */
+    .text-gradient,
+    .gradient-text {
+        background-image: linear-gradient(105deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
     }
 
-    /* Modern Button Base */
+    /* ---- Promo / feature gradient card (white text safe) ---- */
+    .gradient-card-bg {
+        background: linear-gradient(135deg, #2f5d0b 0%, #15240d 52%, #7a4f06 100%);
+        position: relative;
+        isolation: isolate;
+    }
+
+    .gradient-card-bg::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-image:
+            linear-gradient(var(--primary) 1px, transparent 1px),
+            linear-gradient(90deg, var(--primary) 1px, transparent 1px);
+        background-size: 28px 28px;
+        opacity: 0.06;
+    }
+
+    /* ---- Blueprint / graph-paper grid backdrop ---- */
+    .bg-grid {
+        background-image:
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 32px 32px;
+    }
+
+    .bg-grid-sm {
+        background-image:
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 16px 16px;
+    }
+
+    /* Eyebrow label — instrument readout */
+    .eyebrow {
+        @apply font-mono text-xs font-medium uppercase tracking-[0.2em] text-text-muted;
+    }
+
+    /* Cut-corner technical frame (PCB/schematic box) */
+    .clip-corner {
+        clip-path: polygon(
+            0 0,
+            calc(100% - 14px) 0,
+            100% 14px,
+            100% 100%,
+            14px 100%,
+            0 calc(100% - 14px)
+        );
+    }
+
+    /* Modern button base */
     .btn-base {
-        @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+        @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    /* Animation delay helpers */
+    .animation-delay-200 {
+        animation-delay: 0.2s;
+    }
+
+    .animation-delay-400 {
+        animation-delay: 0.4s;
     }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
 }
 
 ::-webkit-scrollbar-track {
@@ -209,9 +251,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-border transition-colors;
+    @apply rounded-full bg-border-strong transition-colors;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: color-mix(in srgb, var(--text-muted) 50%, transparent);
+    background-color: color-mix(in srgb, var(--primary) 55%, transparent);
 }
