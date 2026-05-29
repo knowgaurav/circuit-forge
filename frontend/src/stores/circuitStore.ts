@@ -8,9 +8,11 @@ export interface CircuitStore {
     components: CircuitComponent[];
     wires: Wire[];
     annotations: Annotation[];
+    replay: boolean;
 
     // Actions
     setCircuitState: (state: CircuitState) => void;
+    setReplay: (value: boolean) => void;
     setComponents: (components: CircuitComponent[]) => void;
     setWires: (wires: Wire[]) => void;
     addComponent: (component: CircuitComponent) => void;
@@ -33,6 +35,7 @@ const initialState = {
     components: [],
     wires: [],
     annotations: [],
+    replay: false,
 };
 
 export const useCircuitStore = create<CircuitStore>((set) => ({
@@ -48,6 +51,8 @@ export const useCircuitStore = create<CircuitStore>((set) => ({
         }),
 
     setComponents: (components) => set({ components }),
+
+    setReplay: (value) => set({ replay: value }),
 
     setWires: (wires) => set({ wires }),
 
