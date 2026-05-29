@@ -65,8 +65,8 @@ export default function TemplatesPage() {
                                     onClick={() => setSelectedCategory('all')}
                                     className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                                         selectedCategory === 'all'
-                                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'
+                                            ? 'border-primary/30 bg-primary/10 border font-medium text-primary'
+                                            : 'border border-transparent text-text-secondary hover:bg-surface-secondary hover:text-foreground'
                                     }`}
                                 >
                                     All Templates
@@ -82,13 +82,13 @@ export default function TemplatesPage() {
                                         onClick={() => setSelectedCategory(key)}
                                         className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                                             selectedCategory === key
-                                                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'
+                                                ? 'border-primary/30 bg-primary/10 border font-medium text-primary'
+                                                : 'border border-transparent text-text-secondary hover:bg-surface-secondary hover:text-foreground'
                                         }`}
                                     >
                                         <span className="mr-2">{category.icon}</span>
                                         {category.name}
-                                        <span className="ml-2 text-gray-400">
+                                        <span className="ml-2 font-mono text-xs text-text-muted">
                                             ({getTemplatesByCategory(key).length})
                                         </span>
                                     </button>
@@ -101,10 +101,10 @@ export default function TemplatesPage() {
                     <div className="flex-1">
                         {selectedTemplate ? (
                             /* Template Detail View */
-                            <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                            <div className="clip-corner rounded-xl border border-border bg-surface p-6">
                                 <button
                                     onClick={() => setSelectedTemplate(null)}
-                                    className="mb-4 flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-text-muted transition-colors hover:text-primary"
                                 >
                                     <ArrowLeft className="h-4 w-4" />
                                     Back to templates
@@ -112,10 +112,10 @@ export default function TemplatesPage() {
 
                                 <div className="mb-6 flex items-start justify-between">
                                     <div>
-                                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                                        <h2 className="font-heading text-2xl font-semibold text-foreground">
                                             {selectedTemplate.name}
                                         </h2>
-                                        <p className="mt-1 text-gray-600 dark:text-gray-400">
+                                        <p className="mt-1 text-text-secondary">
                                             {selectedTemplate.description}
                                         </p>
                                         <div className="mt-3 flex items-center gap-2">
@@ -141,10 +141,8 @@ export default function TemplatesPage() {
 
                                 {/* Overview */}
                                 <div className="mb-6">
-                                    <h3 className="mb-2 font-medium text-gray-900 dark:text-white">
-                                        Overview
-                                    </h3>
-                                    <p className="text-gray-600 dark:text-gray-400">
+                                    <h3 className="eyebrow mb-2">Overview</h3>
+                                    <p className="text-text-secondary">
                                         {selectedTemplate.overview}
                                     </p>
                                 </div>
@@ -152,10 +150,8 @@ export default function TemplatesPage() {
                                 {/* Theory */}
                                 {selectedTemplate.theory && (
                                     <div className="mb-6">
-                                        <h3 className="mb-2 font-medium text-gray-900 dark:text-white">
-                                            Theory
-                                        </h3>
-                                        <pre className="whitespace-pre-wrap rounded-lg bg-gray-50 p-4 font-mono text-sm text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                        <h3 className="eyebrow mb-2">Theory</h3>
+                                        <pre className="whitespace-pre-wrap rounded-lg border border-border bg-surface-secondary p-4 font-mono text-sm text-text-secondary">
                                             {selectedTemplate.theory}
                                         </pre>
                                     </div>
@@ -163,23 +159,21 @@ export default function TemplatesPage() {
 
                                 {/* Steps Preview */}
                                 <div className="mb-6">
-                                    <h3 className="mb-2 font-medium text-gray-900 dark:text-white">
-                                        Implementation Steps
-                                    </h3>
+                                    <h3 className="eyebrow mb-2">Implementation Steps</h3>
                                     <div className="space-y-2">
                                         {selectedTemplate.steps.map((step, index) => (
                                             <div
                                                 key={step.id}
-                                                className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
+                                                className="flex items-center gap-3 rounded-lg border border-border bg-surface-secondary p-3"
                                             >
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                                <div className="border-primary/30 bg-primary/10 flex h-6 w-6 items-center justify-center rounded border font-mono text-sm font-medium text-primary">
                                                     {index + 1}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-900 dark:text-white">
+                                                    <p className="font-medium text-foreground">
                                                         {step.title}
                                                     </p>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    <p className="text-sm text-text-muted">
                                                         {step.description}
                                                     </p>
                                                 </div>
@@ -215,17 +209,17 @@ export default function TemplatesPage() {
                                 {selectedCategory === 'all' && (
                                     <button
                                         onClick={handleOpenPlayground}
-                                        className="gradient-card-bg group col-span-full rounded-lg p-6 text-left transition-all hover:scale-[1.01] hover:shadow-lg"
+                                        className="gradient-card-bg clip-corner group col-span-full rounded-xl p-6 text-left transition-all hover:scale-[1.005] hover:shadow-glow"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur">
                                                     <Sparkles className="h-7 w-7 text-white" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="flex items-center gap-2 text-xl font-semibold text-white">
+                                                    <h3 className="flex items-center gap-2 font-heading text-xl font-semibold text-white">
                                                         Playground
-                                                        <Zap className="h-5 w-5 text-yellow-300" />
+                                                        <Zap className="h-5 w-5 text-accent-amber" />
                                                     </h3>
                                                     <p className="mt-1 text-sm text-white/80">
                                                         Free practice mode - Build any circuit from
@@ -234,23 +228,23 @@ export default function TemplatesPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2 text-white/80 transition-colors group-hover:text-white">
-                                                <span className="text-sm font-medium">
+                                                <span className="font-mono text-xs uppercase tracking-wider">
                                                     Start Building
                                                 </span>
                                                 <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                                             </div>
                                         </div>
-                                        <div className="mt-4 flex items-center gap-3 text-xs text-white/70">
-                                            <span className="flex items-center gap-1">
-                                                <span className="h-2 w-2 rounded-full bg-green-400"></span>
+                                        <div className="mt-4 flex items-center gap-4 font-mono text-xs text-white/70">
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="h-2 w-2 rounded-full bg-accent-lime"></span>
                                                 Full component library
                                             </span>
-                                            <span className="flex items-center gap-1">
-                                                <span className="h-2 w-2 rounded-full bg-blue-400"></span>
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="h-2 w-2 rounded-full bg-white/70"></span>
                                                 Circuit simulation
                                             </span>
-                                            <span className="flex items-center gap-1">
-                                                <span className="h-2 w-2 rounded-full bg-yellow-400"></span>
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="h-2 w-2 rounded-full bg-accent-amber"></span>
                                                 Auto-save enabled
                                             </span>
                                         </div>
@@ -261,15 +255,15 @@ export default function TemplatesPage() {
                                     <button
                                         key={template.id}
                                         onClick={() => setSelectedTemplate(template)}
-                                        className="rounded-lg border border-gray-200 bg-white p-4 text-left transition-all hover:border-blue-300 hover:shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
+                                        className="hover:border-primary/50 group rounded-xl border border-border bg-surface p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-glow"
                                     >
                                         <div className="mb-2 flex items-start justify-between">
-                                            <h3 className="font-medium text-gray-900 dark:text-white">
+                                            <h3 className="font-heading font-medium text-foreground transition-colors group-hover:text-primary">
                                                 {template.name}
                                             </h3>
-                                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                                            <ChevronRight className="h-4 w-4 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                                         </div>
-                                        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                                        <p className="mb-3 text-sm text-text-secondary">
                                             {template.description}
                                         </p>
                                         <div className="flex items-center gap-2">
@@ -279,7 +273,7 @@ export default function TemplatesPage() {
                                             >
                                                 {template.difficulty}
                                             </Badge>
-                                            <span className="text-xs text-gray-400">
+                                            <span className="font-mono text-xs text-text-muted">
                                                 {template.steps.length} steps
                                             </span>
                                         </div>
@@ -287,7 +281,7 @@ export default function TemplatesPage() {
                                 ))}
 
                                 {filteredTemplates.length === 0 && (
-                                    <div className="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
+                                    <div className="col-span-full py-12 text-center text-text-muted">
                                         No templates found in this category
                                     </div>
                                 )}
