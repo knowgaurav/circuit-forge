@@ -217,6 +217,41 @@
         @apply font-mono text-xs font-medium uppercase tracking-[0.2em] text-text-muted;
     }
 
+    /* Primary gradient button (used across course pages) */
+    .gradient-btn {
+        background-image: linear-gradient(105deg, var(--primary) 0%, var(--accent) 100%);
+        color: var(--primary-foreground);
+        transition: all 0.2s ease;
+    }
+
+    .gradient-btn:hover {
+        filter: brightness(1.08);
+        box-shadow: 0 0 22px -4px color-mix(in srgb, var(--primary) 60%, transparent);
+    }
+
+    /* Brand-tinted spinner ring */
+    .spinner-brand {
+        border-color: color-mix(in srgb, var(--primary) 25%, transparent);
+        border-top-color: var(--primary);
+    }
+
+    /* Brand text/surface helpers (legacy aliases) */
+    .text-brand-link {
+        color: var(--primary);
+    }
+
+    .text-brand-muted {
+        color: var(--text-muted);
+    }
+
+    .bg-brand-subtle {
+        background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+    }
+
+    .border-brand-subtle {
+        border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+    }
+
     /* Cut-corner technical frame (PCB/schematic box) */
     .clip-corner {
         clip-path: polygon(

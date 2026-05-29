@@ -12,9 +12,9 @@ import { api } from '@/services/api';
 import type { CoursePlan, CourseEnrollment } from '@/types';
 
 const difficultyColors: Record<string, string> = {
-    Beginner: 'text-green-400 bg-green-500/20',
-    Intermediate: 'text-yellow-400 bg-yellow-500/20',
-    Advanced: 'text-red-400 bg-red-500/20',
+    Beginner: 'text-success bg-success/15',
+    Intermediate: 'text-warning bg-warning/15',
+    Advanced: 'text-error bg-error/15',
 };
 
 export default function CoursePage() {
@@ -93,7 +93,7 @@ export default function CoursePage() {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background transition-colors duration-300">
                 <div className="text-center">
-                    <p className="mb-4 text-red-400">{error || 'Course not found'}</p>
+                    <p className="mb-4 text-error">{error || 'Course not found'}</p>
                     <Link href="/courses/create" className="text-brand-link">
                         Create a new course
                     </Link>
@@ -112,19 +112,19 @@ export default function CoursePage() {
                     <div className="glass-card mb-6 rounded-2xl p-8">
                         <div className="mb-4 flex items-start justify-between">
                             <div>
-                                <h1 className="mb-2 text-2xl font-bold text-white">
+                                <h1 className="mb-2 font-heading text-2xl font-bold text-foreground">
                                     {coursePlan.title}
                                 </h1>
-                                <p className="text-gray-400">{coursePlan.description}</p>
+                                <p className="text-text-secondary">{coursePlan.description}</p>
                             </div>
                             <span
-                                className={`rounded-full px-3 py-1 text-sm font-medium ${difficultyColors[coursePlan.difficulty]}`}
+                                className={`rounded-full px-3 py-1 font-mono text-xs font-medium uppercase tracking-wider ${difficultyColors[coursePlan.difficulty]}`}
                             >
                                 {coursePlan.difficulty}
                             </span>
                         </div>
 
-                        <div className="mb-6 flex items-center gap-6 text-sm text-gray-500">
+                        <div className="mb-6 flex items-center gap-6 font-mono text-sm text-text-muted">
                             <span>📚 {coursePlan.levels.length} levels</span>
                             <span>⏱️ ~{coursePlan.estimatedHours} hours</span>
                             <span>🎯 Topic: {coursePlan.topic}</span>
@@ -134,18 +134,18 @@ export default function CoursePage() {
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleContinueCourse}
-                                    className="gradient-btn flex-1 rounded-xl px-6 py-3 font-medium text-white"
+                                    className="gradient-btn flex-1 rounded-xl px-6 py-3 font-medium"
                                 >
                                     Continue Course (Level {enrollment.currentLevel})
                                 </button>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-text-muted">
                                     Started {new Date(enrollment.startedAt).toLocaleDateString()}
                                 </span>
                             </div>
                         ) : (
                             <button
                                 onClick={handleStartCourse}
-                                className="gradient-btn w-full rounded-xl px-6 py-3 font-medium text-white"
+                                className="gradient-btn w-full rounded-xl px-6 py-3 font-medium"
                             >
                                 Start Course
                             </button>
@@ -154,7 +154,9 @@ export default function CoursePage() {
 
                     {/* Course Outline */}
                     <div className="glass-card rounded-2xl p-8">
-                        <h2 className="mb-4 text-lg font-semibold text-white">Course Outline</h2>
+                        <h2 className="mb-4 font-heading text-lg font-semibold text-foreground">
+                            Course Outline
+                        </h2>
                         <div className="space-y-3">
                             {coursePlan.levels.map((level, index) => {
                                 const isUnlocked = enrollment
@@ -170,40 +172,40 @@ export default function CoursePage() {
                                         key={level.levelNumber}
                                         className={`rounded-xl border p-4 transition-all ${
                                             isCurrent
-                                                ? 'border-blue-500/50 bg-blue-500/10'
+                                                ? 'border-primary/50 bg-primary/10'
                                                 : isCompleted
-                                                  ? 'border-green-500/50 bg-green-500/10'
+                                                  ? 'border-success/50 bg-success/10'
                                                   : isUnlocked
-                                                    ? 'border-white/10 bg-white/5 hover:border-white/20'
-                                                    : 'border-white/5 bg-white/[0.02] opacity-60'
+                                                    ? 'border-border bg-surface-secondary hover:border-border-strong'
+                                                    : 'bg-surface-secondary/50 border-border-subtle opacity-60'
                                         }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <span
-                                                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
+                                                className={`flex h-8 w-8 items-center justify-center rounded-full font-mono text-sm font-medium ${
                                                     isCompleted
-                                                        ? 'bg-green-500 text-white'
+                                                        ? 'bg-success text-success-foreground'
                                                         : isCurrent
-                                                          ? 'bg-blue-500 text-white'
+                                                          ? 'bg-primary text-primary-foreground'
                                                           : isUnlocked
-                                                            ? 'bg-white/20 text-gray-300'
-                                                            : 'bg-white/10 text-gray-500'
+                                                            ? 'bg-surface-tertiary text-text-secondary'
+                                                            : 'bg-surface-tertiary text-text-muted'
                                                 }`}
                                             >
                                                 {isCompleted ? '✓' : level.levelNumber}
                                             </span>
                                             <div className="flex-1">
-                                                <h3 className="font-medium text-white">
+                                                <h3 className="font-medium text-foreground">
                                                     {level.title}
                                                 </h3>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-text-muted">
                                                     {level.description}
                                                 </p>
                                             </div>
                                             {isCurrent && (
                                                 <Link
                                                     href={`/courses/${courseId}/level/${level.levelNumber}`}
-                                                    className="gradient-btn rounded-lg px-4 py-2 text-sm font-medium text-white"
+                                                    className="gradient-btn rounded-lg px-4 py-2 text-sm font-medium"
                                                 >
                                                     Continue
                                                 </Link>
@@ -211,13 +213,13 @@ export default function CoursePage() {
                                             {isCompleted && (
                                                 <Link
                                                     href={`/courses/${courseId}/level/${level.levelNumber}`}
-                                                    className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5"
+                                                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-secondary"
                                                 >
                                                     Review
                                                 </Link>
                                             )}
                                             {!isUnlocked && (
-                                                <span className="text-gray-500">🔒</span>
+                                                <span className="text-text-muted">🔒</span>
                                             )}
                                         </div>
                                     </div>
