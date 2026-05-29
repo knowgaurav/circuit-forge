@@ -26,12 +26,15 @@ interface LLMConfigState {
     model: string;
     temperature: number;
     maxTokens: number;
+    // Google Vertex AI location (persisted preference)
+    location: string;
 
     // Actions
     setApiKey: (key: string) => void;
     clearApiKey: () => void;
     setProvider: (provider: string) => void;
     setModel: (model: string) => void;
+    setLocation: (location: string) => void;
     setAdvancedSettings: (temperature: number, maxTokens: number) => void;
     setLocalConfig: (baseUrl: string, token: string) => void;
     clearLocalConfig: () => void;
@@ -48,6 +51,8 @@ export interface LLMConfig {
     // Local LLM specific
     baseUrl?: string;
     bridgeToken?: string;
+    // Google Vertex AI specific
+    location?: string;
 }
 
 const SESSION_KEY = 'llm-api-key';
@@ -112,6 +117,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
             model: 'gpt-4o',
             temperature: 0.7,
             maxTokens: 4000,
+            location: 'global',
 
             setApiKey: (key: string) => {
                 setSessionApiKey(key);
@@ -132,6 +138,8 @@ export const useLLMConfigStore = create<LLMConfigState>()(
             },
 
             setModel: (model: string) => set({ model }),
+
+            setLocation: (location: string) => set({ location }),
 
             setAdvancedSettings: (temperature: number, maxTokens: number) =>
                 set({ temperature, maxTokens }),
@@ -187,6 +195,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
                         model: state.model,
                         temperature: state.temperature,
                         maxTokens: state.maxTokens,
+                        location: state.location,
                     };
                 }
             },
@@ -200,6 +209,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
                 model: state.model,
                 temperature: state.temperature,
                 maxTokens: state.maxTokens,
+                location: state.location,
             }),
         }
     )

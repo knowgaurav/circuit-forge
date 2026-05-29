@@ -157,6 +157,11 @@ class ApiClient {
             config.bridgeToken = llmConfig.bridgeToken;
         }
 
+        // Add Google Vertex AI location
+        if (llmConfig.location) {
+            config.location = llmConfig.location;
+        }
+
         return this.request('/courses/generate-plan', {
             method: 'POST',
             body: JSON.stringify({
@@ -170,7 +175,8 @@ class ApiClient {
     async testConnection(
         provider: string,
         apiKey: string,
-        model: string
+        model: string,
+        location?: string
     ): Promise<{ success: boolean; message: string }> {
         return this.request('/courses/test-connection', {
             method: 'POST',
@@ -178,6 +184,7 @@ class ApiClient {
                 provider,
                 apiKey,
                 model,
+                location,
             }),
         });
     }
@@ -243,6 +250,11 @@ class ApiClient {
         }
         if (llmConfig.bridgeToken) {
             config.bridgeToken = llmConfig.bridgeToken;
+        }
+
+        // Add Google Vertex AI location
+        if (llmConfig.location) {
+            config.location = llmConfig.location;
         }
 
         return this.request(`/courses/${courseId}/levels/${levelNum}`, {

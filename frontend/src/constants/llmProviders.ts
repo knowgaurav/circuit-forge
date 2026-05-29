@@ -105,8 +105,8 @@ export const LLM_PROVIDERS: LLMProvider[] = [
         name: 'Google',
         icon: '✨',
         logoUrl: 'https://cdn.simpleicons.org/googlegemini/white',
-        description: 'Affordable Gemini models with tool calling',
-        docsUrl: 'https://aistudio.google.com/app/apikey',
+        description: 'Gemini models on Vertex AI (express mode)',
+        docsUrl: 'https://console.cloud.google.com/expressmode',
         models: [
             {
                 id: 'gemini-3.1-flash-lite',

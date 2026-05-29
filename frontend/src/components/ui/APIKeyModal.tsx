@@ -52,6 +52,9 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
     const [testError, setTestError] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
 
+    // Google Vertex AI location (express mode)
+    const [location, setLocation] = useState(store.location);
+
     // Local LLM specific state
     const [baseUrl, setBaseUrl] = useState('');
     const [bridgeToken, setBridgeToken] = useState('');
@@ -64,6 +67,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
 
     const provider = getProvider(selectedProvider);
     const isLocalProvider = provider?.requiresBaseUrl === true;
+    const isGoogleProvider = selectedProvider === 'google';
     const models = isLocalProvider ? localModels : provider?.models || [];
 
     useEffect(() => {
@@ -73,6 +77,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             setApiKey('');
             setTemperature(store.temperature);
             setMaxTokens(store.maxTokens);
+            setLocation(store.location);
             setTestStatus('idle');
             setTestError(null);
             setValidationError(null);
@@ -83,7 +88,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             setTokenError(null);
             setLocalModels([]);
         }
-    }, [isOpen, store.provider, store.model, store.temperature, store.maxTokens]);
+    }, [isOpen, store.provider, store.model, store.temperature, store.maxTokens, store.location]);
 
     useEffect(() => {
         const newProvider = getProvider(selectedProvider);
@@ -197,7 +202,12 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             if (isLocalProvider) {
                 result = await api.testLocalConnection(baseUrl, bridgeToken, selectedModel);
             } else {
-                result = await api.testConnection(selectedProvider, apiKey, selectedModel);
+                result = await api.testConnection(
+                    selectedProvider,
+                    apiKey,
+                    selectedModel,
+                    isGoogleProvider ? location : undefined
+                );
             }
 
             if (result.success) {
@@ -227,6 +237,9 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             store.setModel(selectedModel);
             store.setApiKey(apiKey);
             store.setAdvancedSettings(temperature, maxTokens);
+            if (isGoogleProvider) {
+                store.setLocation(location);
+            }
         }
         onSave();
     };
@@ -460,6 +473,29 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                         {selectedModelData?.description || ''}
                                     </p>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Google Vertex AI: Location/Region (express mode) */}
+                        {!isLocalProvider && isGoogleProvider && (
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-300">
+                                    Location / Region
+                                </label>
+                                <input
+                                    type="text"
+                                    value={location}
+                                    onChange={(e) => {
+                                        setLocation(e.target.value);
+                                        setTestStatus('idle');
+                                        setTestError(null);
+                                    }}
+                                    placeholder="global"
+                                    className="focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:ring-2"
+                                />
+                                <p className="mt-1.5 h-4 truncate text-xs text-gray-500">
+                                    Vertex AI region (e.g. us-central1) or &quot;global&quot;
+                                </p>
                             </div>
                         )}
 
