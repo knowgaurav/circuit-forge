@@ -8,27 +8,22 @@ import { Button, Input, IconButton } from '@/components/ui';
 
 export function Footer() {
     return (
-        <footer className="relative overflow-hidden border-t border-white/5 bg-[#050510]">
-            {/* Background Grid Pattern - subtle texture */}
-            <div
-                className="absolute inset-0 z-0 opacity-[0.03]"
-                style={{
-                    backgroundImage:
-                        'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-                    backgroundSize: '40px 40px',
-                }}
-            />
+        <footer className="relative overflow-hidden border-t border-border bg-surface">
+            {/* Blueprint grid texture */}
+            <div className="bg-grid pointer-events-none absolute inset-0 z-0 opacity-60" />
+            {/* Top signal rail */}
+            <div className="via-primary/60 absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />
 
             <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 pt-20">
                 <div className="mb-20 grid grid-cols-1 gap-12 md:grid-cols-12">
                     {/* Brand Column */}
                     <div className="space-y-6 md:col-span-3">
-                        <Link href="/" className="group flex items-center gap-2">
-                            <div className="shadow-primary/25 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg transition-transform duration-200 group-hover:scale-110">
+                        <Link href="/" className="group flex items-center gap-2.5">
+                            <div className="border-primary/40 bg-primary/10 relative flex h-10 w-10 items-center justify-center rounded-md border text-primary transition-all duration-200 group-hover:shadow-glow">
                                 <Zap className="h-6 w-6 fill-current" />
                             </div>
-                            <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-xl font-bold text-transparent">
-                                Circuit Forge
+                            <span className="font-heading text-xl font-bold tracking-tight text-foreground">
+                                Circuit<span className="text-primary">Forge</span>
                             </span>
                         </Link>
                         <p className="max-w-xs text-sm leading-relaxed text-text-muted">
@@ -41,7 +36,7 @@ export function Footer() {
                                 href="https://github.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-text-muted transition-colors hover:text-white"
+                                className="text-text-muted transition-colors hover:text-primary"
                             >
                                 <IconButton
                                     icon={<Github className="h-5 w-5" />}
@@ -54,7 +49,7 @@ export function Footer() {
                                 href="https://twitter.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-text-muted transition-colors hover:text-white"
+                                className="text-text-muted transition-colors hover:text-primary"
                             >
                                 <IconButton
                                     icon={<Twitter className="h-5 w-5" />}
@@ -67,7 +62,7 @@ export function Footer() {
                                 href="https://linkedin.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-text-muted transition-colors hover:text-white"
+                                className="text-text-muted transition-colors hover:text-primary"
                             >
                                 <IconButton
                                     icon={<Linkedin className="h-5 w-5" />}
@@ -80,7 +75,7 @@ export function Footer() {
                                 href="https://discord.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-text-muted transition-colors hover:text-white"
+                                className="text-text-muted transition-colors hover:text-primary"
                             >
                                 <IconButton
                                     icon={<Disc className="h-5 w-5" />}
@@ -205,10 +200,7 @@ export function Footer() {
                             Get the latest updates on features and releases.
                         </p>
                         <div className="flex flex-col gap-2">
-                            <Input
-                                placeholder="Enter your email"
-                                className="border-white/10 bg-white/5 text-white placeholder:text-white/30"
-                            />
+                            <Input placeholder="Enter your email" />
                             <Button className="w-full">Subscribe</Button>
                         </div>
                     </div>
@@ -217,9 +209,9 @@ export function Footer() {
                 {/* Big Text Overlay */}
                 <div className="pointer-events-none relative flex h-32 w-full select-none items-end justify-center overflow-hidden md:h-48">
                     <h1
-                        className="text-[15vw] font-bold leading-[0.8] tracking-tighter text-transparent"
+                        className="font-heading text-[15vw] font-bold leading-[0.8] tracking-tighter text-transparent"
                         style={{
-                            WebkitTextStroke: '1px rgba(255, 255, 255, 0.15)',
+                            WebkitTextStroke: '1px var(--border-strong)',
                         }}
                     >
                         CircuitForge
@@ -227,16 +219,16 @@ export function Footer() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs text-text-muted md:flex-row">
-                    <p>© 2025 Circuit Forge Inc. All rights reserved.</p>
+                <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 font-mono text-xs text-text-muted md:flex-row">
+                    <p>© 2025 CircuitForge. All rights reserved.</p>
                     <div className="flex gap-6">
-                        <Link href="/terms" className="transition-colors hover:text-white">
+                        <Link href="/terms" className="transition-colors hover:text-primary">
                             Terms of Service
                         </Link>
-                        <Link href="/privacy" className="transition-colors hover:text-white">
+                        <Link href="/privacy" className="transition-colors hover:text-primary">
                             Privacy Policy
                         </Link>
-                        <Link href="/cookies" className="transition-colors hover:text-white">
+                        <Link href="/cookies" className="transition-colors hover:text-primary">
                             Cookie Policy
                         </Link>
                     </div>

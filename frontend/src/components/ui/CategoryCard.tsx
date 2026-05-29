@@ -16,16 +16,18 @@ export interface CategoryCardProps {
 export function CategoryCard({ id, name, description, icon, count, href }: CategoryCardProps) {
     const cardContent = (
         <div
-            className="glass-card group h-full cursor-pointer p-6 transition-all duration-300 hover:scale-[1.02]"
+            className="hover:border-primary/50 group relative h-full cursor-pointer overflow-hidden rounded-xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glow"
             data-testid={`category-card-${id}`}
         >
+            {/* corner node markers */}
+            <span className="absolute right-3 top-3 h-1.5 w-1.5 rounded-full bg-border-strong transition-colors group-hover:bg-primary" />
             <div className="flex items-start gap-4">
-                <div className="from-primary/20 to-accent/20 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-primary transition-colors group-hover:text-accent">
+                <div className="border-primary/30 bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg border text-primary transition-all group-hover:border-primary group-hover:shadow-glow">
                     {icon}
                 </div>
                 <div className="min-w-0 flex-1">
                     <h3
-                        className="font-semibold text-foreground transition-colors group-hover:text-primary"
+                        className="font-heading font-semibold text-foreground transition-colors group-hover:text-primary"
                         data-testid="category-name"
                     >
                         {name}
@@ -37,10 +39,10 @@ export function CategoryCard({ id, name, description, icon, count, href }: Categ
                         {description}
                     </p>
                     <div
-                        className="mt-3 flex items-center gap-1 text-xs font-medium text-primary"
+                        className="mt-3 flex items-center gap-1.5 font-mono text-xs font-medium uppercase tracking-wider text-primary"
                         data-testid="category-count"
                     >
-                        <span className="bg-primary/60 h-1.5 w-1.5 rounded-full"></span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
                         {count} components
                     </div>
                 </div>

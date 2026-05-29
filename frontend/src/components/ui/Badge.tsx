@@ -15,22 +15,17 @@ export function Badge({ variant = 'default', size = 'md', children, className }:
     return (
         <span
             className={clsx(
-                'inline-flex items-center rounded-full font-medium',
+                'inline-flex items-center rounded border font-mono font-medium uppercase tracking-wider',
                 {
                     // Variants
-                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200':
-                        variant === 'default',
-                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400':
-                        variant === 'success',
-                    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400':
-                        variant === 'warning',
-                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400':
-                        variant === 'danger',
-                    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':
-                        variant === 'info',
+                    'border-border bg-surface-secondary text-text-secondary': variant === 'default',
+                    'border-success/30 bg-success/10 text-success': variant === 'success',
+                    'border-warning/30 bg-warning/10 text-warning': variant === 'warning',
+                    'border-error/30 bg-error/10 text-error': variant === 'danger',
+                    'border-primary/30 bg-primary/10 text-primary': variant === 'info',
                     // Sizes
-                    'px-2 py-0.5 text-xs': size === 'sm',
-                    'px-2.5 py-1 text-sm': size === 'md',
+                    'px-1.5 py-0.5 text-[10px]': size === 'sm',
+                    'px-2 py-0.5 text-xs': size === 'md',
                 },
                 className
             )}

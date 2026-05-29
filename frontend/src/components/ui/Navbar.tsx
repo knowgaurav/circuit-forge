@@ -71,38 +71,43 @@ export function Navbar({ showSessionButtons = true }: NavbarProps) {
             <nav
                 className={clsx(
                     'fixed left-0 right-0 top-0 z-50 border-b transition-all duration-300',
-                    scrolled
-                        ? 'glass border-border/50 py-2'
-                        : 'border-transparent bg-transparent py-4'
+                    scrolled ? 'glass border-border py-2' : 'border-transparent bg-transparent py-4'
                 )}
             >
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-12 items-center justify-between">
-                        <Link href="/" className="group flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-brand shadow-lg transition-transform group-hover:scale-110">
-                                <Zap className="h-5 w-5 fill-white text-white" />
+                        <Link href="/" className="group flex items-center gap-2.5">
+                            <div className="border-primary/40 bg-primary/10 relative flex h-9 w-9 items-center justify-center rounded-md border transition-all group-hover:border-primary group-hover:shadow-glow">
+                                <Zap className="h-5 w-5 fill-primary text-primary" />
+                                <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-primary shadow-glow" />
                             </div>
-                            <span className="text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
-                                CircuitForge
+                            <span className="font-heading text-lg font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                                Circuit<span className="text-primary">Forge</span>
                             </span>
                         </Link>
 
                         {/* Desktop Navigation */}
                         <div className="hidden items-center gap-1 md:flex">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className={clsx(
-                                        'rounded-md px-4 py-2 text-sm font-medium transition-all duration-200',
-                                        pathname === link.href
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'text-muted hover:bg-surface-secondary hover:text-foreground'
-                                    )}
-                                >
-                                    {link.label}
-                                </Link>
-                            ))}
+                            {navLinks.map((link) => {
+                                const active = pathname === link.href;
+                                return (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className={clsx(
+                                            'relative rounded-md px-3.5 py-2 font-mono text-xs font-medium uppercase tracking-wider transition-all duration-200',
+                                            active
+                                                ? 'text-primary'
+                                                : 'text-text-muted hover:bg-surface-secondary hover:text-foreground'
+                                        )}
+                                    >
+                                        {link.label}
+                                        {active && (
+                                            <span className="absolute inset-x-3.5 -bottom-px h-px bg-primary shadow-glow" />
+                                        )}
+                                    </Link>
+                                );
+                            })}
                         </div>
 
                         <div className="hidden items-center gap-3 md:flex">
@@ -131,7 +136,7 @@ export function Navbar({ showSessionButtons = true }: NavbarProps) {
 
                         {/* Mobile menu button */}
                         <button
-                            className="text-muted rounded-md p-2 transition-colors hover:bg-surface-secondary hover:text-foreground md:hidden"
+                            className="rounded-md p-2 text-text-muted transition-colors hover:bg-surface-secondary hover:text-foreground md:hidden"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         >
                             {mobileMenuOpen ? (
@@ -145,17 +150,17 @@ export function Navbar({ showSessionButtons = true }: NavbarProps) {
 
                 {/* Mobile Navigation */}
                 {mobileMenuOpen && (
-                    <div className="glass border-border/50 animate-fade-in border-t md:hidden">
+                    <div className="glass animate-fade-in border-t border-border md:hidden">
                         <div className="space-y-2 px-4 py-4">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.href}
                                     href={link.href}
                                     className={clsx(
-                                        'block rounded-lg px-4 py-3 text-sm font-medium transition-colors',
+                                        'block rounded-lg px-4 py-3 font-mono text-xs font-medium uppercase tracking-wider transition-colors',
                                         pathname === link.href
                                             ? 'bg-primary/10 text-primary'
-                                            : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+                                            : 'text-text-muted hover:bg-surface-secondary hover:text-foreground'
                                     )}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
@@ -163,9 +168,11 @@ export function Navbar({ showSessionButtons = true }: NavbarProps) {
                                 </Link>
                             ))}
 
-                            <div className="border-border/50 mt-2 flex flex-col gap-3 border-t pt-4">
+                            <div className="mt-2 flex flex-col gap-3 border-t border-border pt-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted text-sm font-medium">Theme</span>
+                                    <span className="text-sm font-medium text-text-muted">
+                                        Theme
+                                    </span>
                                     <ThemeToggle />
                                 </div>
                                 {showSessionButtons && (

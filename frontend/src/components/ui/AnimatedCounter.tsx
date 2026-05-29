@@ -61,12 +61,14 @@ export function AnimatedCounter({
 
     return (
         <div ref={ref} className="flex flex-col items-center text-center">
-            {icon && <div className="text-brand-500 mb-2">{icon}</div>}
-            <div className="text-3xl font-bold text-text md:text-4xl">
+            {icon && <div className="mb-2 text-primary">{icon}</div>}
+            <div className="font-heading text-3xl font-bold text-foreground md:text-4xl">
                 {count}
-                {suffix}
+                <span className="text-primary">{suffix}</span>
             </div>
-            <div className="mt-1 text-sm text-text-secondary">{label}</div>
+            <div className="mt-1 font-mono text-xs uppercase tracking-wider text-text-secondary">
+                {label}
+            </div>
         </div>
     );
 }
