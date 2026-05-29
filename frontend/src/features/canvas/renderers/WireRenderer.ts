@@ -4,9 +4,10 @@
  * @module features/canvas/renderers
  */
 
-import type { Position, Wire, CircuitComponent } from '@/types';
-import type { SignalState } from '@/features/simulation';
 import { getWireStyle } from '@/components/circuit/SimulationOverlay';
+
+import type { SignalState } from '@/features/simulation';
+import type { Position, Wire, CircuitComponent } from '@/types';
 
 /**
  * Draws a wire between two components with orthogonal routing.

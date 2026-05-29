@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useRef, useCallback, ReactNode } from 'react';
+import { useState, useRef, useCallback } from 'react';
+
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+import type { ReactNode } from 'react';
 
 interface ResizablePanelProps {
     children: ReactNode;

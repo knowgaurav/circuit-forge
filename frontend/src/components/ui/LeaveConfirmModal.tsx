@@ -1,8 +1,9 @@
 'use client';
 
 import { AlertTriangle, XCircle } from 'lucide-react';
-import { Modal } from './Modal';
+
 import { Button } from './Button';
+import { Modal } from './Modal';
 
 export interface LeaveConfirmModalProps {
     isOpen: boolean;

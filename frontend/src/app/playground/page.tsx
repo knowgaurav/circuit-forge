@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+
 import Link from 'next/link';
+
 import {
     MousePointer2,
     Hand,
@@ -22,6 +24,8 @@ import {
     FolderOpen,
 } from 'lucide-react';
 
+import { Canvas, SimulationOverlay } from '@/components/circuit';
+import { ComponentPalette } from '@/components/circuit/ComponentPalette';
 import {
     Button,
     IconButton,
@@ -30,16 +34,17 @@ import {
     ColorPicker,
     Tooltip,
     ToastContainer,
-    ToastItem,
     ThemeToggle,
     Input,
 } from '@/components/ui';
-import { Canvas, SimulationOverlay } from '@/components/circuit';
-import { ComponentPalette } from '@/components/circuit/ComponentPalette';
-import type { ComponentDefinition } from '@/constants/components';
-import { useCircuitStore, useUIStore, Tool } from '@/stores';
+
 import { exportAsPng, exportAsJson, importFromJson } from '@/services/export';
+import { useCircuitStore, useUIStore } from '@/stores';
+
+import type { ToastItem } from '@/components/ui';
+import type { ComponentDefinition } from '@/constants/components';
 import type { SimulationResult } from '@/features/simulation';
+import type { Tool } from '@/stores';
 import type { Position, Annotation, CircuitState, CircuitComponent } from '@/types';
 
 const PLAYGROUND_AUTOSAVE_KEY = 'circuitforge_playground_autosave';
@@ -546,10 +551,11 @@ export default function PlaygroundPage() {
                                     <button
                                         key={width}
                                         onClick={() => uiStore.setStrokeWidth(width as 2 | 4 | 8)}
-                                        className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${uiStore.strokeWidth === width
+                                        className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${
+                                            uiStore.strokeWidth === width
                                                 ? 'bg-primary/20 ring-primary/20 text-primary ring-2'
                                                 : 'text-text-muted hover:bg-surface-secondary'
-                                            }`}
+                                        }`}
                                     >
                                         <div
                                             className="rounded-full bg-current"
@@ -608,10 +614,11 @@ export default function PlaygroundPage() {
                                         <button
                                             key={preset}
                                             onClick={() => handleZoomPreset(preset)}
-                                            className={`hover:bg-primary/10 w-full px-3 py-1.5 text-left text-sm transition-colors ${Math.round(uiStore.zoom * 100) === preset
+                                            className={`hover:bg-primary/10 w-full px-3 py-1.5 text-left text-sm transition-colors ${
+                                                Math.round(uiStore.zoom * 100) === preset
                                                     ? 'bg-primary/5 font-medium text-primary'
                                                     : 'text-text-secondary'
-                                                }`}
+                                            }`}
                                         >
                                             {preset}%
                                         </button>

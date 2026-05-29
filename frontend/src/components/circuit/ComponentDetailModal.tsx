@@ -1,12 +1,16 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+
 import { Modal } from '@/components/ui';
-import { ComponentDefinition } from '@/constants/components';
+
 import { getComponentDetail } from '@/constants/componentDetails';
 import { getExampleCircuit } from '@/constants/exampleCircuits';
-import { MiniCanvas } from './MiniCanvas';
+
 import { drawComponentSymbol } from './drawingUtils';
+import { MiniCanvas } from './MiniCanvas';
+
+import type { ComponentDefinition } from '@/constants/components';
 
 interface ComponentDetailModalProps {
     component: ComponentDefinition | null;

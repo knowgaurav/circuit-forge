@@ -5,8 +5,10 @@
  */
 
 import { useCallback } from 'react';
-import { useCircuitStore } from '@/stores';
+
 import { exportAsPng, exportAsJson, importFromJson } from '@/services/export';
+import { useCircuitStore } from '@/stores';
+
 import type { CircuitState } from '@/types';
 
 export interface UseCircuitExportOptions {
@@ -41,7 +43,14 @@ export function useCircuitExport(options: UseCircuitExportOptions = {}): UseCirc
         } catch {
             onError?.('Failed to export PNG');
         }
-    }, [circuitStore.components, circuitStore.wires, circuitStore.annotations, fileNamePrefix, onSuccess, onError]);
+    }, [
+        circuitStore.components,
+        circuitStore.wires,
+        circuitStore.annotations,
+        fileNamePrefix,
+        onSuccess,
+        onError,
+    ]);
 
     const exportJson = useCallback(() => {
         try {
@@ -61,22 +70,28 @@ export function useCircuitExport(options: UseCircuitExportOptions = {}): UseCirc
         }
     }, [circuitStore, fileNamePrefix, onSuccess, onError]);
 
-    const importJson = useCallback(async (file: File) => {
-        try {
-            const circuitState = await importFromJson(file);
-            circuitStore.setCircuitState(circuitState);
-            onSuccess?.('Circuit imported successfully');
-        } catch (error) {
-            onError?.(error instanceof Error ? error.message : 'Failed to import circuit');
-        }
-    }, [circuitStore, onSuccess, onError]);
+    const importJson = useCallback(
+        async (file: File) => {
+            try {
+                const circuitState = await importFromJson(file);
+                circuitStore.setCircuitState(circuitState);
+                onSuccess?.('Circuit imported successfully');
+            } catch (error) {
+                onError?.(error instanceof Error ? error.message : 'Failed to import circuit');
+            }
+        },
+        [circuitStore, onSuccess, onError]
+    );
 
-    const handleImportChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        await importJson(file);
-        e.target.value = '';
-    }, [importJson]);
+    const handleImportChange = useCallback(
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            await importJson(file);
+            e.target.value = '';
+        },
+        [importJson]
+    );
 
     return {
         exportPng,

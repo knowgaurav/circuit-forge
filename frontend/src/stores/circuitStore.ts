@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+
 import type { CircuitComponent, Wire, Annotation, CircuitState, Position } from '@/types';
 
 export interface CircuitStore {

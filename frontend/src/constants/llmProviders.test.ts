@@ -9,6 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { LLM_PROVIDERS, getProvider, getDefaultModel, validateKeyFormat } from './llmProviders';
 
 describe('LLM Providers Configuration', () => {

@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { Key, Check } from 'lucide-react';
-import { APIKeyModal } from './APIKeyModal';
-import { useLLMConfigStore } from '@/stores/llmConfigStore';
+
 import { getProvider } from '@/constants/llmProviders';
+import { useLLMConfigStore } from '@/stores/llmConfigStore';
+
+import { APIKeyModal } from './APIKeyModal';
 
 export function FloatingLLMButton() {
     const [showModal, setShowModal] = useState(false);

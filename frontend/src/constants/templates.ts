@@ -10,8 +10,9 @@
  * - Communication
  */
 
-import type { CircuitComponent, Wire } from '@/types';
 import { ADDITIONAL_TEMPLATES_V2 } from './additional-templates';
+
+import type { CircuitComponent, Wire } from '@/types';
 
 export interface TemplateStep {
     id: string;

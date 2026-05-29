@@ -1,11 +1,12 @@
 import { Inter, Outfit, JetBrains_Mono } from 'next/font/google'; // Using JetBrains Mono for a better code aesthetic
 
-import type { Metadata } from 'next';
-
 import './globals.css';
-import { ThemeProvider } from '@/components/ui';
 import { FloatingLLMButton } from '@/components/ui/FloatingLLMButton';
+
 import { AxiomProvider } from '@/components/providers/AxiomProvider';
+import { ThemeProvider } from '@/components/ui';
+
+import type { Metadata } from 'next';
 
 const inter = Inter({
     subsets: ['latin'],

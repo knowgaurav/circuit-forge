@@ -2,6 +2,9 @@
  * REST API client for CircuitForge backend
  */
 
+import { extractTraceFromResponse, getTracingHeaders, logErrorWithTrace } from '@/utils/tracing';
+
+import type { LLMConfig } from '@/stores/llmConfigStore';
 import type {
     CircuitState,
     CoursePlan,
@@ -12,8 +15,6 @@ import type {
     TopicSuggestion,
     ValidationResult,
 } from '@/types';
-import type { LLMConfig } from '@/stores/llmConfigStore';
-import { extractTraceFromResponse, getTracingHeaders, logErrorWithTrace } from '@/utils/tracing';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 

@@ -11,7 +11,9 @@
  */
 
 import { readFileSync } from 'node:fs';
+
 import { SimulationEngine } from '../src/features/simulation/engine';
+
 import type { CircuitState } from '../src/types';
 
 function readInput(arg: string | undefined): string {

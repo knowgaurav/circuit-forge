@@ -1,13 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
-import { api } from '@/services/api';
+
 import { Sparkles, AlertTriangle, Lock, Unlock } from 'lucide-react';
-import type { TopicSuggestion, CoursePlan } from '@/types';
+
 import { APIKeyModal } from '@/components/ui/APIKeyModal';
+
 import { Navbar, Button, Input, Spinner } from '@/components/ui';
+
+import { api } from '@/services/api';
 import { useLLMConfigStore } from '@/stores/llmConfigStore';
+
+import type { TopicSuggestion, CoursePlan } from '@/types';
 
 // Category colors using semantic tokens
 const categoryColors: Record<string, string> = {

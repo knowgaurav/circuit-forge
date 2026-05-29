@@ -1,7 +1,8 @@
 'use client';
 
-import { ReactNode } from 'react';
 import Link from 'next/link';
+
+import type { ReactNode } from 'react';
 
 export interface CategoryCardProps {
     id: string;

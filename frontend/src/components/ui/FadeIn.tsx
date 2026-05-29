@@ -1,8 +1,12 @@
 'use client';
 
-import { motion, Variants } from 'framer-motion';
-import { cn } from '@/lib/utils';
 import React from 'react';
+
+import { motion } from 'framer-motion';
+
+import { cn } from '@/lib/utils';
+
+import type { Variants } from 'framer-motion';
 
 interface FadeInProps {
     children: React.ReactNode;

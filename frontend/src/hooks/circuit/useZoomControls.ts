@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useState } from 'react';
+
 import { useUIStore } from '@/stores';
 
 const DEFAULT_ZOOM_PRESETS = [25, 50, 75, 100, 125, 150, 200, 300, 400];
@@ -45,10 +46,13 @@ export function useZoomControls(options: UseZoomControlsOptions = {}): UseZoomCo
         if (prevPreset) uiStore.setZoom(prevPreset / 100);
     }, [uiStore, presets]);
 
-    const setZoomPreset = useCallback((percent: number) => {
-        uiStore.setZoom(percent / 100);
-        setShowDropdown(false);
-    }, [uiStore]);
+    const setZoomPreset = useCallback(
+        (percent: number) => {
+            uiStore.setZoom(percent / 100);
+            setShowDropdown(false);
+        },
+        [uiStore]
+    );
 
     const resetZoom = useCallback(() => {
         uiStore.setZoom(1);

@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+
 import Link from 'next/link';
-import { api } from '@/services/api';
+import { useRouter, useParams } from 'next/navigation';
+
 import { Navbar } from '@/components/ui/Navbar';
+
+import { api } from '@/services/api';
+
 import type { CoursePlan, CourseEnrollment } from '@/types';
 
 const difficultyColors: Record<string, string> = {

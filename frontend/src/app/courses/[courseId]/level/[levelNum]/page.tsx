@@ -1,15 +1,20 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+
 import Link from 'next/link';
-import { api } from '@/services/api';
-import { loadCircuitFromBlueprint, validateBlueprint } from '@/services/blueprintLoader';
-import { EmbeddedPlayground } from '@/components/circuit';
-import { useCircuitStore } from '@/stores/circuitStore';
-import { useLLMConfigStore } from '@/stores/llmConfigStore';
+import { useRouter, useParams } from 'next/navigation';
+
 import { APIKeyModal } from '@/components/ui/APIKeyModal';
 import { Navbar } from '@/components/ui/Navbar';
+
+import { EmbeddedPlayground } from '@/components/circuit';
+
+import { api } from '@/services/api';
+import { loadCircuitFromBlueprint, validateBlueprint } from '@/services/blueprintLoader';
+import { useCircuitStore } from '@/stores/circuitStore';
+import { useLLMConfigStore } from '@/stores/llmConfigStore';
+
 import type { CoursePlan, LevelContent, LevelOutline } from '@/types';
 
 export default function LevelPage() {

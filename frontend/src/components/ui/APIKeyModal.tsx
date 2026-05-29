@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import {
     X,
     ExternalLink,
@@ -17,6 +18,7 @@ import {
     Terminal,
     RefreshCw,
 } from 'lucide-react';
+
 import {
     LLM_PROVIDERS,
     getProvider,
@@ -24,8 +26,8 @@ import {
     validateBaseUrl,
     validateBridgeToken,
 } from '@/constants/llmProviders';
-import { useLLMConfigStore } from '@/stores/llmConfigStore';
 import { api } from '@/services/api';
+import { useLLMConfigStore } from '@/stores/llmConfigStore';
 
 interface APIKeyModalProps {
     isOpen: boolean;
@@ -282,10 +284,11 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     <button
                                         key={p.id}
                                         onClick={() => setSelectedProvider(p.id)}
-                                        className={`group relative rounded-xl border p-3 transition-all duration-200 ${selectedProvider === p.id
-                                            ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
-                                            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                                            }`}
+                                        className={`group relative rounded-xl border p-3 transition-all duration-200 ${
+                                            selectedProvider === p.id
+                                                ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
+                                                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                        }`}
                                     >
                                         <div className="mb-2 flex h-6 items-center">
                                             {p.logoUrl ? (
@@ -312,10 +315,11 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     <button
                                         key={p.id}
                                         onClick={() => setSelectedProvider(p.id)}
-                                        className={`group relative rounded-xl border p-3 transition-all duration-200 ${selectedProvider === p.id
-                                            ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
-                                            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                                            }`}
+                                        className={`group relative rounded-xl border p-3 transition-all duration-200 ${
+                                            selectedProvider === p.id
+                                                ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
+                                                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                        }`}
                                     >
                                         <div className="mb-2 flex h-6 items-center">
                                             {p.logoUrl ? (
@@ -402,10 +406,11 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                                     ? `${provider.keyPrefix}...`
                                                     : 'Paste your API key'
                                             }
-                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${validationError
-                                                ? 'border-red-500/50'
-                                                : 'border-white/10'
-                                                }`}
+                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                                validationError
+                                                    ? 'border-red-500/50'
+                                                    : 'border-white/10'
+                                            }`}
                                         />
                                         <button
                                             type="button"
@@ -471,10 +476,11 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             value={baseUrl}
                                             onChange={(e) => handleBaseUrlChange(e.target.value)}
                                             placeholder="https://xxx.trycloudflare.com"
-                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${baseUrlError
-                                                ? 'border-red-500/50'
-                                                : 'border-white/10'
-                                                }`}
+                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                                baseUrlError
+                                                    ? 'border-red-500/50'
+                                                    : 'border-white/10'
+                                            }`}
                                         />
                                         <p className="mt-1.5 flex h-4 items-center gap-1 text-xs text-red-400">
                                             {baseUrlError && (
@@ -496,10 +502,11 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                                 value={bridgeToken}
                                                 onChange={(e) => handleTokenChange(e.target.value)}
                                                 placeholder="Paste token from CLI"
-                                                className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${tokenError
-                                                    ? 'border-red-500/50'
-                                                    : 'border-white/10'
-                                                    }`}
+                                                className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                                    tokenError
+                                                        ? 'border-red-500/50'
+                                                        : 'border-white/10'
+                                                }`}
                                             />
                                             <button
                                                 type="button"
@@ -585,12 +592,13 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                         <button
                             onClick={handleTestConnection}
                             disabled={!canTestConnection || testStatus === 'testing'}
-                            className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium transition-all ${testStatus === 'success'
-                                ? 'border border-green-500/50 bg-green-500/20 text-green-300'
-                                : testStatus === 'error'
-                                    ? 'border border-red-500/50 bg-red-500/20 text-red-300'
-                                    : 'border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50'
-                                }`}
+                            className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium transition-all ${
+                                testStatus === 'success'
+                                    ? 'border border-green-500/50 bg-green-500/20 text-green-300'
+                                    : testStatus === 'error'
+                                      ? 'border border-red-500/50 bg-red-500/20 text-red-300'
+                                      : 'border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50'
+                            }`}
                         >
                             {testStatus === 'testing' && (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -600,10 +608,10 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                             {testStatus === 'testing'
                                 ? 'Testing Connection...'
                                 : testStatus === 'success'
-                                    ? 'Connection Successful!'
-                                    : testStatus === 'error'
-                                        ? 'Connection Failed'
-                                        : 'Test Connection'}
+                                  ? 'Connection Successful!'
+                                  : testStatus === 'error'
+                                    ? 'Connection Failed'
+                                    : 'Test Connection'}
                         </button>
                         {testStatus === 'error' && testError && (
                             <p className="-mt-4 text-center text-xs text-red-400">{testError}</p>

@@ -3,8 +3,9 @@
  * Converts LLM-generated circuit blueprints into CircuitForge components and wires
  */
 
-import type { CircuitBlueprint, CircuitComponent, Wire, ComponentType, Pin } from '@/types';
 import { getComponentDefinition } from '@/constants/components';
+
+import type { CircuitBlueprint, CircuitComponent, Wire, ComponentType, Pin } from '@/types';
 
 interface LoadedCircuit {
     components: CircuitComponent[];

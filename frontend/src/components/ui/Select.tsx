@@ -1,8 +1,11 @@
 'use client';
 
-import { forwardRef, SelectHTMLAttributes } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { forwardRef } from 'react';
+
 import clsx from 'clsx';
+import { ChevronDown } from 'lucide-react';
+
+import type { SelectHTMLAttributes } from 'react';
 
 export interface SelectOption {
     value: string;

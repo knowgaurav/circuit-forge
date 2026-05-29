@@ -1,10 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import { BookOpen, Wrench, ChevronRight, Sparkles, Zap, ArrowLeft } from 'lucide-react';
-import { Button, Badge, Panel } from '@/components/ui';
+
 import { Navbar } from '@/components/ui/Navbar';
+
+import { Button, Badge, Panel } from '@/components/ui';
+
 import {
     TEMPLATES,
     TEMPLATE_CATEGORIES,

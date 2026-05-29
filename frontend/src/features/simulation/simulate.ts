@@ -6,18 +6,34 @@
  * @module features/simulation
  */
 
-import type { CircuitState, ComponentType } from '@/types';
 import { SimulationEngine } from './engine';
 import { toLegacy } from './types';
+
 import type { SignalState, SimulationError, SimulationResult } from './types';
+import type { CircuitState, ComponentType } from '@/types';
 
 const INPUT_DEVICES = new Set<ComponentType>([
-    'SWITCH_TOGGLE', 'SWITCH_PUSH', 'CONST_HIGH', 'CONST_LOW', 'CLOCK',
-    'DIP_SWITCH_4', 'NUMERIC_INPUT', 'VCC_5V', 'VCC_3V3',
+    'SWITCH_TOGGLE',
+    'SWITCH_PUSH',
+    'CONST_HIGH',
+    'CONST_LOW',
+    'CLOCK',
+    'DIP_SWITCH_4',
+    'NUMERIC_INPUT',
+    'VCC_5V',
+    'VCC_3V3',
 ]);
 const OUTPUT_DEVICES = new Set<ComponentType>([
-    'LED_RED', 'LED_GREEN', 'LED_YELLOW', 'LED_BLUE', 'LED_RGB',
-    'DISPLAY_7SEG', 'BUZZER', 'MOTOR_DC', 'PROBE', 'GROUND',
+    'LED_RED',
+    'LED_GREEN',
+    'LED_YELLOW',
+    'LED_BLUE',
+    'LED_RGB',
+    'DISPLAY_7SEG',
+    'BUZZER',
+    'MOTOR_DC',
+    'PROBE',
+    'GROUND',
 ]);
 
 function validate(circuit: CircuitState): SimulationError[] {
@@ -38,7 +54,8 @@ function validate(circuit: CircuitState): SimulationError[] {
                 errors.push({
                     errorType: 'FLOATING_INPUT',
                     message: `Floating Input: ${c.label || c.type} pin '${p.name}' has no connection`,
-                    componentId: c.id, pinId: p.id,
+                    componentId: c.id,
+                    pinId: p.id,
                 });
             }
         }
@@ -52,7 +69,8 @@ function validate(circuit: CircuitState): SimulationError[] {
             errors.push({
                 errorType: 'OUTPUT_CONFLICT',
                 message: `Output Conflict: ${comp?.label || cid} pin '${pinName}' has multiple drivers`,
-                componentId: cid, pinId: pid,
+                componentId: cid,
+                pinId: pid,
             });
         }
     });
@@ -62,7 +80,10 @@ function validate(circuit: CircuitState): SimulationError[] {
 function detectCycle(circuit: CircuitState): boolean {
     const adj = new Map<string, string[]>();
     const indeg = new Map<string, number>();
-    for (const c of circuit.components) { adj.set(c.id, []); indeg.set(c.id, 0); }
+    for (const c of circuit.components) {
+        adj.set(c.id, []);
+        indeg.set(c.id, 0);
+    }
     const seen = new Set<string>();
     for (const w of circuit.wires) {
         const e = `${w.fromComponentId}>${w.toComponentId}`;
@@ -72,10 +93,13 @@ function detectCycle(circuit: CircuitState): boolean {
         indeg.set(w.toComponentId, (indeg.get(w.toComponentId) ?? 0) + 1);
     }
     const q: string[] = [];
-    indeg.forEach((d, cid) => { if (d === 0) q.push(cid); });
+    indeg.forEach((d, cid) => {
+        if (d === 0) q.push(cid);
+    });
     let visited = 0;
     while (q.length) {
-        const cur = q.shift()!; visited++;
+        const cur = q.shift()!;
+        visited++;
         for (const nxt of adj.get(cur) ?? []) {
             indeg.set(nxt, indeg.get(nxt)! - 1);
             if (indeg.get(nxt) === 0) q.push(nxt);
@@ -89,8 +113,15 @@ export function simulate(circuit: CircuitState): SimulationResult {
     if (errors.length) return { success: false, wireStates: {}, pinStates: {}, errors };
     if (detectCycle(circuit)) {
         return {
-            success: false, wireStates: {}, pinStates: {},
-            errors: [{ errorType: 'CYCLE_DETECTED', message: 'Circuit feedback loop did not stabilize - possible oscillation' }],
+            success: false,
+            wireStates: {},
+            pinStates: {},
+            errors: [
+                {
+                    errorType: 'CYCLE_DETECTED',
+                    message: 'Circuit feedback loop did not stabilize - possible oscillation',
+                },
+            ],
         };
     }
     const engine = new SimulationEngine();

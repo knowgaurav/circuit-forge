@@ -6,8 +6,9 @@
  *   POST /api/sessions/{code}/branch?from_seq=N
  */
 
-import type { CircuitEvent, CircuitState } from '@/types';
 import { extractTraceFromResponse, getTracingHeaders, logErrorWithTrace } from '@/utils/tracing';
+
+import type { CircuitEvent, CircuitState } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -46,7 +47,12 @@ async function request<T>(endpoint: string, init: RequestInit = {}): Promise<T> 
         } catch {
             // body wasn't JSON; keep the status-line fallback above.
         }
-        logErrorWithTrace(`Replay API request failed: ${endpoint}`, errorMessage, traceId, requestId);
+        logErrorWithTrace(
+            `Replay API request failed: ${endpoint}`,
+            errorMessage,
+            traceId,
+            requestId
+        );
         throw new Error(errorMessage);
     }
 
@@ -69,8 +75,7 @@ export async function fetchEvents(
 
 export async function branchSession(code: string, fromSeq: number): Promise<BranchResponse> {
     const params = new URLSearchParams({ from_seq: String(fromSeq) });
-    return request<BranchResponse>(
-        `/sessions/${code.toUpperCase()}/branch?${params.toString()}`,
-        { method: 'POST' }
-    );
+    return request<BranchResponse>(`/sessions/${code.toUpperCase()}/branch?${params.toString()}`, {
+        method: 'POST',
+    });
 }

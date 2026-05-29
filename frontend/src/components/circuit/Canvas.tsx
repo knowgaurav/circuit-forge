@@ -1,20 +1,21 @@
 'use client';
 
-import { useRef, useEffect, useCallback, useState, MouseEvent, DragEvent } from 'react';
-import { useCircuitStore, useSessionStore, useUIStore } from '@/stores';
-import type { Position, CircuitComponent, Wire, Annotation, StrokeData, Pin } from '@/types';
-import {
-    ComponentDefinition,
-    createComponentInstance,
-    getComponentDefinition,
-} from '@/constants/components';
-import type { SimulationResult } from '@/features/simulation';
+import { useRef, useEffect, useCallback, useState } from 'react';
+
 import {
     drawGrid,
     drawComponent,
     drawWire,
     calculateOrthogonalPath,
 } from '@/features/canvas/renderers';
+
+import { createComponentInstance, getComponentDefinition } from '@/constants/components';
+import { useCircuitStore, useSessionStore, useUIStore } from '@/stores';
+
+import type { ComponentDefinition } from '@/constants/components';
+import type { SimulationResult } from '@/features/simulation';
+import type { Position, CircuitComponent, Wire, Annotation, StrokeData, Pin } from '@/types';
+import type { MouseEvent, DragEvent } from 'react';
 
 interface CanvasProps {
     onComponentSelect?: (componentId: string) => void;

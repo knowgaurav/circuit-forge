@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+
 import { TabSyncManager } from '@/services/tabSync';
+
 import type { SyncState, TabSyncStatus } from '@/types';
 
 interface UseTabSyncOptions {

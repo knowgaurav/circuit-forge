@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Button, Input, IconButton } from '@/components/ui';
+
 import { Twitter, Github, Linkedin, Disc, Zap } from 'lucide-react';
+
+import { Button, Input, IconButton } from '@/components/ui';
 
 export function Footer() {
     return (

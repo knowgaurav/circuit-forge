@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 
-import type { CircuitEvent, CircuitState } from '@/types';
 import { fetchEvents } from '@/services/replay';
+
+import type { CircuitEvent, CircuitState } from '@/types';
 
 const DEBOUNCE_MS = 100;
 
@@ -84,9 +85,7 @@ function applyEvent(state: CircuitState, event: CircuitEvent): CircuitState {
         case 'ANNOTATION_DELETED':
             return {
                 ...state,
-                annotations: state.annotations.filter(
-                    (a) => a.id !== event.payload.annotationId
-                ),
+                annotations: state.annotations.filter((a) => a.id !== event.payload.annotationId),
                 version: event.seq,
             };
     }
@@ -105,14 +104,14 @@ async function loadStateAtSeq(
     const base = snapshot
         ? snapshot.state
         : ({
-            sessionId: code,
-            version: 0,
-            schemaVersion: '1.0.0',
-            components: [],
-            wires: [],
-            annotations: [],
-            updatedAt: new Date(0).toISOString(),
-        } satisfies CircuitState);
+              sessionId: code,
+              version: 0,
+              schemaVersion: '1.0.0',
+              components: [],
+              wires: [],
+              annotations: [],
+              updatedAt: new Date(0).toISOString(),
+          } satisfies CircuitState);
     let state = base;
     for (const event of events) {
         state = applyEvent(state, event);

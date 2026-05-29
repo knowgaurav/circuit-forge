@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import type { ChangeEvent } from 'react';
 
 export interface TimelineProps {

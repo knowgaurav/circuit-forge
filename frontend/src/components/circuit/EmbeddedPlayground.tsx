@@ -1,14 +1,21 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+
 import { MousePointer2, Hand, Spline, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
+
+import { IconButton, Tooltip } from '@/components/ui';
+
+import { createComponentInstance } from '@/constants/components';
+import { useCircuitStore, useUIStore } from '@/stores';
+
 import { Canvas } from './Canvas';
 import { ComponentPalette } from './ComponentPalette';
 import { SimulationOverlay } from './SimulationOverlay';
-import { IconButton, Tooltip } from '@/components/ui';
-import { createComponentInstance, ComponentDefinition } from '@/constants/components';
-import { useCircuitStore, useUIStore, Tool } from '@/stores';
+
+import type { ComponentDefinition } from '@/constants/components';
 import type { SimulationResult } from '@/features/simulation';
+import type { Tool } from '@/stores';
 import type { Position, CircuitComponent, Wire } from '@/types';
 
 interface EmbeddedPlaygroundProps {

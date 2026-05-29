@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
+
 import { branchSession } from '@/services/replay';
 
 export interface BranchButtonProps {
@@ -40,7 +41,7 @@ export function BranchButton({ sessionCode, fromSeq, onBranched }: BranchButtonP
                 {pending ? 'Branching…' : 'Branch from here'}
             </Button>
             {error && (
-                <span className="text-error text-xs" role="alert">
+                <span className="text-xs text-error" role="alert">
                     {error}
                 </span>
             )}

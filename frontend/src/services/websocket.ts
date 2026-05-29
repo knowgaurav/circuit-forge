@@ -3,8 +3,9 @@
  * Enhanced with leader/follower mode for cross-tab synchronization
  */
 
-import type { ClientMessage, ServerMessage, Position, SyncAction } from '@/types';
 import { getSessionTraceId, logErrorWithTrace } from '@/utils/tracing';
+
+import type { ClientMessage, ServerMessage, Position, SyncAction } from '@/types';
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/ws';
 

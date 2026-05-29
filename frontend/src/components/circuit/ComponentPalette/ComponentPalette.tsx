@@ -7,9 +7,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { COMPONENT_CATEGORIES, ComponentDefinition } from '@/constants/components';
+
+import { COMPONENT_CATEGORIES } from '@/constants/components';
+
 import { ComponentDetailModal } from '../ComponentDetailModal';
 import { CategorySection } from './CategorySection';
+
+import type { ComponentDefinition } from '@/constants/components';
 
 interface ComponentPaletteProps {
     onDragStart: (component: ComponentDefinition) => void;

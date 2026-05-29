@@ -1,16 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Zap, Menu, X } from 'lucide-react';
-import { Button } from './Button';
-import { ThemeToggle } from './ThemeToggle';
-import { Spinner } from './Spinner';
-import { Modal } from './Modal';
-import { Input } from './Input';
-import { api } from '@/services/api';
+
 import clsx from 'clsx';
+import { Zap, Menu, X } from 'lucide-react';
+
+import { api } from '@/services/api';
+
+import { Button } from './Button';
+import { Input } from './Input';
+import { Modal } from './Modal';
+import { Spinner } from './Spinner';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavbarProps {
     showSessionButtons?: boolean;

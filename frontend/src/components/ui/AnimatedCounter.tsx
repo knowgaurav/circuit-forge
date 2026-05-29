@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useInView } from '@/hooks';
+
+import type { ReactNode } from 'react';
 
 export interface AnimatedCounterProps {
     end: number;

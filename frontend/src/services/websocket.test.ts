@@ -5,9 +5,11 @@
  * **Validates: Requirements 5.4, 5.5**
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fc from 'fast-check';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { WebSocketClient } from './websocket';
+
 import type { ServerMessage, SyncAction } from '@/types';
 
 describe('WebSocketClient', () => {
@@ -43,7 +45,7 @@ describe('WebSocketClient', () => {
                         };
 
                         const client = new WebSocketClient({
-                            onMessage: () => { },
+                            onMessage: () => {},
                         });
 
                         // Set to follower mode with forwarder
@@ -89,7 +91,7 @@ describe('WebSocketClient', () => {
                         };
 
                         const client = new WebSocketClient({
-                            onMessage: () => { },
+                            onMessage: () => {},
                         });
 
                         // Set to leader mode (default)
@@ -121,7 +123,7 @@ describe('WebSocketClient', () => {
                     };
 
                     const client = new WebSocketClient({
-                        onMessage: () => { },
+                        onMessage: () => {},
                     });
 
                     client.setMode('follower');
@@ -145,7 +147,7 @@ describe('WebSocketClient', () => {
     describe('Mode Management', () => {
         it('defaults to leader mode', () => {
             const client = new WebSocketClient({
-                onMessage: () => { },
+                onMessage: () => {},
             });
 
             expect(client.getMode()).toBe('leader');
@@ -162,7 +164,7 @@ describe('WebSocketClient', () => {
                     ),
                     (modes) => {
                         const client = new WebSocketClient({
-                            onMessage: () => { },
+                            onMessage: () => {},
                         });
 
                         for (const mode of modes) {
@@ -178,7 +180,7 @@ describe('WebSocketClient', () => {
         it('generates unique tab IDs', () => {
             const clients = Array.from(
                 { length: 10 },
-                () => new WebSocketClient({ onMessage: () => { } })
+                () => new WebSocketClient({ onMessage: () => {} })
             );
 
             const tabIds = clients.map((c) => c.getTabId());
@@ -241,7 +243,7 @@ describe('WebSocketClient', () => {
         });
 
         it('connect() omits last_seen_seq when lastSeenSeq is not provided', async () => {
-            const client = new WebSocketClient({ onMessage: () => { } });
+            const client = new WebSocketClient({ onMessage: () => {} });
             client.connect('ABC123', 'p1');
 
             await Promise.resolve();
@@ -256,7 +258,7 @@ describe('WebSocketClient', () => {
             fc.assert(
                 fc.property(fc.integer({ min: 0, max: 100000 }), (seq) => {
                     createdSockets = [];
-                    const client = new WebSocketClient({ onMessage: () => { } });
+                    const client = new WebSocketClient({ onMessage: () => {} });
                     client.connect('ABC123', 'p1', { lastSeenSeq: seq });
                     const ws = createdSockets[0]!;
                     const url = new URL(ws.url);
@@ -332,7 +334,7 @@ describe('WebSocketClient', () => {
         });
 
         it('setLastSeenSeq updates which seq subsequent reconnects request', async () => {
-            const client = new WebSocketClient({ onMessage: () => { } });
+            const client = new WebSocketClient({ onMessage: () => {} });
             client.connect('ABC123', 'p1', { lastSeenSeq: 5 });
             await Promise.resolve();
 

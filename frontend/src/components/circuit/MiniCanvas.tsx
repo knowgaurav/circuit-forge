@@ -1,12 +1,17 @@
 'use client';
 
 import { useRef, useEffect, useCallback, useState } from 'react';
-import type { CircuitComponent, Wire, CircuitBlueprint } from '@/types';
+
+import { Play, Pause, RotateCcw, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+
+import { simulate, type SimulationResult } from '@/features/simulation';
+
 import { getComponentDefinition } from '@/constants/components';
 import { loadCircuitFromBlueprint } from '@/services/blueprintLoader';
-import { simulate, type SimulationResult } from '@/features/simulation';
-import { Play, Pause, RotateCcw, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+
 import { drawComponent, drawWire, drawGrid } from './drawingUtils';
+
+import type { CircuitComponent, Wire, CircuitBlueprint } from '@/types';
 
 interface MiniCanvasProps {
     blueprint: CircuitBlueprint;
@@ -254,13 +259,13 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                                 prev.map((c) =>
                                     c.id === comp.id
                                         ? {
-                                            ...c,
-                                            properties: {
-                                                ...c.properties,
-                                                [`sw${switchIdx}`]:
-                                                    !c.properties[`sw${switchIdx}`],
-                                            },
-                                        }
+                                              ...c,
+                                              properties: {
+                                                  ...c.properties,
+                                                  [`sw${switchIdx}`]:
+                                                      !c.properties[`sw${switchIdx}`],
+                                              },
+                                          }
                                         : c
                                 )
                             );
@@ -273,13 +278,13 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                             prev.map((c) =>
                                 c.id === comp.id
                                     ? {
-                                        ...c,
-                                        properties: {
-                                            ...c.properties,
-                                            value:
-                                                (((c.properties.value as number) ?? 0) + 1) % 16,
-                                        },
-                                    }
+                                          ...c,
+                                          properties: {
+                                              ...c.properties,
+                                              value:
+                                                  (((c.properties.value as number) ?? 0) + 1) % 16,
+                                          },
+                                      }
                                     : c
                             )
                         );
@@ -292,12 +297,12 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                             const updated = prev.map((c) =>
                                 c.id === comp.id
                                     ? {
-                                        ...c,
-                                        properties: {
-                                            ...c.properties,
-                                            state: !c.properties.state,
-                                        },
-                                    }
+                                          ...c,
+                                          properties: {
+                                              ...c.properties,
+                                              state: !c.properties.state,
+                                          },
+                                      }
                                     : c
                             );
 

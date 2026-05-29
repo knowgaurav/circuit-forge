@@ -1,7 +1,10 @@
 'use client';
 
-import { forwardRef, InputHTMLAttributes } from 'react';
+import { forwardRef } from 'react';
+
 import clsx from 'clsx';
+
+import type { InputHTMLAttributes } from 'react';
 
 export interface SliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
     label?: string;

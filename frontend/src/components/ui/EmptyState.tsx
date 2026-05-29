@@ -1,7 +1,8 @@
 'use client';
 
-import { ReactNode } from 'react';
 import clsx from 'clsx';
+
+import type { ReactNode } from 'react';
 
 export interface EmptyStateProps {
     icon?: ReactNode;

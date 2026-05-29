@@ -4,14 +4,15 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { CircuitEvent, CircuitState } from '@/types';
-
 vi.mock('@/services/replay', () => ({
     fetchEvents: vi.fn(),
 }));
 
 import { fetchEvents } from '@/services/replay';
+
 import { useReplayStore } from './replayStore';
+
+import type { CircuitEvent, CircuitState } from '@/types';
 
 const fetchEventsMock = fetchEvents as unknown as ReturnType<typeof vi.fn>;
 

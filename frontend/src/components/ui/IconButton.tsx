@@ -1,7 +1,10 @@
 'use client';
 
-import { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef } from 'react';
+
 import clsx from 'clsx';
+
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'ghost' | 'danger';

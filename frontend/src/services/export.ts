@@ -107,7 +107,7 @@ export async function importFromJson(file: File): Promise<CircuitState> {
                 };
 
                 resolve(circuitState);
-            } catch (error) {
+            } catch {
                 reject(new Error('Invalid circuit file'));
             }
         };

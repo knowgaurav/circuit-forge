@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
 import { motion } from 'framer-motion';
 import {
     Zap,
@@ -25,6 +27,7 @@ import {
     Radio,
     Timer,
 } from 'lucide-react';
+
 import {
     Button,
     Input,
@@ -40,6 +43,7 @@ import {
     StaggerContainer,
     fadeInItemVariants,
 } from '@/components/ui';
+
 import { useSessionRecovery } from '@/hooks';
 import { api } from '@/services/api';
 

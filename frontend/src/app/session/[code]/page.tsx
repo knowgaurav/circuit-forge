@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+
 import { useParams, useRouter } from 'next/navigation';
+
 import {
     MousePointer2,
     Hand,
@@ -26,6 +28,8 @@ import {
     ShieldOff,
 } from 'lucide-react';
 
+import { Canvas, SimulationOverlay } from '@/components/circuit';
+import { ComponentPalette } from '@/components/circuit/ComponentPalette';
 import {
     Button,
     IconButton,
@@ -38,19 +42,21 @@ import {
     Spinner,
     Tooltip,
     ToastContainer,
-    ToastItem,
     ThemeToggle,
     LeaveConfirmModal,
 } from '@/components/ui';
-import { Canvas, SimulationOverlay } from '@/components/circuit';
-import { ComponentPalette } from '@/components/circuit/ComponentPalette';
-import { createComponentInstance, ComponentDefinition } from '@/constants/components';
-import { useCircuitStore, useSessionStore, useUIStore, Tool } from '@/stores';
+
+import { createComponentInstance } from '@/constants/components';
 import { useCloseGuard, useSessionRecovery } from '@/hooks';
 import { api } from '@/services/api';
-import { WebSocketClient } from '@/services/websocket';
 import { exportAsPng, exportAsJson, importFromJson } from '@/services/export';
+import { WebSocketClient } from '@/services/websocket';
+import { useCircuitStore, useSessionStore, useUIStore } from '@/stores';
+
+import type { ToastItem } from '@/components/ui';
+import type { ComponentDefinition } from '@/constants/components';
 import type { SimulationResult } from '@/features/simulation';
+import type { Tool } from '@/stores';
 import type { ServerMessage, Position, Annotation, Participant } from '@/types';
 
 export default function SessionPage() {
@@ -374,7 +380,7 @@ export default function SessionPage() {
                 } else {
                     setShowNameModal(true);
                 }
-            } catch (error) {
+            } catch {
                 addToast('error', 'Failed to load session');
                 router.push('/');
             } finally {
@@ -595,7 +601,7 @@ export default function SessionPage() {
             wsClient?.disconnect();
             addToast('success', 'Session closed');
             router.push('/');
-        } catch (error) {
+        } catch {
             addToast('error', 'Failed to close session');
         }
     };
@@ -609,7 +615,7 @@ export default function SessionPage() {
                 `circuit-${code}.png`
             );
             addToast('success', 'Circuit exported as PNG');
-        } catch (error) {
+        } catch {
             addToast('error', 'Failed to export PNG');
         }
     };
@@ -629,7 +635,7 @@ export default function SessionPage() {
                 `circuit-${code}.json`
             );
             addToast('success', 'Circuit exported as JSON');
-        } catch (error) {
+        } catch {
             addToast('error', 'Failed to export JSON');
         }
     };
@@ -717,7 +723,7 @@ export default function SessionPage() {
             wsClient?.disconnect();
             router.push('/');
         },
-        onLeaveCancelled: () => { },
+        onLeaveCancelled: () => {},
     });
 
     const pendingRequests = editRequests.filter((r) => r.status === 'pending');
@@ -745,8 +751,8 @@ export default function SessionPage() {
                             {isConnected
                                 ? 'Connected'
                                 : isReconnecting
-                                    ? 'Reconnecting...'
-                                    : 'Disconnected'}
+                                  ? 'Reconnecting...'
+                                  : 'Disconnected'}
                         </Badge>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                             Session: {code}
@@ -1004,10 +1010,11 @@ export default function SessionPage() {
                                             <button
                                                 key={percent}
                                                 onClick={() => handleZoomPreset(percent)}
-                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${Math.round(uiStore.zoom * 100) === percent
-                                                    ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                                    : 'text-gray-700 dark:text-gray-200'
-                                                    }`}
+                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                                    Math.round(uiStore.zoom * 100) === percent
+                                                        ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                        : 'text-gray-700 dark:text-gray-200'
+                                                }`}
                                             >
                                                 {percent}%
                                             </button>
@@ -1260,10 +1267,11 @@ export default function SessionPage() {
                                                 {[2, 4, 8].map((width) => (
                                                     <button
                                                         key={width}
-                                                        className={`flex h-8 w-8 items-center justify-center rounded border ${uiStore.strokeWidth === width
-                                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                                                            : 'border-gray-200 dark:border-gray-600'
-                                                            }`}
+                                                        className={`flex h-8 w-8 items-center justify-center rounded border ${
+                                                            uiStore.strokeWidth === width
+                                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                                                                : 'border-gray-200 dark:border-gray-600'
+                                                        }`}
                                                         onClick={() =>
                                                             uiStore.setStrokeWidth(
                                                                 width as 2 | 4 | 8
@@ -1290,7 +1298,7 @@ export default function SessionPage() {
             </div>
 
             {/* Name Modal */}
-            <Modal isOpen={showNameModal} onClose={() => { }} title="Enter Your Name" size="sm">
+            <Modal isOpen={showNameModal} onClose={() => {}} title="Enter Your Name" size="sm">
                 <form onSubmit={handleJoinWithName} className="space-y-4">
                     <Input
                         label="Display Name"

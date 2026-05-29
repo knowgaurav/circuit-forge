@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+
 import type { Session, Participant, EditRequest, Position } from '@/types';
 
 interface RemoteCursor {

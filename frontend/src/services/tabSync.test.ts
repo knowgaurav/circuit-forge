@@ -2,9 +2,11 @@
  * Property-based tests for TabSyncManager
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fc from 'fast-check';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { TabSyncManager } from './tabSync';
+
 import type { SessionLock } from '@/types';
 
 describe('TabSyncManager', () => {

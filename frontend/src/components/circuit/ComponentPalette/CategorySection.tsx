@@ -7,11 +7,16 @@
 'use client';
 
 import React from 'react';
+
 import { ChevronDown, ChevronRight, Info } from 'lucide-react';
-import { ComponentDefinition } from '@/constants/components';
+
 import { Tooltip } from '@/components/ui';
+
 import { getComponentDetail } from '@/constants/componentDetails';
+
 import { ComponentIcon } from './ComponentIcon';
+
+import type { ComponentDefinition } from '@/constants/components';
 
 interface CategorySectionProps {
     category: string;
@@ -69,10 +74,11 @@ export function CategorySection({
                                 <div
                                     draggable={!disabled}
                                     onDragStart={(e) => onDragStart(e, comp)}
-                                    className={`group relative flex min-h-[84px] cursor-grab flex-col items-center justify-center rounded-lg border-2 p-2 transition-all duration-200 hover:scale-[1.02] hover:shadow-md active:cursor-grabbing ${disabled
-                                        ? 'cursor-not-allowed border-border bg-surface-secondary text-text-muted'
-                                        : 'hover:bg-primary/5 hover:border-primary/30 border-border bg-surface text-foreground'
-                                        } `}
+                                    className={`group relative flex min-h-[84px] cursor-grab flex-col items-center justify-center rounded-lg border-2 p-2 transition-all duration-200 hover:scale-[1.02] hover:shadow-md active:cursor-grabbing ${
+                                        disabled
+                                            ? 'cursor-not-allowed border-border bg-surface-secondary text-text-muted'
+                                            : 'hover:bg-primary/5 hover:border-primary/30 border-border bg-surface text-foreground'
+                                    } `}
                                 >
                                     {/* Info button */}
                                     <button
@@ -84,10 +90,11 @@ export function CategorySection({
                                     </button>
 
                                     <div
-                                        className={`mb-2 flex h-10 w-10 items-center justify-center rounded-md border shadow-sm transition-all duration-200 ${disabled
-                                            ? 'border-border bg-surface-secondary text-text-muted'
-                                            : 'group-hover:border-primary/30 group-hover:shadow-primary/5 border-border bg-white text-foreground dark:bg-gray-800'
-                                            } `}
+                                        className={`mb-2 flex h-10 w-10 items-center justify-center rounded-md border shadow-sm transition-all duration-200 ${
+                                            disabled
+                                                ? 'border-border bg-surface-secondary text-text-muted'
+                                                : 'group-hover:border-primary/30 group-hover:shadow-primary/5 border-border bg-white text-foreground dark:bg-gray-800'
+                                        } `}
                                     >
                                         <ComponentIcon type={comp.type} />
                                     </div>

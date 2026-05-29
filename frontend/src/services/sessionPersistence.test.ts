@@ -5,9 +5,11 @@
  * **Validates: Requirements 3.5, 3.6, 3.7**
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { SessionPersistence } from './sessionPersistence';
+
 import type { PersistedSession } from '@/types';
 
 describe('SessionPersistence', () => {

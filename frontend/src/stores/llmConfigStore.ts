@@ -10,6 +10,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+
 import { getDefaultModel } from '@/constants/llmProviders';
 
 interface LLMConfigState {

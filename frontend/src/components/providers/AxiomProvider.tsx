@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+
 import { usePathname } from 'next/navigation';
+
 import { logPageView } from '@/lib/axiom/client';
 
 export function AxiomProvider({ children }: { children: React.ReactNode }) {

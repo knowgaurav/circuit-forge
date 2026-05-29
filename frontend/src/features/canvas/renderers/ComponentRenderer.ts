@@ -4,9 +4,6 @@
  * @module features/canvas/renderers
  */
 
-import type { CircuitComponent, Pin } from '@/types';
-import type { SignalState } from '@/features/simulation';
-import { getComponentDefinition } from '@/constants/components';
 import {
     // Base utilities
     drawDefaultComponent,
@@ -47,6 +44,11 @@ import {
     drawDiodeSymbol,
 } from '@/features/canvas/symbols';
 
+import { getComponentDefinition } from '@/constants/components';
+
+import type { SignalState } from '@/features/simulation';
+import type { CircuitComponent, Pin } from '@/types';
+
 /**
  * Draws a complete circuit component including its symbol, pins, and label.
  */
@@ -86,7 +88,15 @@ export function drawComponent(
     }
 
     // Draw component based on type
-    drawComponentSymbol(ctx, type, width, height, isDarkMode, inputSignalState, component.properties);
+    drawComponentSymbol(
+        ctx,
+        type,
+        width,
+        height,
+        isDarkMode,
+        inputSignalState,
+        component.properties
+    );
 
     // Draw component label below the component
     if (label) {
@@ -204,10 +214,10 @@ export function drawComponentSymbol(
             type === 'LED_RED'
                 ? '#EF4444'
                 : type === 'LED_GREEN'
-                    ? '#22C55E'
-                    : type === 'LED_BLUE'
-                        ? '#3B82F6'
-                        : '#FBBF24';
+                  ? '#22C55E'
+                  : type === 'LED_BLUE'
+                    ? '#3B82F6'
+                    : '#FBBF24';
         const isLit = signalState === 'HIGH';
         drawLedSymbol(ctx, width, height, color, isLit);
     } else if (type === 'DISPLAY_7SEG') {

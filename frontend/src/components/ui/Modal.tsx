@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useCallback, ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { useEffect, useCallback } from 'react';
+
 import clsx from 'clsx';
+import { X } from 'lucide-react';
+
 import { IconButton } from './IconButton';
+
+import type { ReactNode } from 'react';
 
 export interface ModalProps {
     isOpen: boolean;

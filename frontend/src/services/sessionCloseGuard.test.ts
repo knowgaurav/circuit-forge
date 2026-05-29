@@ -5,8 +5,9 @@
  * **Validates: Requirements 1.1, 1.5**
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fc from 'fast-check';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { SessionCloseGuard } from './sessionCloseGuard';
 
 describe('SessionCloseGuard', () => {

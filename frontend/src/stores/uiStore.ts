@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+
 import type { StrokeWidth } from '@/types';
 
 export type Tool = 'select' | 'pan' | 'draw' | 'erase' | 'wire';

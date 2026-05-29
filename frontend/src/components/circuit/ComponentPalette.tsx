@@ -1,11 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+
 import { ChevronDown, ChevronRight, Info } from 'lucide-react';
-import { COMPONENT_CATEGORIES, ComponentDefinition } from '@/constants/components';
+
 import { Tooltip } from '@/components/ui';
+
 import { getComponentDetail } from '@/constants/componentDetails';
+import { COMPONENT_CATEGORIES } from '@/constants/components';
+
 import { ComponentDetailModal } from './ComponentDetailModal';
+
+import type { ComponentDefinition } from '@/constants/components';
 
 interface ComponentPaletteProps {
     onDragStart: (component: ComponentDefinition) => void;

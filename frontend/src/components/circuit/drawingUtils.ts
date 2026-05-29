@@ -3,9 +3,10 @@
  * Used by both Canvas.tsx and MiniCanvas.tsx
  */
 
-import type { CircuitComponent, Wire } from '@/types';
 import { getComponentDefinition } from '@/constants/components';
+
 import type { SignalState } from '@/features/simulation';
+import type { CircuitComponent, Wire } from '@/types';
 
 // ============================================================================
 // COMPONENT DRAWING
@@ -133,10 +134,10 @@ export function drawComponentSymbol(
             type === 'LED_RED'
                 ? '#EF4444'
                 : type === 'LED_GREEN'
-                    ? '#22C55E'
-                    : type === 'LED_BLUE'
-                        ? '#3B82F6'
-                        : '#FBBF24';
+                  ? '#22C55E'
+                  : type === 'LED_BLUE'
+                    ? '#3B82F6'
+                    : '#FBBF24';
         drawLed(ctx, width, height, color, signalState === 'HIGH');
     } else if (type === 'DISPLAY_7SEG') {
         // Get segment states from pinStates
@@ -585,10 +586,10 @@ function drawFlipFlop(ctx: CanvasRenderingContext2D, w: number, h: number, type:
         type === 'D_FLIPFLOP'
             ? 'D-FF'
             : type === 'SR_LATCH'
-                ? 'SR'
-                : type === 'JK_FLIPFLOP'
-                    ? 'JK'
-                    : 'T';
+              ? 'SR'
+              : type === 'JK_FLIPFLOP'
+                ? 'JK'
+                : 'T';
     ctx.fillText(label, 0, 0);
 }
 

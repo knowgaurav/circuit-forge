@@ -3,8 +3,9 @@
  * Uses CircuitBlueprint format for consistency with LLM-generated courses
  */
 
-import type { CircuitBlueprint, ComponentType } from '@/types';
 import { getComponentDefinition } from './components';
+
+import type { CircuitBlueprint, ComponentType } from '@/types';
 
 // Simple circuit showing component in typical usage
 export interface ExampleCircuit {

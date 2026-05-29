@@ -4,8 +4,8 @@
  * Students learn the internal workings of every circuit
  */
 
-import type { CircuitComponent, Wire } from '@/types';
 import type { Template } from './templates';
+import type { CircuitComponent, Wire } from '@/types';
 
 // Helper functions
 function createComp(

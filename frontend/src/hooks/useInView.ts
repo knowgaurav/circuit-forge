@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, MutableRefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import type { MutableRefObject } from 'react';
 
 interface UseInViewOptions {
     threshold?: number;
