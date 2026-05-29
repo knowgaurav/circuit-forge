@@ -1,4 +1,53 @@
-"""Topological-sort circuit simulation engine. See docs/simulator.md."""
+"""Topological-sort circuit simulation engine. See docs/simulator.md.
+
+What this engine does
+---------------------
+Given a circuit (components + wires), it computes the signal on every pin.
+It is a *fresh-instance-per-evaluation* design: build one, ``load_circuit``,
+then read ``get_pin_states`` / ``get_wire_states``. Mutating helpers
+(``toggle_switch``, ``set_input``, ``tick_clock``) re-run the evaluation for
+you.
+
+When to call what
+-----------------
+* ``load_circuit`` once, to wire everything up (it runs an initial pass).
+* ``run`` / ``evaluate`` — recompute combinational logic. Cheap; call after
+  any input change. (``evaluate`` is just an alias for ``run``.)
+* ``tick_clock`` — advance a clock by one half-period; this is what makes
+  flip-flops and counters move.
+
+Three-valued logic (0, 1, X)
+----------------------------
+Every signal is HIGH (1), LOW (0), or X (unknown / floating / cycle). The
+dominance rules let gates commit early when one input already decides the
+output:
+
+    AND | 0 1 X        OR | 0 1 X        NOT | in -> out
+    ----+------        ---+------        ----+----------
+     0  | 0 0 0         0 | 0 1 X          0 | 1
+     1  | 0 1 X         1 | 1 1 1          1 | 0
+     X  | 0 X X         X | X 1 X          X | X
+
+So ``0 AND X = 0`` (a low input alone forces the AND low) and ``1 OR X = 1``
+(a high input alone forces the OR high). Anything still undetermined stays X.
+
+Why combinational cycles produce X
+----------------------------------
+``run`` evaluates combinational nodes in topological order (Kahn's
+algorithm). A feedback loop of pure gates has no valid topo order — those
+nodes never reach in-degree 0 — so they are detected as "in a cycle" and all
+their outputs are set to X. Real latches must use the dedicated ``SR_LATCH``
+stateful component instead of a gate feedback loop.
+
+Combinational vs stateful
+-------------------------
+Sources (``_SOURCE``: constants, power, switches, clock) and stateful nodes
+(``_STATEFUL``: latches, flip-flops, counters, shift registers, clock) have
+their outputs published *before* the topo walk, so combinational nodes treat
+them as ready inputs. Stateful nodes reflect their *previous* committed state
+during a pass; their new state is committed at the end of ``run`` (or, for
+clocks, on ``tick_clock``).
+"""
 
 from dataclasses import dataclass, field
 from enum import Enum
