@@ -258,7 +258,7 @@ export function SimulationOverlay({
 
             {/* Error Panel */}
             {showErrors && result?.errors && result.errors.length > 0 && (
-                <div className="border-error/30 bg-error/10 absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border p-3 shadow-lg">
+                <div className="border-error/30 absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border bg-surface p-3 shadow-lg">
                     <div className="mb-2 flex items-center justify-between">
                         <span className="font-medium text-error">Simulation Errors</span>
                         <button
