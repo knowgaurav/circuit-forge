@@ -323,18 +323,18 @@ export type ClientMessage =
     | { type: 'simulation:clock:tick'; payload: { componentId: string } }
     | { type: 'simulation:step'; payload: Record<string, never> }
     | {
-        type: 'simulation:state';
-        payload: {
-            wireStates: Record<string, string>;
-            pinStates: Record<string, Record<string, string>>;
-            errors: Array<{
-                errorType: string;
-                message: string;
-                componentId?: string;
-                pinId?: string;
-            }>;
-        };
-    };
+          type: 'simulation:state';
+          payload: {
+              wireStates: Record<string, string>;
+              pinStates: Record<string, Record<string, string>>;
+              errors: Array<{
+                  errorType: string;
+                  message: string;
+                  componentId?: string;
+                  pinId?: string;
+              }>;
+          };
+      };
 
 // Server -> Client
 export type ServerMessageType =
@@ -369,9 +369,9 @@ export type ServerMessage =
     | { type: 'sync:delta'; payload: { fromSeq: number; events: CircuitEvent[] } }
     | { type: 'circuit:component:added'; payload: { component: CircuitComponent; userId: string } }
     | {
-        type: 'circuit:component:moved';
-        payload: { componentId: string; position: Position; userId: string };
-    }
+          type: 'circuit:component:moved';
+          payload: { componentId: string; position: Position; userId: string };
+      }
     | { type: 'circuit:component:deleted'; payload: { componentId: string; userId: string } }
     | { type: 'circuit:wire:added'; payload: { wire: Wire; userId: string } }
     | { type: 'circuit:wire:deleted'; payload: { wireId: string; userId: string } }
@@ -380,20 +380,20 @@ export type ServerMessage =
     | { type: 'circuit:state:updated'; payload: { version: number } }
     | { type: 'presence:cursor:moved'; payload: { participantId: string; position: Position } }
     | {
-        type: 'presence:selection:changed';
-        payload: { participantId: string; componentIds: string[] };
-    }
+          type: 'presence:selection:changed';
+          payload: { participantId: string; componentIds: string[] };
+      }
     | { type: 'presence:participant:joined'; payload: { participant: Participant } }
     | { type: 'presence:participant:left'; payload: { participantId: string } }
     | {
-        type: 'presence:participant:kicked';
-        payload: { participantId: string; displayName: string };
-    }
+          type: 'presence:participant:kicked';
+          payload: { participantId: string; displayName: string };
+      }
     | { type: 'permission:request:sent'; payload: { participantId: string; status: string } }
     | {
-        type: 'permission:request:received';
-        payload: { participantId: string; displayName: string };
-    }
+          type: 'permission:request:received';
+          payload: { participantId: string; displayName: string };
+      }
     | { type: 'permission:granted'; payload: { participantId: string } }
     | { type: 'permission:denied'; payload: { participantId: string } }
     | { type: 'permission:revoked'; payload: { participantId: string } }
@@ -401,19 +401,19 @@ export type ServerMessage =
     | { type: 'simulation:started'; payload: { startedBy: string } }
     | { type: 'simulation:stopped'; payload: { stoppedBy: string } }
     | {
-        type: 'simulation:state:updated';
-        payload: {
-            isRunning: boolean;
-            wireStates: Record<string, string>;
-            pinStates: Record<string, Record<string, string>>;
-            errors: Array<{
-                errorType: string;
-                message: string;
-                componentId?: string;
-                pinId?: string;
-            }>;
-        };
-    }
+          type: 'simulation:state:updated';
+          payload: {
+              isRunning: boolean;
+              wireStates: Record<string, string>;
+              pinStates: Record<string, Record<string, string>>;
+              errors: Array<{
+                  errorType: string;
+                  message: string;
+                  componentId?: string;
+                  pinId?: string;
+              }>;
+          };
+      }
     | { type: 'error'; payload: { code: string; message: string } };
 
 // ============================================================================
@@ -671,4 +671,32 @@ export interface MyCourseItem {
     coursePlan: CoursePlan;
     completedLevels: number;
     totalLevels: number;
+}
+
+// ============================================================================
+// In-Course AI Tutor Types
+// ============================================================================
+
+export type TutorMode = 'theory' | 'practical';
+
+export interface CircuitMutation {
+    type: CircuitEventType;
+    payload: Record<string, unknown>;
+}
+
+export interface CourseTurnResponse {
+    finalMessage: string;
+    mutations: CircuitMutation[];
+    trace: Array<Record<string, unknown>>;
+    tokensIn: number;
+    tokensOut: number;
+    iterations: number;
+    aborted: boolean;
+    abortReason: string | null;
+}
+
+export interface TutorMessage {
+    role: 'user' | 'assistant';
+    text: string;
+    pending?: boolean;
 }
