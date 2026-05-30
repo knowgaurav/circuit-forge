@@ -1,7 +1,14 @@
 """Private helpers shared by tool implementations.
 
-Three pure-Python utilities live here. They do not depend on any tool module,
+Four pure-Python utilities live here. They do not depend on any tool module,
 so importing them from a tool file never risks a circular import.
+
+``_resolve_pin``
+    Maps a component *label* + *pin name* + expected direction onto the
+    ``(component_id, pin_id)`` pair the persistence layer needs. Lets the
+    agent address pins the way it sees them on the board rather than by
+    internal UUIDs. Raises :class:`ToolError` (``COMPONENT_NOT_FOUND`` /
+    ``INVALID_PIN``) on a miss.
 
 ``_registry_pins``
     Maps a registered component definition's pin descriptors onto the
@@ -36,7 +43,7 @@ the self-loop case) and treat the set as unordered.
 
 from __future__ import annotations
 
-from app.models.circuit import Pin, PinType, Position
+from app.models.circuit import CircuitComponent, Pin, PinType, Position
 from app.services.component_registry import ComponentRegistry
 from app.services.simulation_engine import (
     _SOURCE as _SIM_SOURCE,
@@ -44,6 +51,44 @@ from app.services.simulation_engine import (
 )
 
 from ._types import ToolError
+
+
+def _resolve_pin(
+    components: list[CircuitComponent],
+    label: str,
+    pin_name: str,
+    expected: PinType,
+) -> tuple[str, str]:
+    """Resolve a (component label, pin name) pair to (component_id, pin_id).
+
+    The agent addresses pins the way a human reads the board — by the
+    component's label (stored in ``properties["label"]``) and the pin's
+    name — never by internal UUIDs. We match against the component's own
+    pins, so the returned ``pin_id`` is guaranteed to exist on the
+    component and to carry the expected direction.
+
+    Raises:
+        ToolError("COMPONENT_NOT_FOUND") — no component carries ``label``.
+        ToolError("INVALID_PIN") — the component has no pin named
+            ``pin_name`` of type ``expected``.
+    """
+    component = next(
+        (c for c in components if c.properties.get("label") == label), None
+    )
+    if component is None:
+        raise ToolError("COMPONENT_NOT_FOUND", f"no component labelled '{label}'")
+
+    pin = next(
+        (p for p in component.pins if p.name == pin_name and p.type == expected),
+        None,
+    )
+    if pin is None:
+        raise ToolError(
+            "INVALID_PIN",
+            f"component '{label}' has no {expected.value} pin named '{pin_name}'",
+        )
+
+    return component.id, pin.id
 
 
 def _registry_pins(registry: ComponentRegistry, component_type: str) -> list[Pin]:

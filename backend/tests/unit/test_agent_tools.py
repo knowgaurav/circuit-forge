@@ -1,4 +1,4 @@
-"""Unit tests for the six agent tools (Story B — B.3 through B.8).
+"""Unit tests for the agent tools (Story B + in-course-ai-tutor R1).
 
 The tests use the same in-memory MongoDB fake pattern as
 ``tests/integration/test_replay.py`` so we exercise the real
@@ -18,9 +18,12 @@ from pymongo.errors import DuplicateKeyError
 from app.models.circuit import Position
 from app.services.agent.schemas import (
     AddComponentArgs,
+    AddWireArgs,
     ExplainSignalPathArgs,
     GetCircuitStateArgs,
+    MoveComponentArgs,
     RemoveComponentArgs,
+    RemoveWireArgs,
     SimulateArgs,
     ValidateCircuitArgs,
 )
@@ -29,9 +32,12 @@ from app.services.agent.tools import (
     ToolDeps,
     ToolError,
     add_component,
+    add_wire,
     explain_signal_path,
     get_circuit_state,
+    move_component,
     remove_component,
+    remove_wire,
     simulate,
     validate_circuit,
 )
@@ -290,6 +296,7 @@ async def test_add_component_creates_event_and_returns_seq() -> None:
     assert placed.position.x == 42
     assert placed.position.y == 84
     assert {p.id for p in placed.pins} == {"A", "B", "Y"}
+    assert placed.properties["label"] == "U1"
 
 
 @pytest.mark.asyncio
@@ -469,7 +476,7 @@ async def test_explain_signal_path_unreachable_returns_empty() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_tools_registry_has_exact_six_entries() -> None:
+def test_tools_registry_has_exact_nine_entries() -> None:
     expected = {
         "get_circuit_state",
         "simulate",
@@ -477,6 +484,221 @@ def test_tools_registry_has_exact_six_entries() -> None:
         "remove_component",
         "validate_circuit",
         "explain_signal_path",
+        "add_wire",
+        "remove_wire",
+        "move_component",
     }
     assert set(TOOLS.keys()) == expected
-    assert len(TOOLS) == 6
+    assert len(TOOLS) == 9
+
+
+# ---------------------------------------------------------------------------
+# add_wire / remove_wire / move_component (in-course-ai-tutor R1)
+# ---------------------------------------------------------------------------
+
+
+async def _seed_labelled_and_led(
+    circuit_service: CircuitService,
+) -> None:
+    """Place an AND gate labelled "AND1" and an LED labelled "LED1" (no wire)."""
+    and_gate = ComponentFactory.create_and_gate(id="and-1")
+    and_gate.properties["label"] = "AND1"
+    led = ComponentFactory.create_led(id="led-1")
+    led.properties["label"] = "LED1"
+    for comp in (and_gate, led):
+        await circuit_service.add_component(SESSION_ID, ACTOR_ID, comp)
+
+
+@pytest.mark.asyncio
+async def test_add_wire_connects_output_to_input() -> None:
+    deps, circuit_service = _make_deps()
+    await _seed_labelled_and_led(circuit_service)
+
+    result = await add_wire(
+        AddWireArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            from_label="AND1",
+            from_pin="Y",
+            to_label="LED1",
+            to_pin="IN",
+        ),
+        deps=deps,
+    )
+
+    assert result.seq >= 1
+    state = await circuit_service.get_circuit_state(SESSION_ID)
+    wire = next(w for w in state.wires if w.id == result.wire_id)
+    assert wire.from_component_id == "and-1"
+    assert wire.from_pin_id == "Y"
+    assert wire.to_component_id == "led-1"
+    assert wire.to_pin_id == "IN"
+
+
+@pytest.mark.asyncio
+async def test_add_wire_unknown_label_raises_tool_error() -> None:
+    deps, circuit_service = _make_deps()
+    await _seed_labelled_and_led(circuit_service)
+
+    with pytest.raises(ToolError) as exc:
+        await add_wire(
+            AddWireArgs(
+                session_id=SESSION_ID,
+                actor_id=ACTOR_ID,
+                from_label="NOPE",
+                from_pin="Y",
+                to_label="LED1",
+                to_pin="IN",
+            ),
+            deps=deps,
+        )
+
+    assert exc.value.code == "COMPONENT_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_add_wire_wrong_direction_raises_tool_error() -> None:
+    deps, circuit_service = _make_deps()
+    await _seed_labelled_and_led(circuit_service)
+
+    # AND1:A is an INPUT, so requesting it as the source (expected OUTPUT)
+    # fails in pin resolution.
+    with pytest.raises(ToolError) as exc:
+        await add_wire(
+            AddWireArgs(
+                session_id=SESSION_ID,
+                actor_id=ACTOR_ID,
+                from_label="AND1",
+                from_pin="A",
+                to_label="LED1",
+                to_pin="IN",
+            ),
+            deps=deps,
+        )
+
+    assert exc.value.code == "INVALID_PIN"
+
+
+@pytest.mark.asyncio
+async def test_add_wire_input_already_connected_raises_tool_error() -> None:
+    deps, circuit_service = _make_deps()
+    await _seed_labelled_and_led(circuit_service)
+    # First connection succeeds.
+    await add_wire(
+        AddWireArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            from_label="AND1",
+            from_pin="Y",
+            to_label="LED1",
+            to_pin="IN",
+        ),
+        deps=deps,
+    )
+
+    # Add a second driver to the same input pin: place another labelled gate.
+    or_gate = ComponentFactory.create_or_gate(id="or-1")
+    or_gate.properties["label"] = "OR1"
+    await circuit_service.add_component(SESSION_ID, ACTOR_ID, or_gate)
+
+    with pytest.raises(ToolError) as exc:
+        await add_wire(
+            AddWireArgs(
+                session_id=SESSION_ID,
+                actor_id=ACTOR_ID,
+                from_label="OR1",
+                from_pin="Y",
+                to_label="LED1",
+                to_pin="IN",
+            ),
+            deps=deps,
+        )
+
+    assert exc.value.code == "INPUT_ALREADY_CONNECTED"
+
+
+@pytest.mark.asyncio
+async def test_remove_wire_drops_wire_and_returns_seq() -> None:
+    deps, circuit_service = _make_deps()
+    await _seed_labelled_and_led(circuit_service)
+    add_result = await add_wire(
+        AddWireArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            from_label="AND1",
+            from_pin="Y",
+            to_label="LED1",
+            to_pin="IN",
+        ),
+        deps=deps,
+    )
+
+    remove_result = await remove_wire(
+        RemoveWireArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            wire_id=add_result.wire_id,
+        ),
+        deps=deps,
+    )
+
+    assert remove_result.seq > add_result.seq
+    state = await circuit_service.get_circuit_state(SESSION_ID)
+    assert all(w.id != add_result.wire_id for w in state.wires)
+
+
+@pytest.mark.asyncio
+async def test_remove_wire_missing_raises_tool_error() -> None:
+    deps, _circuit_service = _make_deps()
+
+    with pytest.raises(ToolError) as exc:
+        await remove_wire(
+            RemoveWireArgs(
+                session_id=SESSION_ID,
+                actor_id=ACTOR_ID,
+                wire_id="does-not-exist",
+            ),
+            deps=deps,
+        )
+
+    assert exc.value.code == "WIRE_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_move_component_updates_position_and_returns_seq() -> None:
+    deps, circuit_service = _make_deps()
+    await _seed_labelled_and_led(circuit_service)
+
+    result = await move_component(
+        MoveComponentArgs(
+            session_id=SESSION_ID,
+            actor_id=ACTOR_ID,
+            component_id="and-1",
+            position=Position(x=321, y=654),
+        ),
+        deps=deps,
+    )
+
+    assert result.seq >= 1
+    state = await circuit_service.get_circuit_state(SESSION_ID)
+    moved = next(c for c in state.components if c.id == "and-1")
+    assert moved.position.x == 321
+    assert moved.position.y == 654
+
+
+@pytest.mark.asyncio
+async def test_move_component_missing_raises_tool_error() -> None:
+    deps, _circuit_service = _make_deps()
+
+    with pytest.raises(ToolError) as exc:
+        await move_component(
+            MoveComponentArgs(
+                session_id=SESSION_ID,
+                actor_id=ACTOR_ID,
+                component_id="does-not-exist",
+                position=Position(x=0, y=0),
+            ),
+            deps=deps,
+        )
+
+    assert exc.value.code == "COMPONENT_NOT_FOUND"

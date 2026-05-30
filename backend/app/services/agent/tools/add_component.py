@@ -7,8 +7,9 @@ Steps:
 2. Build the ``Pin`` list using ``_registry_pins`` so pin IDs/types/positions
    match the registry's authoritative description.
 3. Generate a fresh component UUID, bundle the registry's default
-   ``properties``, and place the component at ``args.position`` with
-   rotation 0°.
+   ``properties`` plus the caller's ``label`` (stored under
+   ``properties["label"]`` so label-addressed tools like ``add_wire`` can
+   find it), and place the component at ``args.position`` with rotation 0°.
 4. Persist via ``CircuitService.add_component``, which appends an event and
    returns the resulting ``(event, state)`` pair.
 5. Return the new ``component_id`` and the event ``seq`` so the LLM can use
@@ -55,12 +56,14 @@ async def add_component(
         )
 
     pins = _registry_pins(deps.component_registry, args.component_type)
+    properties = dict(definition.properties)
+    properties["label"] = args.label
     component = CircuitComponent(
         id=str(uuid4()),
         type=ComponentType(args.component_type),
         position=args.position,
         rotation=Rotation.DEG_0,
-        properties=dict(definition.properties),
+        properties=properties,
         pins=pins,
     )
 

@@ -183,25 +183,15 @@ export const LLM_PROVIDERS: LLMProvider[] = [
         docsUrl: 'https://openrouter.ai/keys',
         models: [
             {
-                id: 'xiaomi/mimo-v2-flash:free',
-                name: 'MiMo-V2-Flash (Free)',
-                description: 'Free - Xiaomi 309B MoE, #1 open-source',
+                id: 'moonshotai/kimi-k2.6:free',
+                name: 'Kimi K2.6 (Free)',
+                description: 'Free - Moonshot multimodal, long-horizon coding',
                 isDefault: true,
             },
             {
-                id: 'mistralai/devstral-2512:free',
-                name: 'Devstral 2 (Free)',
-                description: 'Free - Mistral 123B for agentic coding',
-            },
-            {
-                id: 'kwaipilot/kat-coder-pro:free',
-                name: 'KAT-Coder-Pro (Free)',
-                description: 'Free - KwaiKAT agentic coding model',
-            },
-            {
-                id: 'deepseek/deepseek-r1-0528:free',
-                name: 'DeepSeek R1 (Free)',
-                description: 'Free - DeepSeek 671B reasoning model',
+                id: 'deepseek/deepseek-v4-flash:free',
+                name: 'DeepSeek V4 Flash (Free)',
+                description: 'Free - DeepSeek 284B MoE, 1M context',
             },
             {
                 id: 'qwen/qwen3-coder:free',
@@ -209,14 +199,24 @@ export const LLM_PROVIDERS: LLMProvider[] = [
                 description: 'Free - Qwen 480B for coding tasks',
             },
             {
-                id: 'meta-llama/llama-3.3-70b-instruct:free',
-                name: 'Llama 3.3 70B (Free)',
-                description: 'Free - Meta Llama 3.3 multilingual',
+                id: 'qwen/qwen3-next-80b-a3b-instruct:free',
+                name: 'Qwen3 Next 80B (Free)',
+                description: 'Free - Qwen 80B for reasoning and code',
             },
             {
-                id: 'google/gemma-3-27b-it:free',
-                name: 'Gemma 3 27B (Free)',
-                description: 'Free - Google multimodal model',
+                id: 'minimax/minimax-m2.5:free',
+                name: 'MiniMax M2.5 (Free)',
+                description: 'Free - SOTA model for coding and agents',
+            },
+            {
+                id: 'z-ai/glm-4.5-air:free',
+                name: 'GLM 4.5 Air (Free)',
+                description: 'Free - Z.ai agent-centric MoE model',
+            },
+            {
+                id: 'nvidia/nemotron-3-super-120b-a12b:free',
+                name: 'Nemotron 3 Super 120B (Free)',
+                description: 'Free - NVIDIA 120B MoE for multi-agent',
             },
             {
                 id: 'openai/gpt-oss-120b:free',
@@ -224,14 +224,14 @@ export const LLM_PROVIDERS: LLMProvider[] = [
                 description: 'Free - OpenAI open-source 117B MoE',
             },
             {
-                id: 'moonshotai/kimi-k2:free',
-                name: 'Kimi K2 (Free)',
-                description: 'Free - Moonshot 1T params, tool use',
+                id: 'meta-llama/llama-3.3-70b-instruct:free',
+                name: 'Llama 3.3 70B (Free)',
+                description: 'Free - Meta Llama 3.3 multilingual',
             },
             {
-                id: 'google/gemini-2.0-flash-exp:free',
-                name: 'Gemini 2.0 Flash (Free)',
-                description: 'Free - Google 1M context experimental',
+                id: 'google/gemma-4-31b-it:free',
+                name: 'Gemma 4 31B (Free)',
+                description: 'Free - Google multimodal model',
             },
         ],
     },

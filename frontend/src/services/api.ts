@@ -9,10 +9,12 @@ import type {
     CircuitState,
     CoursePlan,
     CourseEnrollment,
+    CourseTurnResponse,
     LevelContent,
     MyCourseItem,
     Participant,
     TopicSuggestion,
+    TutorMode,
     ValidationResult,
 } from '@/types';
 
@@ -291,6 +293,43 @@ class ApiClient {
 
     async getMyCourses(participantId: string): Promise<MyCourseItem[]> {
         return this.request(`/courses/my-courses/${participantId}`);
+    }
+
+    // In-course AI tutor
+    async agentCourseTurn(
+        courseId: string,
+        levelNumber: number,
+        mode: TutorMode,
+        message: string,
+        circuit: CircuitState,
+        actorId: string,
+        llmConfig: LLMConfig
+    ): Promise<CourseTurnResponse> {
+        // The backend addresses pins by component label, which it reads from
+        // `properties.label`. Mirror the top-level `label` into properties so
+        // the seeded board matches what the tutor is shown.
+        const circuitForTutor: CircuitState = {
+            ...circuit,
+            components: circuit.components.map((c) => ({
+                ...c,
+                properties: { ...c.properties, label: c.label },
+            })),
+        };
+
+        return this.request(`/agent/course-turn`, {
+            method: 'POST',
+            body: JSON.stringify({
+                actorId,
+                message,
+                courseId,
+                levelNumber,
+                mode,
+                circuit: circuitForTutor,
+                providerId: llmConfig.provider,
+                apiKey: llmConfig.apiKey,
+                model: llmConfig.model,
+            }),
+        });
     }
 }
 

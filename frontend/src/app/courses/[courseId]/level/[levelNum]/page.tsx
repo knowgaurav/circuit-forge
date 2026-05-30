@@ -8,7 +8,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { APIKeyModal } from '@/components/ui/APIKeyModal';
 import { Navbar } from '@/components/ui/Navbar';
 
-import { EmbeddedPlayground } from '@/components/circuit';
+import { EmbeddedPlayground, TutorChat } from '@/components/circuit';
 
 import { api } from '@/services/api';
 import { loadCircuitFromBlueprint, validateBlueprint } from '@/services/blueprintLoader';
@@ -372,6 +372,9 @@ export default function LevelPage() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* In-course AI tutor (theory) */}
+                            <TutorChat courseId={courseId} levelNumber={levelNum} mode="theory" />
                         </div>
                     )}
 
@@ -515,6 +518,15 @@ export default function LevelPage() {
                                         own following the steps above!
                                     </p>
                                 )}
+
+                                {/* In-course AI tutor */}
+                                <div className="mt-6">
+                                    <TutorChat
+                                        courseId={courseId}
+                                        levelNumber={levelNum}
+                                        mode="practical"
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}

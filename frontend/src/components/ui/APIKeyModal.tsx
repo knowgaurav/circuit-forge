@@ -260,10 +260,10 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
-            <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gray-900 to-[#0a0a0f] shadow-2xl">
+            <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gray-900 to-[#0a0a0f] shadow-2xl">
                 <div className="from-primary/5 to-accent/5 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent" />
 
-                <div className="relative p-6">
+                <div className="custom-scrollbar relative overflow-y-auto p-6">
                     <div className="mb-6 flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div className="border-primary/40 bg-primary/15 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-glow">
