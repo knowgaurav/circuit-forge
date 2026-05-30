@@ -23,12 +23,10 @@ const icons = {
 };
 
 const styles = {
-    success:
-        'bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800',
-    error: 'bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800',
-    info: 'bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-    warning:
-        'bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+    success: 'bg-success/10 text-success border-success/30',
+    error: 'bg-error/10 text-error border-error/30',
+    info: 'bg-primary/10 text-primary border-primary/30',
+    warning: 'bg-warning/10 text-warning border-warning/30',
 };
 
 export function Toast({ id, type, message, duration = 5000, onClose }: ToastProps) {

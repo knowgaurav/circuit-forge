@@ -60,16 +60,18 @@ export function ResizablePanel({
 
     if (isCollapsed) {
         return (
-            <div className={`flex flex-col bg-white ${side === 'left' ? 'border-r' : 'border-l'}`}>
+            <div
+                className={`flex flex-col bg-surface ${side === 'left' ? 'border-r border-border' : 'border-l border-border'}`}
+            >
                 <button
                     onClick={toggleCollapse}
-                    className="p-2 transition-colors hover:bg-gray-100"
+                    className="p-2 transition-colors hover:bg-surface-secondary"
                     title={`Expand ${title || 'panel'}`}
                 >
                     {side === 'left' ? (
-                        <ChevronRight className="h-4 w-4 text-gray-500" />
+                        <ChevronRight className="h-4 w-4 text-text-muted" />
                     ) : (
-                        <ChevronLeft className="h-4 w-4 text-gray-500" />
+                        <ChevronLeft className="h-4 w-4 text-text-muted" />
                     )}
                 </button>
             </div>
@@ -79,23 +81,25 @@ export function ResizablePanel({
     return (
         <div
             ref={panelRef}
-            className={`relative flex flex-col bg-white ${side === 'left' ? 'border-r' : 'border-l'}`}
+            className={`relative flex flex-col bg-surface ${side === 'left' ? 'border-r border-border' : 'border-l border-border'}`}
             style={{ width: `${width}px` }}
         >
             {/* Header with collapse button */}
             {(title || collapsible) && (
-                <div className="flex items-center justify-between border-b bg-gray-50 px-3 py-2">
-                    {title && <span className="text-sm font-semibold text-gray-700">{title}</span>}
+                <div className="flex items-center justify-between border-b border-border bg-surface-secondary px-3 py-2">
+                    {title && (
+                        <span className="text-sm font-semibold text-text-secondary">{title}</span>
+                    )}
                     {collapsible && (
                         <button
                             onClick={toggleCollapse}
-                            className="rounded p-1 transition-colors hover:bg-gray-200"
+                            className="rounded p-1 transition-colors hover:bg-surface-tertiary"
                             title={`Collapse ${title || 'panel'}`}
                         >
                             {side === 'left' ? (
-                                <ChevronLeft className="h-4 w-4 text-gray-500" />
+                                <ChevronLeft className="h-4 w-4 text-text-muted" />
                             ) : (
-                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                                <ChevronRight className="h-4 w-4 text-text-muted" />
                             )}
                         </button>
                     )}
@@ -107,8 +111,8 @@ export function ResizablePanel({
 
             {/* Resize handle */}
             <div
-                className={`absolute bottom-0 top-0 w-1 cursor-col-resize transition-colors hover:bg-blue-400 ${
-                    isResizing ? 'bg-blue-500' : 'bg-transparent'
+                className={`absolute bottom-0 top-0 w-1 cursor-col-resize transition-colors hover:bg-primary ${
+                    isResizing ? 'bg-primary' : 'bg-transparent'
                 } ${side === 'left' ? 'right-0' : 'left-0'}`}
                 onMouseDown={handleMouseDown}
             />

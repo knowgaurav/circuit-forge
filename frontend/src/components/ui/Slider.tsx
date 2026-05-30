@@ -20,11 +20,16 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
                 {(label || showValue) && (
                     <div className="mb-1 flex items-center justify-between">
                         {label && (
-                            <label htmlFor={sliderId} className="text-sm font-medium text-gray-700">
+                            <label
+                                htmlFor={sliderId}
+                                className="text-sm font-medium text-foreground"
+                            >
                                 {label}
                             </label>
                         )}
-                        {showValue && <span className="text-sm text-gray-500">{value}</span>}
+                        {showValue && (
+                            <span className="font-mono text-sm text-text-muted">{value}</span>
+                        )}
                     </div>
                 )}
                 <input
@@ -33,13 +38,13 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
                     type="range"
                     value={value}
                     className={clsx(
-                        'h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200',
-                        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                        'h-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-tertiary',
+                        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
                         '[&::-webkit-slider-thumb]:appearance-none',
                         '[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4',
-                        '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500',
+                        '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary',
                         '[&::-webkit-slider-thumb]:cursor-pointer',
-                        '[&::-webkit-slider-thumb]:hover:bg-blue-600',
+                        '[&::-webkit-slider-thumb]:hover:bg-primary-hover',
                         className
                     )}
                     {...props}

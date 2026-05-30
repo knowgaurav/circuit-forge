@@ -18,8 +18,8 @@ export function ListItem({ children, onClick, selected, className }: ListItemPro
         <Component
             className={clsx(
                 'w-full px-4 py-2 text-left transition-colors',
-                onClick && 'cursor-pointer hover:bg-gray-50',
-                selected && 'bg-blue-50',
+                onClick && 'cursor-pointer hover:bg-surface-secondary',
+                selected && 'bg-primary/10 text-primary',
                 className
             )}
             onClick={onClick}
@@ -38,7 +38,7 @@ export function List({ children, className }: ListProps) {
     return (
         <div
             className={clsx(
-                'divide-y divide-gray-200 overflow-hidden rounded-lg border border-gray-200 bg-white',
+                'divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface',
                 className
             )}
             role="list"
