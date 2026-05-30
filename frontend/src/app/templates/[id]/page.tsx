@@ -315,28 +315,23 @@ export default function TemplateDetailPage() {
 
     if (!template) {
         return (
-            <div className="flex min-h-screen items-center justify-center dark:bg-gray-900">
-                <p className="dark:text-gray-300">Loading template...</p>
+            <div className="flex min-h-screen items-center justify-center bg-background">
+                <p className="text-text-secondary">Loading template...</p>
             </div>
         );
     }
 
     return (
-        <div className="flex h-screen flex-col bg-gray-100 dark:bg-gray-900">
+        <div className="flex h-screen flex-col bg-background">
             {/* Header */}
-            <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+            <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-2">
                 <div className="flex items-center gap-4">
-                    <Link
-                        href="/templates"
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
+                    <Link href="/templates" className="text-text-muted hover:text-foreground">
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="font-semibold text-gray-900 dark:text-white">
-                            {template.name}
-                        </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <h1 className="font-semibold text-foreground">{template.name}</h1>
+                        <p className="text-sm text-text-muted">
                             {mode === 'learning' ? 'Learning Mode' : 'Implementation Mode'}
                         </p>
                     </div>
@@ -344,13 +339,13 @@ export default function TemplateDetailPage() {
 
                 <div className="flex items-center gap-2">
                     {/* Mode Toggle */}
-                    <div className="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
+                    <div className="flex rounded-lg bg-surface-secondary p-1">
                         <button
                             onClick={() => router.push(`/templates/${templateId}?mode=learning`)}
                             className={`rounded px-3 py-1 text-sm ${
                                 mode === 'learning'
-                                    ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
-                                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                                    ? 'bg-surface text-primary shadow'
+                                    : 'text-text-secondary hover:text-foreground'
                             }`}
                         >
                             <BookOpen className="mr-1 inline h-4 w-4" />
@@ -362,8 +357,8 @@ export default function TemplateDetailPage() {
                             }
                             className={`rounded px-3 py-1 text-sm ${
                                 mode === 'implementation'
-                                    ? 'bg-white text-blue-600 shadow dark:bg-gray-600 dark:text-blue-400'
-                                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                                    ? 'bg-surface text-primary shadow'
+                                    : 'text-text-secondary hover:text-foreground'
                             }`}
                         >
                             <Wrench className="mr-1 inline h-4 w-4" />
@@ -395,30 +390,28 @@ export default function TemplateDetailPage() {
             <div className="relative flex flex-1 overflow-hidden">
                 {/* Left Sidebar - Steps/Info */}
                 <div
-                    className="relative flex flex-shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-white transition-all duration-200 dark:border-gray-700 dark:bg-gray-800"
+                    className="relative flex flex-shrink-0 flex-col overflow-hidden border-r border-border bg-surface transition-all duration-200"
                     style={{ width: sidebarCollapsed ? 0 : sidebarWidth }}
                 >
                     {!sidebarCollapsed && (
                         <>
                             {/* Resize handle */}
                             <div
-                                className="absolute right-0 top-0 z-10 h-full w-1 cursor-col-resize bg-gray-200 opacity-0 transition-opacity hover:bg-blue-400 hover:opacity-100 dark:bg-gray-700"
+                                className="absolute right-0 top-0 z-10 h-full w-1 cursor-col-resize bg-border opacity-0 transition-opacity hover:bg-primary hover:opacity-100"
                                 onMouseDown={handleResizeMouseDown}
                             />
                             {/* Progress (Implementation Mode) */}
                             {mode === 'implementation' && (
-                                <div className="border-b border-gray-200 p-4 dark:border-gray-700">
+                                <div className="border-b border-border p-4">
                                     <div className="mb-2 flex items-center justify-between">
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        <span className="text-sm font-medium text-text-secondary">
                                             Progress
                                         </span>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                                            {progress}%
-                                        </span>
+                                        <span className="text-sm text-text-muted">{progress}%</span>
                                     </div>
-                                    <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                                    <div className="h-2 overflow-hidden rounded-full bg-surface-tertiary">
                                         <div
-                                            className="h-full bg-green-500 transition-all"
+                                            className="h-full bg-primary transition-all"
                                             style={{ width: `${progress}%` }}
                                         />
                                     </div>
@@ -428,14 +421,14 @@ export default function TemplateDetailPage() {
                             {/* Steps List */}
                             <div className="flex-1 overflow-y-auto p-5">
                                 <div className="mb-4 flex items-center gap-2">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
+                                    <div className="border-primary/30 bg-primary/15 flex h-8 w-8 items-center justify-center rounded-lg border">
                                         {mode === 'learning' ? (
-                                            <BookOpen className="h-4 w-4 text-white" />
+                                            <BookOpen className="h-4 w-4 text-primary" />
                                         ) : (
-                                            <Wrench className="h-4 w-4 text-white" />
+                                            <Wrench className="h-4 w-4 text-primary" />
                                         )}
                                     </div>
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                                    <h3 className="font-semibold text-foreground">
                                         {mode === 'learning'
                                             ? 'Circuit Overview'
                                             : 'Implementation Steps'}
@@ -446,18 +439,18 @@ export default function TemplateDetailPage() {
                                     /* Learning Mode - Show overview and theory */
                                     <div className="space-y-5">
                                         {/* Description Card */}
-                                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700/50">
-                                            <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                                        <div className="rounded-xl border border-border bg-surface-secondary p-4">
+                                            <p className="text-sm leading-relaxed text-text-secondary">
                                                 {template.overview}
                                             </p>
                                         </div>
 
                                         {/* Theory Section */}
                                         {template.theory && (
-                                            <div className="overflow-hidden rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
+                                            <div className="border-primary/20 bg-primary/5 overflow-hidden rounded-xl border">
                                                 <button
                                                     onClick={() => setShowTheory(!showTheory)}
-                                                    className="flex w-full items-center justify-between gap-2 p-4 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100/50 dark:text-blue-300 dark:hover:bg-blue-800/30"
+                                                    className="hover:bg-primary/10 flex w-full items-center justify-between gap-2 p-4 text-sm font-medium text-primary transition-colors"
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <BookOpen className="h-4 w-4" />
@@ -471,7 +464,7 @@ export default function TemplateDetailPage() {
                                                 </button>
                                                 {showTheory && (
                                                     <div className="px-4 pb-4">
-                                                        <pre className="whitespace-pre-wrap rounded-lg border border-blue-100 bg-white/60 p-3 font-mono text-xs leading-relaxed text-gray-700 dark:border-blue-800 dark:bg-gray-800/60 dark:text-gray-300">
+                                                        <pre className="whitespace-pre-wrap rounded-lg border border-border bg-surface p-3 font-mono text-xs leading-relaxed text-text-secondary">
                                                             {template.theory}
                                                         </pre>
                                                     </div>
@@ -482,13 +475,13 @@ export default function TemplateDetailPage() {
                                         {/* Components Section */}
                                         <div>
                                             <div className="mb-3 flex items-center gap-2">
-                                                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-900/30">
-                                                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                                <div className="bg-primary/15 flex h-5 w-5 items-center justify-center rounded-md">
+                                                    <div className="h-2 w-2 rounded-full bg-primary" />
                                                 </div>
-                                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                                <h4 className="text-sm font-semibold text-foreground">
                                                     Components Used
                                                 </h4>
-                                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+                                                <span className="rounded-full bg-surface-secondary px-2 py-0.5 font-mono text-xs text-text-muted">
                                                     {template.components.length}
                                                 </span>
                                             </div>
@@ -496,12 +489,12 @@ export default function TemplateDetailPage() {
                                                 {template.components.map((comp, index) => (
                                                     <div
                                                         key={comp.id}
-                                                        className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 p-2.5 transition-colors hover:border-gray-200 dark:border-gray-600 dark:bg-gray-700/50 dark:hover:border-gray-500"
+                                                        className="flex items-center gap-3 rounded-lg border border-border bg-surface-secondary p-2.5 transition-colors hover:border-border-strong"
                                                     >
-                                                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-blue-400 to-blue-600 text-xs font-medium text-white">
+                                                        <div className="border-primary/30 bg-primary/15 flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-medium text-primary">
                                                             {index + 1}
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        <span className="text-sm font-medium text-text-secondary">
                                                             {comp.type.replace(/_/g, ' ')}
                                                         </span>
                                                     </div>
@@ -518,20 +511,20 @@ export default function TemplateDetailPage() {
                                                 onClick={() => setCurrentStepIndex(index)}
                                                 className={`w-full rounded-lg border p-3 text-left transition-colors ${
                                                     index === currentStepIndex
-                                                        ? 'border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/30'
+                                                        ? 'border-primary/40 bg-primary/10'
                                                         : completedSteps.has(step.id)
-                                                          ? 'border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-900/30'
-                                                          : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+                                                          ? 'border-success/40 bg-success/10'
+                                                          : 'border-border hover:border-border-strong'
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <div
                                                         className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
                                                             completedSteps.has(step.id)
-                                                                ? 'bg-green-500 text-white'
+                                                                ? 'bg-success text-success-foreground'
                                                                 : index === currentStepIndex
-                                                                  ? 'bg-blue-500 text-white'
-                                                                  : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                                                                  ? 'bg-primary text-primary-foreground'
+                                                                  : 'bg-surface-tertiary text-text-secondary'
                                                         }`}
                                                     >
                                                         {completedSteps.has(step.id) ? (
@@ -540,12 +533,12 @@ export default function TemplateDetailPage() {
                                                             index + 1
                                                         )}
                                                     </div>
-                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    <span className="text-sm font-medium text-foreground">
                                                         {step.title}
                                                     </span>
                                                 </div>
                                                 {index === currentStepIndex && (
-                                                    <p className="ml-8 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                                    <p className="ml-8 mt-2 text-sm text-text-muted">
                                                         {step.description}
                                                     </p>
                                                 )}
@@ -557,18 +550,18 @@ export default function TemplateDetailPage() {
 
                             {/* Step Navigation (Implementation Mode) */}
                             {mode === 'implementation' && currentStep && (
-                                <div className="space-y-3 border-t border-gray-200 p-4 dark:border-gray-700">
+                                <div className="space-y-3 border-t border-border p-4">
                                     {currentStep.hint && (
                                         <button
                                             onClick={() => setShowHint(!showHint)}
-                                            className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                                            className="flex items-center gap-2 text-sm text-warning transition-colors hover:brightness-110"
                                         >
                                             <Lightbulb className="h-4 w-4" />
                                             {showHint ? 'Hide Hint' : 'Show Hint'}
                                         </button>
                                     )}
                                     {showHint && currentStep.hint && (
-                                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                        <div className="border-warning/30 bg-warning/10 rounded-lg border p-3 text-sm text-warning">
                                             {currentStep.hint}
                                         </div>
                                     )}
@@ -623,11 +616,11 @@ export default function TemplateDetailPage() {
                 {/* Sidebar collapse toggle */}
                 <button
                     onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    className="absolute top-1/2 z-20 -translate-y-1/2 rounded-r-md border-0 bg-blue-500 px-2 py-4 text-white shadow-lg transition-colors hover:bg-blue-600"
+                    className="absolute top-1/2 z-20 -translate-y-1/2 rounded-r-md border-0 bg-primary px-2 py-4 text-primary-foreground shadow-lg transition-colors hover:bg-primary-hover"
                     style={{ left: sidebarCollapsed ? 0 : sidebarWidth }}
                     title={sidebarCollapsed ? 'Show Panel' : 'Hide Panel'}
                 >
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-primary-foreground">
                         {sidebarCollapsed ? '»' : '«'}
                     </span>
                 </button>
@@ -644,7 +637,7 @@ export default function TemplateDetailPage() {
                     />
 
                     {/* Zoom Controls - Bottom Right */}
-                    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
                         <Tooltip content="Zoom Out (Ctrl+-)" position="top">
                             <IconButton
                                 icon={<ZoomOut className="h-4 w-4" />}
@@ -659,7 +652,7 @@ export default function TemplateDetailPage() {
                         <div className="relative">
                             <button
                                 onClick={() => setShowZoomDropdown(!showZoomDropdown)}
-                                className="flex min-w-[70px] items-center justify-center gap-1 rounded px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                className="flex min-w-[70px] items-center justify-center gap-1 rounded px-2 py-1 font-mono text-sm font-medium text-text-secondary hover:bg-surface-secondary"
                             >
                                 {Math.round(uiStore.zoom * 100)}%
                                 <ChevronDown className="h-3 w-3" />
@@ -671,15 +664,15 @@ export default function TemplateDetailPage() {
                                         className="fixed inset-0 z-10"
                                         onClick={() => setShowZoomDropdown(false)}
                                     />
-                                    <div className="absolute bottom-full left-1/2 z-20 mb-1 min-w-[80px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                    <div className="absolute bottom-full left-1/2 z-20 mb-1 min-w-[80px] -translate-x-1/2 rounded-lg border border-border bg-surface py-1 shadow-lg">
                                         {ZOOM_PRESETS.map((percent) => (
                                             <button
                                                 key={percent}
                                                 onClick={() => handleZoomPreset(percent)}
-                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                                className={`w-full px-3 py-1.5 text-left font-mono text-sm hover:bg-surface-secondary ${
                                                     Math.round(uiStore.zoom * 100) === percent
-                                                        ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                                        : 'text-gray-700 dark:text-gray-200'
+                                                        ? 'bg-primary/10 font-medium text-primary'
+                                                        : 'text-text-secondary'
                                                 }`}
                                             >
                                                 {percent}%
@@ -706,14 +699,14 @@ export default function TemplateDetailPage() {
             {/* Completion Modal */}
             {progress === 100 && mode === 'implementation' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="max-w-md rounded-lg bg-white p-6 text-center dark:bg-gray-800">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
-                            <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <div className="max-w-md rounded-lg border border-border bg-surface p-6 text-center">
+                        <div className="bg-success/15 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                            <Check className="h-8 w-8 text-success" />
                         </div>
-                        <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
+                        <h2 className="mb-2 text-xl font-semibold text-foreground">
                             Congratulations!
                         </h2>
-                        <p className="mb-6 text-gray-600 dark:text-gray-400">
+                        <p className="mb-6 text-text-muted">
                             You have successfully completed the {template.name} circuit!
                         </p>
                         <div className="flex gap-3">

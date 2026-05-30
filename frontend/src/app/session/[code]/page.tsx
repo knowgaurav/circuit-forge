@@ -730,18 +730,18 @@ export default function SessionPage() {
 
     if (isLoading) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div className="flex min-h-screen items-center justify-center bg-background">
                 <Spinner size="lg" />
             </div>
         );
     }
 
     return (
-        <div className="flex h-screen flex-col bg-gray-100 dark:bg-gray-900">
+        <div className="flex h-screen flex-col bg-background">
             {/* Header */}
-            <header className="relative z-50 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+            <header className="relative z-50 flex items-center justify-between border-b border-border bg-surface px-4 py-2">
                 <div className="flex items-center gap-4">
-                    <h1 className="font-semibold text-gray-900 dark:text-white">CircuitForge</h1>
+                    <h1 className="font-semibold text-foreground">CircuitForge</h1>
                     <div className="flex items-center gap-2">
                         <Badge
                             variant={
@@ -754,9 +754,7 @@ export default function SessionPage() {
                                   ? 'Reconnecting...'
                                   : 'Disconnected'}
                         </Badge>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                            Session: {code}
-                        </span>
+                        <span className="font-mono text-sm text-text-muted">Session: {code}</span>
                     </div>
                 </div>
 
@@ -774,7 +772,7 @@ export default function SessionPage() {
                         onSimulationStateChange={setIsSimulationRunning}
                     />
 
-                    <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-6 w-px bg-border" />
 
                     {/* Export/Import */}
                     <Tooltip content="Export as PNG" position="bottom">
@@ -793,7 +791,7 @@ export default function SessionPage() {
                     </Tooltip>
                     {canEdit && (
                         <Tooltip content="Import JSON" position="bottom">
-                            <label className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <label className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-text-secondary hover:bg-surface-secondary">
                                 <input
                                     type="file"
                                     accept=".json"
@@ -805,7 +803,7 @@ export default function SessionPage() {
                         </Tooltip>
                     )}
 
-                    <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-6 w-px bg-border" />
 
                     <Tooltip content="Copy session code" position="bottom">
                         <IconButton
@@ -844,7 +842,7 @@ export default function SessionPage() {
             {/* Main content */}
             <div className="relative flex flex-1 overflow-hidden">
                 {/* Toolbar */}
-                <div className="flex w-12 flex-col items-center gap-1 border-r border-gray-200 bg-white py-2 dark:border-gray-700 dark:bg-gray-800">
+                <div className="flex w-12 flex-col items-center gap-1 border-r border-border bg-surface py-2">
                     <Tooltip content="Select (V)" position="right">
                         <IconButton
                             icon={<MousePointer2 className="h-5 w-5" />}
@@ -888,7 +886,7 @@ export default function SessionPage() {
                                 />
                             </Tooltip>
 
-                            <div className="my-1 h-px w-8 bg-gray-200 dark:bg-gray-700" />
+                            <div className="my-1 h-px w-8 bg-border" />
 
                             <Tooltip content="Delete Selected (Del)" position="right">
                                 <IconButton
@@ -927,7 +925,7 @@ export default function SessionPage() {
                 {/* Component Palette */}
                 {canEdit && (
                     <div
-                        className={`relative flex-shrink-0 overflow-hidden border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 ${isResizing ? '' : 'transition-all duration-200'}`}
+                        className={`relative flex-shrink-0 overflow-hidden border-r border-border bg-surface ${isResizing ? '' : 'transition-all duration-200'}`}
                         style={{ width: leftSidebarCollapsed ? 0 : leftSidebarWidth }}
                     >
                         {!leftSidebarCollapsed && (
@@ -938,7 +936,7 @@ export default function SessionPage() {
                                 />
                                 {/* Resize handle */}
                                 <div
-                                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-gray-200 opacity-0 transition-opacity hover:bg-blue-400 hover:opacity-100 dark:bg-gray-700"
+                                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-border opacity-0 transition-opacity hover:bg-primary hover:opacity-100"
                                     onMouseDown={handleResizeMouseDown('left')}
                                 />
                             </>
@@ -950,11 +948,11 @@ export default function SessionPage() {
                 {canEdit && (
                     <button
                         onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                        className={`absolute top-1/2 z-20 -translate-y-1/2 rounded-r-md border-0 bg-blue-500 px-2 py-4 text-white shadow-lg hover:bg-blue-600 ${isResizing ? '' : 'transition-all duration-200'}`}
+                        className={`absolute top-1/2 z-20 -translate-y-1/2 rounded-r-md border-0 bg-primary px-2 py-4 text-primary-foreground shadow-lg hover:bg-primary-hover ${isResizing ? '' : 'transition-all duration-200'}`}
                         style={{ left: leftSidebarCollapsed ? 48 : 48 + leftSidebarWidth }}
                         title={leftSidebarCollapsed ? 'Show Components' : 'Hide Components'}
                     >
-                        <span className="text-sm font-bold text-white">
+                        <span className="text-sm font-bold text-primary-foreground">
                             {leftSidebarCollapsed ? '»' : '«'}
                         </span>
                     </button>
@@ -978,7 +976,7 @@ export default function SessionPage() {
                     />
 
                     {/* Zoom Controls */}
-                    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
                         <Tooltip content="Zoom Out" position="top">
                             <IconButton
                                 icon={<ZoomOut className="h-4 w-4" />}
@@ -993,7 +991,7 @@ export default function SessionPage() {
                         <div className="relative">
                             <button
                                 onClick={() => setShowZoomDropdown(!showZoomDropdown)}
-                                className="flex min-w-[70px] items-center justify-center gap-1 rounded px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                className="flex min-w-[70px] items-center justify-center gap-1 rounded px-2 py-1 font-mono text-sm font-medium text-text-secondary hover:bg-surface-secondary"
                             >
                                 {Math.round(uiStore.zoom * 100)}%
                                 <ChevronDown className="h-3 w-3" />
@@ -1005,15 +1003,15 @@ export default function SessionPage() {
                                         className="fixed inset-0 z-10"
                                         onClick={() => setShowZoomDropdown(false)}
                                     />
-                                    <div className="absolute bottom-full left-1/2 z-20 mb-1 min-w-[80px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                    <div className="absolute bottom-full left-1/2 z-20 mb-1 min-w-[80px] -translate-x-1/2 rounded-lg border border-border bg-surface py-1 shadow-lg">
                                         {ZOOM_PRESETS.map((percent) => (
                                             <button
                                                 key={percent}
                                                 onClick={() => handleZoomPreset(percent)}
-                                                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                                className={`w-full px-3 py-1.5 text-left font-mono text-sm hover:bg-surface-secondary ${
                                                     Math.round(uiStore.zoom * 100) === percent
-                                                        ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                                        : 'text-gray-700 dark:text-gray-200'
+                                                        ? 'bg-primary/10 font-medium text-primary'
+                                                        : 'text-text-secondary'
                                                 }`}
                                             >
                                                 {percent}%
@@ -1039,34 +1037,34 @@ export default function SessionPage() {
                 {/* Right sidebar collapse toggle */}
                 <button
                     onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-                    className={`absolute top-1/2 z-20 -translate-y-1/2 rounded-l-md border-0 bg-blue-500 px-2 py-4 text-white shadow-lg hover:bg-blue-600 ${isResizing ? '' : 'transition-all duration-200'}`}
+                    className={`absolute top-1/2 z-20 -translate-y-1/2 rounded-l-md border-0 bg-primary px-2 py-4 text-primary-foreground shadow-lg hover:bg-primary-hover ${isResizing ? '' : 'transition-all duration-200'}`}
                     style={{ right: rightSidebarCollapsed ? 0 : rightSidebarWidth }}
                     title={rightSidebarCollapsed ? 'Show Participants' : 'Hide Participants'}
                 >
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-primary-foreground">
                         {rightSidebarCollapsed ? '«' : '»'}
                     </span>
                 </button>
 
                 {/* Participants Panel */}
                 <div
-                    className={`relative flex-shrink-0 overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 ${isResizing ? '' : 'transition-all duration-200'}`}
+                    className={`relative flex-shrink-0 overflow-hidden border-l border-border bg-surface ${isResizing ? '' : 'transition-all duration-200'}`}
                     style={{ width: rightSidebarCollapsed ? 0 : rightSidebarWidth }}
                 >
                     {!rightSidebarCollapsed && (
                         <div className="h-full overflow-y-auto">
                             {/* Resize handle */}
                             <div
-                                className="absolute left-0 top-0 z-10 h-full w-1 cursor-col-resize bg-gray-200 opacity-0 transition-opacity hover:bg-blue-400 hover:opacity-100 dark:bg-gray-700"
+                                className="absolute left-0 top-0 z-10 h-full w-1 cursor-col-resize bg-border opacity-0 transition-opacity hover:bg-primary hover:opacity-100"
                                 onMouseDown={handleResizeMouseDown('right')}
                             />
 
                             <Panel title="Participants">
                                 {/* Pending Requests Section (Teacher only, shown only when there are requests) */}
                                 {isTeacher && pendingRequests.length > 0 && (
-                                    <div className="mb-3 border-b border-gray-200 pb-3 dark:border-gray-700">
+                                    <div className="mb-3 border-b border-border pb-3">
                                         <div className="mb-2 flex items-center gap-2">
-                                            <span className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                                            <span className="text-xs font-medium uppercase tracking-wide text-warning">
                                                 Pending Requests
                                             </span>
                                             <Badge variant="warning" size="sm">
@@ -1081,7 +1079,7 @@ export default function SessionPage() {
                                                 return (
                                                     <div
                                                         key={request.participantId}
-                                                        className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2 dark:border-amber-700 dark:bg-amber-900/30"
+                                                        className="border-warning/30 bg-warning/10 flex items-center gap-2 rounded-lg border p-2"
                                                     >
                                                         <Avatar
                                                             name={request.displayName}
@@ -1089,10 +1087,10 @@ export default function SessionPage() {
                                                             size="sm"
                                                         />
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                                            <p className="truncate text-sm font-medium text-foreground">
                                                                 {request.displayName}
                                                             </p>
-                                                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                                                            <p className="text-xs text-warning">
                                                                 Requesting edit access
                                                             </p>
                                                         </div>
@@ -1112,7 +1110,7 @@ export default function SessionPage() {
                                                                     }
                                                                     size="sm"
                                                                     variant="ghost"
-                                                                    className="text-green-600 hover:bg-green-100"
+                                                                    className="hover:bg-success/15 text-success"
                                                                     aria-label="Approve request"
                                                                 />
                                                             </Tooltip>
@@ -1126,7 +1124,7 @@ export default function SessionPage() {
                                                                     }
                                                                     size="sm"
                                                                     variant="ghost"
-                                                                    className="text-red-600 hover:bg-red-100"
+                                                                    className="hover:bg-error/15 text-error"
                                                                     aria-label="Deny request"
                                                                 />
                                                             </Tooltip>
@@ -1150,7 +1148,7 @@ export default function SessionPage() {
                                         return (
                                             <div
                                                 key={p.id}
-                                                className="group flex items-center gap-2 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                                className="group flex items-center gap-2 rounded-lg p-2 hover:bg-surface-secondary"
                                             >
                                                 <Avatar
                                                     name={p.displayName}
@@ -1158,12 +1156,12 @@ export default function SessionPage() {
                                                     size="sm"
                                                 />
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                                    <p className="truncate text-sm font-medium text-foreground">
                                                         {p.displayName}
                                                         {p.id === currentParticipant?.id &&
                                                             ' (You)'}
                                                     </p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    <p className="text-xs text-text-muted">
                                                         {p.role === 'teacher'
                                                             ? 'Teacher'
                                                             : 'Student'}
@@ -1198,7 +1196,7 @@ export default function SessionPage() {
                                                                             }
                                                                             size="sm"
                                                                             variant="ghost"
-                                                                            className="text-gray-400 hover:bg-orange-50 hover:text-orange-600"
+                                                                            className="hover:bg-warning/10 text-text-muted hover:text-warning"
                                                                             aria-label="Revoke edit access"
                                                                         />
                                                                     </Tooltip>
@@ -1219,7 +1217,7 @@ export default function SessionPage() {
                                                                         }
                                                                         size="sm"
                                                                         variant="ghost"
-                                                                        className="text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                                                        className="hover:bg-error/10 text-text-muted hover:text-error"
                                                                         aria-label="Remove from session"
                                                                     />
                                                                 </Tooltip>
@@ -1233,7 +1231,7 @@ export default function SessionPage() {
 
                                 {/* Request Edit Access Button (Student only) */}
                                 {!canEdit && currentParticipant?.role === 'student' && (
-                                    <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                    <div className="mt-4 border-t border-border pt-4">
                                         <Button
                                             variant="secondary"
                                             size="sm"
@@ -1251,7 +1249,7 @@ export default function SessionPage() {
                                 <Panel title="Drawing" className="mt-2">
                                     <div className="space-y-3">
                                         <div>
-                                            <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">
+                                            <label className="mb-1 block text-xs text-text-muted">
                                                 Color
                                             </label>
                                             <ColorPicker
@@ -1260,7 +1258,7 @@ export default function SessionPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">
+                                            <label className="mb-1 block text-xs text-text-muted">
                                                 Thickness
                                             </label>
                                             <div className="flex gap-2">
@@ -1269,8 +1267,8 @@ export default function SessionPage() {
                                                         key={width}
                                                         className={`flex h-8 w-8 items-center justify-center rounded border ${
                                                             uiStore.strokeWidth === width
-                                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                                                                : 'border-gray-200 dark:border-gray-600'
+                                                                ? 'bg-primary/10 border-primary'
+                                                                : 'border-border'
                                                         }`}
                                                         onClick={() =>
                                                             uiStore.setStrokeWidth(
@@ -1279,7 +1277,7 @@ export default function SessionPage() {
                                                         }
                                                     >
                                                         <div
-                                                            className="rounded-full bg-gray-900 dark:bg-gray-100"
+                                                            className="rounded-full bg-foreground"
                                                             style={{
                                                                 width: width * 2,
                                                                 height: width * 2,
@@ -1339,7 +1337,7 @@ export default function SessionPage() {
                         }
                         autoFocus
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="font-mono text-xs text-text-muted">
                         Double-click a component to edit its label. Labels help identify components
                         in error messages.
                     </p>
