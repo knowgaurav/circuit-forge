@@ -3,117 +3,118 @@
 @tailwind utilities;
 
 /*
- * CircuitForge — "Drafting Table" design system
- * Engineering-instrument aesthetic: charcoal base, signal-lime + amber accents,
- * blueprint grids and phosphor-style glow. Light mode = warm drafting vellum.
+ * CircuitForge — "Signal Bench" design system
+ * Deep-navy instrument aesthetic matching the circuit editor: cyan active-signal
+ * primary, electric-purple accent, blueprint grids and phosphor glow.
+ * Light mode = cool slate-white drafting surface.
  */
 
 @layer base {
     :root {
-        /* ---- Light Mode: Drafting Vellum ---- */
-        --background: #f4f3ec;
-        /* warm vellum paper */
-        --foreground: #15180f;
-        /* drafting ink */
+        /* ---- Light Mode: Cool Slate ---- */
+        --background: #f7f9fc;
+        /* cool paper white */
+        --foreground: #0c1322;
+        /* deep navy ink */
 
-        /* Primary Action — circuit green (darkened for contrast on light) */
-        --primary: #4d7c0f;
-        --primary-hover: #3f6a0a;
-        --primary-foreground: #f4f3ec;
+        /* Primary Action — circuit cyan (darkened for contrast on light) */
+        --primary: #0e7490;
+        --primary-hover: #0b5e74;
+        --primary-foreground: #ffffff;
 
         /* Secondary Action */
-        --secondary: #e7e6db;
-        --secondary-foreground: #2e3326;
+        --secondary: #e8edf5;
+        --secondary-foreground: #283449;
 
-        /* Accent — power-rail amber */
-        --accent: #b8690a;
+        /* Accent — electric purple */
+        --accent: #7c3aed;
         --accent-foreground: #ffffff;
 
         /* Surfaces */
-        --surface: #fbfaf4;
-        --surface-secondary: #efeee4;
-        --surface-tertiary: #e6e4d8;
+        --surface: #ffffff;
+        --surface-secondary: #eef2f8;
+        --surface-tertiary: #e2e8f2;
         --surface-elevated: #ffffff;
 
         /* Borders */
-        --border: #d8d6c7;
-        --border-subtle: #ece9dc;
-        --border-strong: #bdbaa6;
+        --border: #d5deea;
+        --border-subtle: #e9eef5;
+        --border-strong: #b4c1d4;
 
         /* Text */
-        --text-secondary: #4a4f3f;
-        --text-muted: #828573;
-        --text-inverse: #f4f3ec;
+        --text-secondary: #43506a;
+        --text-muted: #7a879c;
+        --text-inverse: #ffffff;
 
         /* Status */
-        --success: #4d7c0f;
+        --success: #0f9d6b;
         --success-foreground: #ffffff;
         --warning: #b45309;
         --warning-foreground: #ffffff;
-        --error: #c0392b;
+        --error: #d22d4a;
         --error-foreground: #ffffff;
 
         /* Circuit canvas */
-        --canvas-bg: #f6f5ee;
-        --canvas-grid: #dedcce;
-        --canvas-border: #bdbaa6;
-        --circuit-node: #4d7c0f;
-        --wire-active: #4d7c0f;
-        --wire-inactive: #b0b1a0;
+        --canvas-bg: #f1f5fb;
+        --canvas-grid: #dbe3ee;
+        --canvas-border: #b4c1d4;
+        --circuit-node: #0e7490;
+        --wire-active: #0891b2;
+        --wire-inactive: #9fb0c6;
 
-        --grid-line: rgba(21, 24, 15, 0.06);
+        --grid-line: rgba(12, 19, 34, 0.06);
     }
 
     html.dark {
-        /* ---- Dark Mode: Engineering Charcoal + Signal ---- */
-        --background: #0a0c0a;
-        /* near-black, faint green-neutral cast */
-        --foreground: #e7eae3;
-        /* warm off-white */
+        /* ---- Dark Mode: Deep Navy + Signal ---- */
+        --background: #080b16;
+        /* near-black deep navy */
+        --foreground: #e6ecf6;
+        /* cool off-white */
 
-        /* Primary Action — signal lime (logic HIGH / active wire) */
-        --primary: #b6f23a;
-        --primary-hover: #c8ff52;
-        --primary-foreground: #0a0c0a;
+        /* Primary Action — active-signal cyan */
+        --primary: #22d3ee;
+        --primary-hover: #4fe3f5;
+        --primary-foreground: #051018;
 
         /* Secondary Action */
-        --secondary: #1a1f1a;
-        --secondary-foreground: #d7ddd2;
+        --secondary: #161d30;
+        --secondary-foreground: #cdd7e8;
 
-        /* Accent — power-rail amber */
-        --accent: #f5a524;
-        --accent-foreground: #1a1206;
+        /* Accent — electric purple */
+        --accent: #a855f7;
+        --accent-foreground: #ffffff;
 
         /* Surfaces */
-        --surface: #101410;
-        --surface-secondary: #161b16;
-        --surface-tertiary: #1d231d;
-        --surface-elevated: #191e19;
+        --surface: #0d1322;
+        --surface-secondary: #131a2c;
+        --surface-tertiary: #1b2438;
+        --surface-elevated: #161e32;
 
         /* Borders */
-        --border: #242b24;
-        --border-subtle: #171c17;
-        --border-strong: #354034;
+        --border: #232d44;
+        --border-subtle: #161d30;
+        --border-strong: #34415e;
 
         /* Text */
-        --text-secondary: #aab3a4;
-        --text-muted: #6f7a6b;
-        --text-inverse: #0a0c0a;
+        --text-secondary: #a3b0c9;
+        --text-muted: #687899;
+        --text-inverse: #080b16;
 
         /* Status */
-        --success: #8fe388;
-        --warning: #f5c451;
-        --error: #ff6b5e;
+        --success: #34d399;
+        --warning: #fbbf24;
+        --error: #fb7185;
 
         /* Circuit canvas */
-        --canvas-bg: #0c0f0c;
-        --canvas-grid: #1a211a;
-        --canvas-border: #354034;
-        --circuit-node: #b6f23a;
-        --wire-active: #b6f23a;
-        --wire-inactive: #475247;
+        --canvas-bg: #0a1020;
+        --canvas-grid: #18203a;
+        --canvas-border: #34415e;
+        --circuit-node: #22d3ee;
+        --wire-active: #22d3ee;
+        --wire-inactive: #3c4866;
 
-        --grid-line: rgba(182, 242, 58, 0.05);
+        --grid-line: rgba(34, 211, 238, 0.06);
     }
 }
 
@@ -187,7 +188,7 @@
 
     /* ---- Promo / feature gradient card (white text safe) ---- */
     .gradient-card-bg {
-        background: linear-gradient(135deg, #2f5d0b 0%, #15240d 52%, #7a4f06 100%);
+        background: linear-gradient(135deg, #0b3a52 0%, #111a33 50%, #3b1d6e 100%);
         position: relative;
         isolation: isolate;
     }

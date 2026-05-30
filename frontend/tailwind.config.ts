@@ -36,8 +36,8 @@ const config: Config = {
         accent: {
           DEFAULT: "var(--accent)",
           foreground: "var(--accent-foreground)",
-          amber: "#f5a524",
-          lime: "#b6f23a",
+          cyan: "#22d3ee",
+          purple: "#a855f7",
         },
 
         // Surface Colors (Cards, Panels, Modals)

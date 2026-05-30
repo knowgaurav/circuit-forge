@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- Engineering charcoal tile with signal accent border -->
-  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6" fill="#0a0c0a" stroke="url(#edge)" stroke-width="1.5"/>
+  <!-- Deep-navy tile with signal accent border -->
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6" fill="#080b16" stroke="url(#edge)" stroke-width="1.5"/>
   <!-- Lightning bolt / Zap icon representing circuits -->
-  <path d="M18 4L8 18H15L14 28L24 14H17L18 4Z" fill="url(#bolt)" stroke="#b6f23a" stroke-width="0.5" stroke-linejoin="round"/>
+  <path d="M18 4L8 18H15L14 28L24 14H17L18 4Z" fill="url(#bolt)" stroke="#22d3ee" stroke-width="0.5" stroke-linejoin="round"/>
   <defs>
     <linearGradient id="bolt" x1="8" y1="4" x2="24" y2="28" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#b6f23a"/>
-      <stop offset="100%" stop-color="#f5a524"/>
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#a855f7"/>
     </linearGradient>
     <linearGradient id="edge" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#b6f23a"/>
-      <stop offset="100%" stop-color="#f5a524"/>
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#a855f7"/>
     </linearGradient>
   </defs>
 </svg>

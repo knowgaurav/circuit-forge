@@ -219,7 +219,7 @@ export default function TemplatesPage() {
                                                 <div>
                                                     <h3 className="flex items-center gap-2 font-heading text-xl font-semibold text-white">
                                                         Playground
-                                                        <Zap className="h-5 w-5 text-accent-amber" />
+                                                        <Zap className="h-5 w-5 text-accent-cyan" />
                                                     </h3>
                                                     <p className="mt-1 text-sm text-white/80">
                                                         Free practice mode - Build any circuit from
@@ -236,7 +236,7 @@ export default function TemplatesPage() {
                                         </div>
                                         <div className="mt-4 flex items-center gap-4 font-mono text-xs text-white/70">
                                             <span className="flex items-center gap-1.5">
-                                                <span className="h-2 w-2 rounded-full bg-accent-lime"></span>
+                                                <span className="h-2 w-2 rounded-full bg-accent-cyan"></span>
                                                 Full component library
                                             </span>
                                             <span className="flex items-center gap-1.5">
@@ -244,7 +244,7 @@ export default function TemplatesPage() {
                                                 Circuit simulation
                                             </span>
                                             <span className="flex items-center gap-1.5">
-                                                <span className="h-2 w-2 rounded-full bg-accent-amber"></span>
+                                                <span className="h-2 w-2 rounded-full bg-accent-purple"></span>
                                                 Auto-save enabled
                                             </span>
                                         </div>
