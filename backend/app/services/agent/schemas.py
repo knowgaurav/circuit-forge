@@ -137,6 +137,58 @@ class ExplainSignalPathResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# add_wire
+# ---------------------------------------------------------------------------
+
+
+class AddWireArgs(BaseModel):
+    """Connect an output pin to an input pin, addressed by label + pin name."""
+
+    session_id: str
+    actor_id: str
+    from_label: str
+    from_pin: str
+    to_label: str
+    to_pin: str
+
+
+class AddWireResult(BaseModel):
+    wire_id: str
+    seq: int = Field(ge=1)
+
+
+# ---------------------------------------------------------------------------
+# remove_wire
+# ---------------------------------------------------------------------------
+
+
+class RemoveWireArgs(BaseModel):
+    session_id: str
+    actor_id: str
+    wire_id: str
+
+
+class RemoveWireResult(BaseModel):
+    seq: int = Field(ge=1)
+
+
+# ---------------------------------------------------------------------------
+# move_component
+# ---------------------------------------------------------------------------
+
+
+class MoveComponentArgs(BaseModel):
+    session_id: str
+    actor_id: str
+    component_id: str
+    position: Position
+
+
+class MoveComponentResult(BaseModel):
+    seq: int = Field(ge=1)
+
+
+# ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
@@ -148,4 +200,7 @@ TOOL_SCHEMAS: dict[str, tuple[type[BaseModel], type[BaseModel]]] = {
     "remove_component": (RemoveComponentArgs, RemoveComponentResult),
     "validate_circuit": (ValidateCircuitArgs, ValidateCircuitResult),
     "explain_signal_path": (ExplainSignalPathArgs, ExplainSignalPathResult),
+    "add_wire": (AddWireArgs, AddWireResult),
+    "remove_wire": (RemoveWireArgs, RemoveWireResult),
+    "move_component": (MoveComponentArgs, MoveComponentResult),
 }
