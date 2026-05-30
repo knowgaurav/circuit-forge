@@ -28,6 +28,7 @@ from pydantic import BaseModel
 
 from app.models.circuit import CircuitState
 from app.repositories.event_repository import EventRepository
+from app.services.agent.tools import TOOLS, ToolDeps, ToolFn
 from app.services.circuit_service import CircuitService
 
 TUTOR_ACTOR_ID = "tutor-agent"
@@ -90,3 +91,34 @@ async def discard_session(
     await event_repo.delete_events_by_session(session_id)
     await event_repo.delete_snapshots_by_session(session_id)
     circuit_service.cleanup_session(session_id)
+
+
+def build_tool_registry(
+    deps: ToolDeps, session_id: str, actor_id: str
+) -> dict[str, ToolFn]:
+    """Bind ``deps`` into every tool and serialize results to plain dicts.
+
+    The orchestrator's dispatch calls ``fn(validated_args)`` and expects a
+    JSON-able dict back, but each tool is ``async def fn(args, *, deps) ->
+    BaseModel``. This adapter closes over ``deps`` and dumps the result with
+    camelCase aliases so it matches the rest of the agent trace.
+
+    The ephemeral ``session_id`` and ``actor_id`` are **forced** onto the
+    validated args, overriding whatever the model produced. The LLM never
+    learns the server-generated session id, and it cannot point a tool at
+    another session's event log — the args it sees for those fields are
+    placeholders the adapter discards.
+    """
+
+    def _bind(tool: ToolFn) -> ToolFn:
+        async def _runner(args: BaseModel) -> dict[str, Any]:
+            if "session_id" in type(args).model_fields:
+                args.session_id = session_id
+            if "actor_id" in type(args).model_fields:
+                args.actor_id = actor_id
+            result = await tool(args, deps=deps)
+            return result.model_dump(by_alias=True)
+
+        return _runner
+
+    return {name: _bind(tool) for name, tool in TOOLS.items()}
