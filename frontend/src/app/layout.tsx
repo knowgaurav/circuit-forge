@@ -1,4 +1,4 @@
-import { Chakra_Petch, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { Sora, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 
 import './globals.css';
 import { FloatingLLMButton } from '@/components/ui/FloatingLLMButton';
@@ -8,11 +8,11 @@ import { ThemeProvider } from '@/components/ui';
 
 import type { Metadata } from 'next';
 
-// Display: squared, technical headline face
-const chakra = Chakra_Petch({
+// Display: clean geometric headline face
+const sora = Sora({
     subsets: ['latin'],
-    weight: ['400', '500', '600', '700'],
-    variable: '--font-chakra',
+    weight: ['500', '600', '700', '800'],
+    variable: '--font-display',
     display: 'swap',
 });
 
@@ -96,7 +96,7 @@ export default function RootLayout({
                 />
             </head>
             <body
-                className={`${plexSans.variable} ${chakra.variable} ${plexMono.variable} bg-background font-sans text-foreground antialiased`}
+                className={`${plexSans.variable} ${sora.variable} ${plexMono.variable} bg-background font-sans text-foreground antialiased`}
             >
                 <AxiomProvider>
                     <ThemeProvider>

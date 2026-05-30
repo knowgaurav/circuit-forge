@@ -12,7 +12,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-plex-sans)", "sans-serif"],
         mono: ["var(--font-plex-mono)", "monospace"],
-        heading: ["var(--font-chakra)", "sans-serif"],
+        heading: ["var(--font-display)", "sans-serif"],
       },
       colors: {
         // Semantic Base Colors
