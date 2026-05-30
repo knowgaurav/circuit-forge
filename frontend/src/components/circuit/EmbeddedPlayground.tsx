@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 
 import { MousePointer2, Hand, Spline, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
 
-import { IconButton, Tooltip } from '@/components/ui';
+import { IconButton, Tooltip, Modal, Input, Button } from '@/components/ui';
 
 import { createComponentInstance } from '@/constants/components';
 import { useCircuitStore, useUIStore } from '@/stores';
@@ -30,6 +30,10 @@ export function EmbeddedPlayground({ height = 500 }: EmbeddedPlaygroundProps) {
     const [draggingComponent, setDraggingComponent] = useState<ComponentDefinition | null>(null);
     const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
     const [isSimulationRunning, setIsSimulationRunning] = useState(false);
+    const [editingLabel, setEditingLabel] = useState<{
+        componentId: string;
+        label: string;
+    } | null>(null);
 
     const handleToolSelect = (tool: Tool) => {
         uiStore.setSelectedTool(tool);
@@ -112,6 +116,16 @@ export function EmbeddedPlayground({ height = 500 }: EmbeddedPlaygroundProps) {
         },
         [circuitStore]
     );
+
+    const handleComponentLabelEdit = useCallback((componentId: string, currentLabel: string) => {
+        setEditingLabel({ componentId, label: currentLabel });
+    }, []);
+
+    const handleLabelSave = useCallback(() => {
+        if (!editingLabel) return;
+        circuitStore.updateComponentLabel(editingLabel.componentId, editingLabel.label);
+        setEditingLabel(null);
+    }, [editingLabel, circuitStore]);
 
     return (
         <div className="flex overflow-hidden rounded-xl border border-border" style={{ height }}>
@@ -209,12 +223,57 @@ export function EmbeddedPlayground({ height = 500 }: EmbeddedPlaygroundProps) {
                     onWireCreate={handleWireCreate}
                     onWireDelete={handleWireDelete}
                     onComponentDrop={handleComponentDrop}
+                    onComponentLabelEdit={handleComponentLabelEdit}
                     onSwitchToggle={(componentId) => {
                         circuitStore.toggleSwitchState(componentId);
                     }}
                     draggingComponent={draggingComponent}
                 />
             </div>
+
+            {/* Label Edit Modal */}
+            <Modal
+                isOpen={!!editingLabel}
+                onClose={() => setEditingLabel(null)}
+                title="Edit Component Label"
+                size="sm"
+            >
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleLabelSave();
+                    }}
+                    className="space-y-4"
+                >
+                    <Input
+                        label="Component Label"
+                        placeholder="e.g., AND1, LED2"
+                        value={editingLabel?.label || ''}
+                        onChange={(e) =>
+                            setEditingLabel((prev) =>
+                                prev ? { ...prev, label: e.target.value } : null
+                            )
+                        }
+                        autoFocus
+                    />
+                    <p className="text-xs text-text-muted">
+                        Double-click a component to edit its label. Labels help identify components.
+                    </p>
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setEditingLabel(null)}
+                            className="flex-1"
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" className="flex-1">
+                            Save
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 }

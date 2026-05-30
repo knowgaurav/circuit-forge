@@ -73,6 +73,10 @@ export default function PlaygroundPage() {
     const [saveName, setSaveName] = useState('');
     const [savedCircuits, setSavedCircuits] = useState<SavedCircuit[]>([]);
     const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+    const [editingLabel, setEditingLabel] = useState<{
+        componentId: string;
+        label: string;
+    } | null>(null);
 
     // Sidebar state
     const [leftSidebarWidth, setLeftSidebarWidth] = useState(256);
@@ -262,6 +266,16 @@ export default function PlaygroundPage() {
             waypoints: [],
         };
         circuitStore.addWire(wire);
+    };
+
+    const handleComponentLabelEdit = (componentId: string, currentLabel: string) => {
+        setEditingLabel({ componentId, label: currentLabel });
+    };
+
+    const handleLabelSave = () => {
+        if (!editingLabel) return;
+        circuitStore.updateComponentLabel(editingLabel.componentId, editingLabel.label);
+        setEditingLabel(null);
     };
 
     const handleClearBoard = () => {
@@ -667,6 +681,7 @@ export default function PlaygroundPage() {
                             circuitStore.addComponent(component as CircuitComponent);
                         }}
                         onWireCreate={handleWireCreate}
+                        onComponentLabelEdit={handleComponentLabelEdit}
                         onSwitchToggle={(componentId) => {
                             circuitStore.toggleSwitchState(componentId);
                         }}
@@ -793,6 +808,50 @@ export default function PlaygroundPage() {
                         ))
                     )}
                 </div>
+            </Modal>
+
+            {/* Label Edit Modal */}
+            <Modal
+                isOpen={!!editingLabel}
+                onClose={() => setEditingLabel(null)}
+                title="Edit Component Label"
+                size="sm"
+            >
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleLabelSave();
+                    }}
+                    className="space-y-4"
+                >
+                    <Input
+                        label="Component Label"
+                        placeholder="e.g., AND1, LED2"
+                        value={editingLabel?.label || ''}
+                        onChange={(e) =>
+                            setEditingLabel((prev) =>
+                                prev ? { ...prev, label: e.target.value } : null
+                            )
+                        }
+                        autoFocus
+                    />
+                    <p className="text-xs text-text-muted">
+                        Double-click a component to edit its label. Labels help identify components.
+                    </p>
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setEditingLabel(null)}
+                            className="flex-1"
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" className="flex-1">
+                            Save
+                        </Button>
+                    </div>
+                </form>
             </Modal>
 
             {/* Toast notifications */}
