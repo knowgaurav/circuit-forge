@@ -63,6 +63,7 @@ export function Navbar({ showSessionButtons = true }: NavbarProps) {
         { href: '/#topics', label: 'Topics' },
         { href: '/templates', label: 'Templates' },
         { href: '/courses/create', label: 'AI Courses' },
+        { href: '/local-llm', label: 'Local LLM' },
         { href: '/playground', label: 'Playground' },
     ];
 

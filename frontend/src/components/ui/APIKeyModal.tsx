@@ -391,7 +391,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     </p>
                                 </div>
                                 <a
-                                    href={provider.docsUrl}
+                                    href="/local-llm"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:text-primary-hover"
