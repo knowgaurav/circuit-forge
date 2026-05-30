@@ -123,6 +123,7 @@ class Orchestrator:
         tools_registry: dict[str, ToolFn],
         context: AgentContext,
         trace_repo: AgentTraceRepoLike,
+        allowed_tools: set[str],
     ) -> TurnResult:
         provider = self._provider_factory(provider_id)
         context.add_user(message)
@@ -134,7 +135,7 @@ class Orchestrator:
         abort_reason: str | None = None
         final_message: str | None = None
 
-        tools_for_llm = self._tools_for_llm()
+        tools_for_llm = self._tools_for_llm(allowed_tools)
 
         while iterations < self._max_iterations:
             iterations += 1
@@ -213,10 +214,17 @@ class Orchestrator:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _tools_for_llm() -> list[dict[str, Any]]:
-        """Convert ``TOOL_SCHEMAS`` to the OpenAI ``tools`` array shape."""
+    def _tools_for_llm(allowed_tools: set[str]) -> list[dict[str, Any]]:
+        """Convert ``TOOL_SCHEMAS`` to the OpenAI ``tools`` array shape.
+
+        Only the names in ``allowed_tools`` are emitted, so a caller can scope
+        the surface offered to the model (e.g. read-only tools on a theory
+        step). Names outside ``TOOL_SCHEMAS`` are ignored.
+        """
         out: list[dict[str, Any]] = []
         for name, (args_cls, _result_cls) in TOOL_SCHEMAS.items():
+            if name not in allowed_tools:
+                continue
             description = (args_cls.__doc__ or "").strip() or name
             out.append(
                 {

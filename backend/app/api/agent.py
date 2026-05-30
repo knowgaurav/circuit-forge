@@ -22,6 +22,7 @@ from app.core.database import db_manager
 from app.repositories.agent_trace_repository import AgentTraceRepository
 from app.services.agent.context import AgentContext
 from app.services.agent.orchestrator import Orchestrator
+from app.services.agent.schemas import TOOL_SCHEMAS
 from app.services.llm_provider_factory import LLMProviderFactory
 
 
@@ -125,6 +126,7 @@ async def agent_turn(
         tools_registry=TOOLS,
         context=context,
         trace_repo=trace_repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     return AgentTurnResponse(

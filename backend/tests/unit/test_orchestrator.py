@@ -21,6 +21,7 @@ from app.services.agent.orchestrator import (
     Orchestrator,
     ToolError,
 )
+from app.services.agent.schemas import TOOL_SCHEMAS
 from app.services.llm_providers import LLMRequest, LLMResponse
 
 
@@ -121,6 +122,7 @@ async def test_final_message_text_only_response_exits_in_one_iteration() -> None
         tools_registry={},
         context=ctx,
         trace_repo=repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     assert result.iterations == 1
@@ -170,6 +172,7 @@ async def test_tool_validation_failure_emits_structured_error_and_continues() ->
         tools_registry={"get_circuit_state": flaky_get_circuit_state},
         context=ctx,
         trace_repo=repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     assert raised == [True]
@@ -234,6 +237,7 @@ async def test_tool_args_validation_failure_emits_invalid_args_error() -> None:
         tools_registry={"simulate": never_called},
         context=ctx,
         trace_repo=repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     assert invoked == []
@@ -277,6 +281,7 @@ async def test_max_iterations_abort_when_provider_loops_on_tool_calls() -> None:
         tools_registry={"get_circuit_state": echo_tool},
         context=ctx,
         trace_repo=repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     assert result.aborted is True
@@ -322,6 +327,7 @@ async def test_max_input_tokens_abort_when_message_history_overflows() -> None:
         tools_registry={"get_circuit_state": echo_tool},
         context=ctx,
         trace_repo=repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     assert result.aborted is True
@@ -361,6 +367,7 @@ async def test_max_output_tokens_abort_when_response_overflows() -> None:
         tools_registry={"get_circuit_state": echo_tool},
         context=ctx,
         trace_repo=repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     assert result.aborted is True
@@ -404,6 +411,7 @@ async def test_trace_repo_receives_full_turn_record() -> None:
         tools_registry={"get_circuit_state": echo_tool},
         context=ctx,
         trace_repo=repo,
+        allowed_tools=set(TOOL_SCHEMAS),
     )
 
     assert len(repo.appended) == 1
@@ -414,3 +422,39 @@ async def test_trace_repo_receives_full_turn_record() -> None:
     assert appended["abort_reason"] is None
     kinds = [t["kind"] for t in appended["trace"]]
     assert kinds == ["thought", "tool_call", "tool_result", "thought"]
+
+
+# ---------------------------------------------------------------------------
+# Tool scoping (in-course-ai-tutor R4)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_allowed_tools_scopes_the_surface_offered_to_the_model() -> None:
+    """Only the tools in ``allowed_tools`` are offered to the provider."""
+    provider = FakeProvider(
+        [LLMResponse(raw_content="done", tool_calls=[], token_usage=0)]
+    )
+    repo = FakeTraceRepo()
+    orch = _make_orchestrator(provider)
+
+    allowed = {"get_circuit_state", "simulate"}
+    ctx = AgentContext("system")
+    await orch.run_turn(
+        session_id="S1",
+        actor_id="A1",
+        message="hi",
+        provider_id="openai",
+        api_key="k",
+        model="m",
+        tools_registry={},
+        context=ctx,
+        trace_repo=repo,
+        allowed_tools=allowed,
+    )
+
+    offered = {
+        t["function"]["name"] for t in provider.calls[0].tools
+    }
+    assert offered == allowed
+    assert offered.issubset(set(TOOL_SCHEMAS))
