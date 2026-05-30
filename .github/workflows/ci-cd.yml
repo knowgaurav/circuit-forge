@@ -61,6 +61,49 @@ jobs:
         working-directory: ${{ matrix.working-directory }}
         run: ${{ matrix.test-command }}
 
+  # Build the local-bridge CLI (sdist + wheel) and verify it installs
+  build-cli:
+    name: Build CLI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The CLI declares requires-python >=3.9, so verify it imports on the
+      # floor version as well as a current one.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.9
+            3.12
+
+      - name: Verify import on Python 3.9 (minimum supported)
+        run: python3.9 -c "import sys; sys.path.insert(0, 'src'); import circuitforge_bridge.main"
+
+      - name: Build sdist and wheel
+        run: |
+          python3.12 -m pip install --upgrade build twine
+          python3.12 -m build
+
+      - name: Check package metadata
+        run: python3.12 -m twine check dist/*
+
+      - name: Verify wheel installs and entry point runs
+        run: |
+          python3.12 -m venv /tmp/cli-check
+          /tmp/cli-check/bin/pip install dist/*.whl
+          /tmp/cli-check/bin/circuitforge-bridge --version
+
+      - name: Upload CLI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: circuitforge-bridge-dist
+          path: cli/dist/*
+
   # Build and push Docker images
   build:
     needs: test
