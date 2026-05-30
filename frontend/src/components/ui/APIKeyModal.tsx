@@ -261,7 +261,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
             <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gray-900 to-[#0a0a0f] shadow-2xl">
-                <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent to-blue-500/5" />
+                <div className="from-primary/5 to-accent/5 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent" />
 
                 <div className="relative p-6">
                     <div className="mb-6 flex items-start justify-between">
@@ -361,7 +361,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                 href={provider.docsUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-sm text-primary transition-colors hover:text-purple-300"
+                                className="inline-flex items-center gap-2 text-sm text-primary transition-colors hover:text-primary-hover"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 Get your {provider.name} API key
@@ -394,7 +394,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     href={provider.docsUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:text-purple-300"
+                                    className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:text-primary-hover"
                                 >
                                     View full setup guide
                                     <ExternalLink className="h-3 w-3" />
