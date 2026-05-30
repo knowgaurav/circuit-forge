@@ -28,10 +28,10 @@ describe('tutorChatStore', () => {
         appendMessage(practical, { role: 'user', text: 'practical question' });
 
         const { threads } = useTutorChatStore.getState();
-        expect(threads[theory]).toHaveLength(1);
-        expect(threads[practical]).toHaveLength(1);
-        expect(threads[theory][0].text).toBe('theory question');
-        expect(threads[practical][0].text).toBe('practical question');
+        expect(threads[theory] ?? []).toHaveLength(1);
+        expect(threads[practical] ?? []).toHaveLength(1);
+        expect(threads[theory]?.[0]?.text).toBe('theory question');
+        expect(threads[practical]?.[0]?.text).toBe('practical question');
     });
 
     it('appends messages in order within a thread', () => {
@@ -42,7 +42,7 @@ describe('tutorChatStore', () => {
         appendMessage(key, { role: 'assistant', text: 'hello' });
 
         const { threads } = useTutorChatStore.getState();
-        expect(threads[key].map((m) => m.role)).toEqual(['user', 'assistant']);
+        expect(threads[key]?.map((m) => m.role)).toEqual(['user', 'assistant']);
     });
 
     it('toggles the pending flag', () => {

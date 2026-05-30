@@ -8,3 +8,4 @@ export { ComponentDetailModal } from './ComponentDetailModal';
 export { EmbeddedPlayground } from './EmbeddedPlayground';
 export { MiniCanvas } from './MiniCanvas';
 export { SimulationOverlay, getWireColor, getWireStyle, getLedColor } from './SimulationOverlay';
+export { TutorChat, applyMutations } from './TutorChat';
