@@ -19,17 +19,14 @@ import type { TopicSuggestion, CoursePlan } from '@/types';
 const categoryColors: Record<string, string> = {
     'Digital Logic': 'bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary',
     Computing: 'bg-accent/10 border-accent/20 hover:bg-accent/20 text-accent',
-    Robotics:
-        'bg-green-500/10 border-green-500/20 hover:bg-green-500/20 text-green-600 dark:text-green-400',
-    Automation:
-        'bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400',
+    Robotics: 'bg-success/10 border-success/20 hover:bg-success/20 text-success',
+    Automation: 'bg-warning/10 border-warning/20 hover:bg-warning/20 text-warning',
 };
 
 const difficultyColors: Record<string, string> = {
-    Beginner: 'text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20',
-    Intermediate:
-        'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border border-yellow-500/20',
-    Advanced: 'text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20',
+    Beginner: 'text-success bg-success/10 border border-success/30',
+    Intermediate: 'text-warning bg-warning/10 border border-warning/30',
+    Advanced: 'text-error bg-error/10 border border-error/30',
 };
 
 export default function CreateCoursePage() {
@@ -251,18 +248,18 @@ export default function CreateCoursePage() {
                     </div>
 
                     {/* Custom Topic Input */}
-                    <div className="glass-card shadow-glass-lg border-primary/10 mb-12 rounded-2xl p-8">
+                    <div className="glass-card border-primary/10 mb-12 rounded-2xl p-8 shadow-glass-lg">
                         <h2 className="mb-6 text-xl font-semibold text-foreground">
                             Enter Your Own Topic
                         </h2>
                         {isMounted && !llmStore.isConfigured() && (
-                            <div className="mb-6 flex items-center gap-3 rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-4">
-                                <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
-                                <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                            <div className="border-warning/30 bg-warning/10 mb-6 flex items-center gap-3 rounded-xl border p-4">
+                                <AlertTriangle className="h-5 w-5 flex-shrink-0 text-warning" />
+                                <p className="text-sm text-warning">
                                     Please configure your API key first to generate courses.
                                     <button
                                         onClick={() => setShowApiKeyModal(true)}
-                                        className="ml-2 font-medium underline transition-colors hover:text-yellow-700 dark:hover:text-yellow-300"
+                                        className="ml-2 font-medium underline transition-colors hover:text-foreground"
                                     >
                                         Configure now
                                     </button>
@@ -300,7 +297,7 @@ export default function CreateCoursePage() {
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="glass-card animate-fade-in-up mb-12 rounded-2xl p-12 text-center">
+                        <div className="glass-card mb-12 animate-fade-in-up rounded-2xl p-12 text-center">
                             <div className="mb-6 flex justify-center">
                                 <Spinner size="lg" className="text-primary" />
                             </div>
@@ -316,7 +313,7 @@ export default function CreateCoursePage() {
 
                     {/* Suggested Topics */}
                     {!isLoading && (
-                        <div className="animate-fade-in-up animation-delay-200">
+                        <div className="animation-delay-200 animate-fade-in-up">
                             <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
                                 Or Choose a Suggested Topic
                             </h2>
@@ -364,10 +361,10 @@ export default function CreateCoursePage() {
                                                 {isMounted && !llmStore.isConfigured() && (
                                                     <button
                                                         onClick={() => setShowApiKeyModal(true)}
-                                                        className="bg-surface/80 absolute inset-0 flex items-center justify-center rounded-xl border-2 border-dashed border-yellow-500/50 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100"
+                                                        className="border-warning/50 bg-surface/80 absolute inset-0 flex items-center justify-center rounded-xl border-2 border-dashed opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100"
                                                     >
                                                         <div className="scale-95 transform px-4 text-center transition-transform group-hover:scale-100">
-                                                            <AlertTriangle className="mx-auto mb-2 h-8 w-8 text-yellow-500" />
+                                                            <AlertTriangle className="mx-auto mb-2 h-8 w-8 text-warning" />
                                                             <p className="text-sm font-bold text-foreground">
                                                                 Configure API Key
                                                             </p>

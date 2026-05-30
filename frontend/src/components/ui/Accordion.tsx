@@ -17,16 +17,16 @@ export function AccordionItem({ title, children, defaultOpen = false }: Accordio
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div className="border-b border-gray-200 last:border-b-0">
+        <div className="border-b border-border last:border-b-0">
             <button
-                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-surface-secondary"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-expanded={isOpen}
             >
-                <span className="text-sm font-medium text-gray-900">{title}</span>
+                <span className="text-sm font-medium text-foreground">{title}</span>
                 <ChevronDown
                     className={clsx(
-                        'h-4 w-4 text-gray-500 transition-transform duration-200',
+                        'h-4 w-4 text-text-muted transition-transform duration-200',
                         isOpen && 'rotate-180'
                     )}
                 />
@@ -50,7 +50,7 @@ export interface AccordionProps {
 
 export function Accordion({ children, className }: AccordionProps) {
     return (
-        <div className={clsx('rounded-lg border border-gray-200 bg-white', className)}>
+        <div className={clsx('rounded-lg border border-border bg-surface', className)}>
             {children}
         </div>
     );

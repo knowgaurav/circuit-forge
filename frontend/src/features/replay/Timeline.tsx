@@ -24,10 +24,13 @@ export function Timeline({ totalEvents, currentSeq, onScrub }: TimelineProps) {
     return (
         <div className="w-full">
             <div className="mb-1 flex items-center justify-between">
-                <label htmlFor="replay-timeline" className="text-sm font-medium text-gray-700">
+                <label
+                    htmlFor="replay-timeline"
+                    className="text-sm font-medium text-text-secondary"
+                >
                     Replay timeline
                 </label>
-                <span className="text-sm text-gray-500">{currentSeq}</span>
+                <span className="font-mono text-sm text-text-muted">{currentSeq}</span>
             </div>
             <div className="relative">
                 <input
@@ -39,7 +42,7 @@ export function Timeline({ totalEvents, currentSeq, onScrub }: TimelineProps) {
                     value={currentSeq}
                     onChange={handleChange}
                     aria-label="Replay timeline"
-                    className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
+                    className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-tertiary"
                 />
                 <div className="pointer-events-none absolute inset-x-0 bottom-1 h-2">
                     {ticks.map((seq) => {
@@ -53,8 +56,8 @@ export function Timeline({ totalEvents, currentSeq, onScrub }: TimelineProps) {
                                 aria-hidden="true"
                                 className={
                                     isCurrent
-                                        ? 'absolute h-2 w-0.5 bg-blue-600'
-                                        : 'absolute h-1 w-px bg-gray-400'
+                                        ? 'absolute h-2 w-0.5 bg-primary'
+                                        : 'absolute h-1 w-px bg-text-muted'
                                 }
                                 style={{ left: `${left}%` }}
                             />

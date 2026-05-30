@@ -93,7 +93,7 @@ export function CategorySection({
                                         className={`mb-2 flex h-10 w-10 items-center justify-center rounded-md border shadow-sm transition-all duration-200 ${
                                             disabled
                                                 ? 'border-border bg-surface-secondary text-text-muted'
-                                                : 'group-hover:border-primary/30 group-hover:shadow-primary/5 border-border bg-white text-foreground dark:bg-gray-800'
+                                                : 'group-hover:border-primary/30 group-hover:shadow-primary/5 border-border bg-surface-elevated text-foreground'
                                         } `}
                                     >
                                         <ComponentIcon type={comp.type} />

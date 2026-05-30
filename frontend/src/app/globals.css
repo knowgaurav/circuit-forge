@@ -2,147 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * CircuitForge — "Signal Bench" design system
+ * Deep-navy instrument aesthetic matching the circuit editor: cyan active-signal
+ * primary, electric-purple accent, blueprint grids and phosphor glow.
+ * Light mode = cool slate-white drafting surface.
+ */
+
 @layer base {
     :root {
-        /* Brand Foundation */
-        --brand-hue: 215;
-        /* Deep Blue */
-        --brand-saturation: 90%;
-        --brand-lightness: 50%;
+        /* ---- Light Mode: Cool Slate ---- */
+        --background: #f7f9fc;
+        /* cool paper white */
+        --foreground: #0c1322;
+        /* deep navy ink */
 
-        /* Light Mode Palette */
-        --background: #ffffff;
-        --foreground: #0f172a;
-        /* Slate 900 */
-
-        /* Primary Action */
-        --primary: #0ea5e9;
-        /* Sky 500 */
-        --primary-hover: #0284c7;
-        /* Sky 600 */
+        /* Primary Action — circuit cyan (darkened for contrast on light) */
+        --primary: #0e7490;
+        --primary-hover: #0b5e74;
         --primary-foreground: #ffffff;
 
         /* Secondary Action */
-        --secondary: #f1f5f9;
-        /* Slate 100 */
-        --secondary-foreground: #334155;
-        /* Slate 700 */
+        --secondary: #e8edf5;
+        --secondary-foreground: #283449;
 
-        /* Accents */
-        --accent: #3b82f6;
-        /* Blue 500 */
+        /* Accent — electric purple */
+        --accent: #7c3aed;
         --accent-foreground: #ffffff;
 
         /* Surfaces */
         --surface: #ffffff;
-        --surface-secondary: #f8fafc;
-        /* Slate 50 */
-        --surface-tertiary: #f1f5f9;
-        /* Slate 100 */
+        --surface-secondary: #eef2f8;
+        --surface-tertiary: #e2e8f2;
         --surface-elevated: #ffffff;
 
         /* Borders */
-        --border: #e2e8f0;
-        /* Slate 200 */
-        --border-subtle: #f8fafc;
-        /* Slate 50 */
-        --border-strong: #cbd5e1;
-        /* Slate 300 */
+        --border: #d5deea;
+        --border-subtle: #e9eef5;
+        --border-strong: #b4c1d4;
 
         /* Text */
-        --text-secondary: #475569;
-        /* Slate 600 */
-        --text-muted: #94a3b8;
-        /* Slate 400 */
+        --text-secondary: #43506a;
+        --text-muted: #7a879c;
         --text-inverse: #ffffff;
 
         /* Status */
-        --success: #22c55e;
+        --success: #0f9d6b;
         --success-foreground: #ffffff;
-        --warning: #f59e0b;
+        --warning: #b45309;
         --warning-foreground: #ffffff;
-        --error: #ef4444;
+        --error: #d22d4a;
         --error-foreground: #ffffff;
 
-        /* Circuit Specific */
-        --canvas-bg: #f8fafc;
-        /* Slate 50 */
-        --canvas-grid: #e2e8f0;
-        /* Slate 200 */
-        --canvas-border: #cbd5e1;
-        --circuit-node: #3b82f6;
-        --wire-active: #22c55e;
-        --wire-inactive: #94a3b8;
+        /* Circuit canvas */
+        --canvas-bg: #f1f5fb;
+        --canvas-grid: #dbe3ee;
+        --canvas-border: #b4c1d4;
+        --circuit-node: #0e7490;
+        --wire-active: #0891b2;
+        --wire-inactive: #9fb0c6;
+
+        --grid-line: rgba(12, 19, 34, 0.06);
     }
 
     html.dark {
-        /* Dark Mode Palette (Rich, Deep Blue/Black) */
-        --background: #020617;
-        /* Slate 950 essentially */
-        --foreground: #f8fafc;
-        /* Slate 50 */
+        /* ---- Dark Mode: Deep Navy + Signal ---- */
+        --background: #080b16;
+        /* near-black deep navy */
+        --foreground: #e6ecf6;
+        /* cool off-white */
 
-        /* Primary Action */
-        --primary: #0ea5e9;
-        /* Sky 500 - keeps pop in dark mode */
-        --primary-hover: #38bdf8;
-        /* Sky 400 - lighter on hover in dark */
-        --primary-foreground: #ffffff;
+        /* Primary Action — active-signal cyan */
+        --primary: #22d3ee;
+        --primary-hover: #4fe3f5;
+        --primary-foreground: #051018;
 
         /* Secondary Action */
-        --secondary: #1e293b;
-        /* Slate 800 */
-        --secondary-foreground: #f1f5f9;
-        /* Slate 100 */
+        --secondary: #161d30;
+        --secondary-foreground: #cdd7e8;
 
-        /* Accents */
-        --accent: #60a5fa;
-        /* Blue 400 */
+        /* Accent — electric purple */
+        --accent: #a855f7;
         --accent-foreground: #ffffff;
 
         /* Surfaces */
-        --surface: #0f172a;
-        /* Slate 900 */
-        --surface-secondary: #1e293b;
-        /* Slate 800 */
-        --surface-tertiary: #334155;
-        /* Slate 700 */
-        --surface-elevated: #1e293b;
-        /* Good for modals */
+        --surface: #0d1322;
+        --surface-secondary: #131a2c;
+        --surface-tertiary: #1b2438;
+        --surface-elevated: #161e32;
 
         /* Borders */
-        --border: #1e293b;
-        /* Slate 800 */
-        --border-subtle: #0f172a;
-        --border-strong: #334155;
-        /* Slate 700 */
+        --border: #232d44;
+        --border-subtle: #161d30;
+        --border-strong: #34415e;
 
         /* Text */
-        --text-secondary: #cbd5e1;
-        /* Slate 300 */
-        --text-muted: #64748b;
-        /* Slate 500 */
-        --text-inverse: #020617;
+        --text-secondary: #a3b0c9;
+        --text-muted: #687899;
+        --text-inverse: #080b16;
 
-        /* Status - Slightly desaturated/lighter for dark mode readability */
-        --success: #4ade80;
+        /* Status */
+        --success: #34d399;
         --warning: #fbbf24;
-        --error: #f87171;
+        --error: #fb7185;
 
-        /* Circuit Specific */
-        --canvas-bg: #0f172a;
-        --canvas-grid: #1e293b;
-        --canvas-border: #334155;
-        --circuit-node: #60a5fa;
-        --wire-active: #4ade80;
-        --wire-inactive: #475569;
+        /* Circuit canvas */
+        --canvas-bg: #0a1020;
+        --canvas-grid: #18203a;
+        --canvas-border: #34415e;
+        --circuit-node: #22d3ee;
+        --wire-active: #22d3ee;
+        --wire-inactive: #3c4866;
+
+        --grid-line: rgba(34, 211, 238, 0.06);
     }
 }
 
 @layer base {
     body {
         @apply bg-background text-foreground antialiased;
-        font-feature-settings: 'ss01', 'ss02', 'cv01', 'cv02';
+        font-feature-settings: 'ss01', 'cv01';
     }
 
     ::selection {
@@ -172,36 +151,146 @@
     }
 }
 
-/* Glassmorphism Utilities */
 @layer components {
+    /* ---- Instrument panel surfaces (formerly "glass") ---- */
     .glass {
-        @apply border border-white/10 bg-white/70 backdrop-blur-md dark:border-white/5 dark:bg-slate-900/70;
+        border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        background-color: color-mix(in srgb, var(--surface) 82%, transparent);
+        backdrop-filter: blur(12px);
     }
 
     .glass-card {
-        @apply border border-white/20 bg-white/40 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 0.75rem;
+        border: 1px solid var(--border);
+        background-color: var(--surface);
+        box-shadow:
+            0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+            0 8px 28px -12px rgba(0, 0, 0, 0.5);
+        transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .glass-card:hover {
-        @apply -translate-y-1 border-sky-500/30 bg-white/60 shadow-glass-sm dark:bg-slate-900/60;
+        transform: translateY(-2px);
+        border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+        box-shadow:
+            0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent),
+            0 0 22px -4px color-mix(in srgb, var(--primary) 55%, transparent);
     }
 
-    /* Gradient Text */
-    .text-gradient {
-        @apply bg-gradient-brand bg-clip-text text-transparent;
+    /* ---- Signal gradient text (support both legacy class names) ---- */
+    .text-gradient,
+    .gradient-text {
+        background-image: linear-gradient(105deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
     }
 
-    /* Modern Button Base */
+    /* ---- Promo / feature gradient card (white text safe) ---- */
+    .gradient-card-bg {
+        background: linear-gradient(135deg, #0b3a52 0%, #111a33 50%, #3b1d6e 100%);
+        position: relative;
+        isolation: isolate;
+    }
+
+    .gradient-card-bg::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-image:
+            linear-gradient(var(--primary) 1px, transparent 1px),
+            linear-gradient(90deg, var(--primary) 1px, transparent 1px);
+        background-size: 28px 28px;
+        opacity: 0.06;
+    }
+
+    /* ---- Blueprint / graph-paper grid backdrop ---- */
+    .bg-grid {
+        background-image:
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 32px 32px;
+    }
+
+    .bg-grid-sm {
+        background-image:
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 16px 16px;
+    }
+
+    /* Eyebrow label — instrument readout */
+    .eyebrow {
+        @apply font-mono text-xs font-medium uppercase tracking-[0.2em] text-text-muted;
+    }
+
+    /* Primary gradient button (used across course pages) */
+    .gradient-btn {
+        background-image: linear-gradient(105deg, var(--primary) 0%, var(--accent) 100%);
+        color: var(--primary-foreground);
+        transition: all 0.2s ease;
+    }
+
+    .gradient-btn:hover {
+        filter: brightness(1.08);
+        box-shadow: 0 0 22px -4px color-mix(in srgb, var(--primary) 60%, transparent);
+    }
+
+    /* Brand-tinted spinner ring */
+    .spinner-brand {
+        border-color: color-mix(in srgb, var(--primary) 25%, transparent);
+        border-top-color: var(--primary);
+    }
+
+    /* Brand text/surface helpers (legacy aliases) */
+    .text-brand-link {
+        color: var(--primary);
+    }
+
+    .text-brand-muted {
+        color: var(--text-muted);
+    }
+
+    .bg-brand-subtle {
+        background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+    }
+
+    .border-brand-subtle {
+        border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+    }
+
+    /* Cut-corner technical frame (PCB/schematic box) */
+    .clip-corner {
+        clip-path: polygon(
+            0 0,
+            calc(100% - 14px) 0,
+            100% 14px,
+            100% 100%,
+            14px 100%,
+            0 calc(100% - 14px)
+        );
+    }
+
+    /* Modern button base */
     .btn-base {
-        @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+        @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    /* Animation delay helpers */
+    .animation-delay-200 {
+        animation-delay: 0.2s;
+    }
+
+    .animation-delay-400 {
+        animation-delay: 0.4s;
     }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
 }
 
 ::-webkit-scrollbar-track {
@@ -209,9 +298,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-border transition-colors;
+    @apply rounded-full bg-border-strong transition-colors;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: color-mix(in srgb, var(--text-muted) 50%, transparent);
+    background-color: color-mix(in srgb, var(--primary) 55%, transparent);
 }

@@ -256,7 +256,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="selection:bg-primary/20 min-h-screen overflow-x-hidden bg-background transition-colors duration-300 selection:text-primary">
+        <div className="min-h-screen overflow-x-hidden bg-background transition-colors duration-300 selection:bg-primary selection:text-primary-foreground">
             <Navbar showSessionButtons={false} />
 
             {/* Rejoin Session Banner */}
@@ -265,11 +265,15 @@ export default function HomePage() {
                     direction="down"
                     className="fixed left-1/2 top-24 z-40 w-full max-w-md -translate-x-1/2 px-4"
                 >
-                    <div className="glass-card border-primary/20 bg-surface/80 rounded-xl border p-4 shadow-lg backdrop-blur-xl">
+                    <div className="border-primary/30 rounded-xl border bg-surface p-4 shadow-glow">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex-1">
                                 <p className="text-sm font-medium text-foreground">
-                                    Rejoin session {pendingSession.sessionCode}?
+                                    Rejoin session{' '}
+                                    <span className="font-mono text-primary">
+                                        {pendingSession.sessionCode}
+                                    </span>
+                                    ?
                                 </p>
                                 <p className="mt-0.5 text-xs text-text-muted">
                                     as {pendingSession.displayName}
@@ -290,26 +294,29 @@ export default function HomePage() {
 
             {/* Hero Section */}
             <section className="relative overflow-hidden px-4 pb-20 pt-32">
-                {/* Background gradient */}
-                <div className="from-primary/20 absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] via-background to-background" />
-                <div className="bg-primary/5 absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 animate-pulse-slow rounded-full blur-3xl" />
+                {/* Blueprint grid backdrop */}
+                <div className="bg-grid pointer-events-none absolute inset-0" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent_30%,var(--background)_85%)]" />
+                {/* Signal glow */}
+                <div className="bg-primary/10 pointer-events-none absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full blur-3xl" />
 
                 <div className="relative mx-auto max-w-7xl">
                     <div className="grid items-center gap-12 lg:grid-cols-2">
                         {/* Left content */}
                         <FadeIn direction="right" delay={0.1}>
-                            <div className="glass border-primary/20 bg-primary/5 mb-6 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium text-primary">
-                                <Sparkles className="h-4 w-4" />
+                            <div className="border-primary/30 bg-primary/10 mb-6 inline-flex items-center gap-2 rounded border px-3 py-1 font-mono text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                                <Sparkles className="h-3.5 w-3.5" />
                                 Free for Education
                             </div>
-                            <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl lg:text-7xl">
-                                Master <GradientText>Circuit Design</GradientText> with Interactive
-                                Learning
+                            <h1 className="mb-6 font-heading text-4xl font-bold leading-[1.05] tracking-tight text-foreground md:text-5xl lg:text-7xl">
+                                Design logic.
+                                <br />
+                                <GradientText>Watch it think.</GradientText>
                             </h1>
                             <p className="mb-8 max-w-xl text-lg leading-relaxed text-text-secondary">
                                 Build, simulate, and learn electronic circuits together in
-                                real-time. Perfect for teachers and students exploring digital
-                                logic, robotics, and automation.
+                                real-time. A hands-on bench for teachers and students exploring
+                                digital logic, robotics, and automation.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row">
                                 <Button
@@ -343,14 +350,23 @@ export default function HomePage() {
                         {/* Right content - Hero illustration */}
                         <FadeIn direction="left" delay={0.3} className="hidden lg:block">
                             <div className="group relative">
-                                <div className="border-border/50 bg-surface/50 overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-sm transition-transform duration-500 group-hover:scale-[1.02]">
+                                {/* schematic frame */}
+                                <div className="clip-corner relative overflow-hidden rounded-2xl border border-border bg-surface shadow-glass-lg transition-transform duration-500 group-hover:scale-[1.01]">
+                                    <div className="flex items-center gap-1.5 border-b border-border bg-surface-secondary px-4 py-2.5">
+                                        <span className="bg-error/70 h-2.5 w-2.5 rounded-full" />
+                                        <span className="bg-warning/70 h-2.5 w-2.5 rounded-full" />
+                                        <span className="bg-primary/70 h-2.5 w-2.5 rounded-full" />
+                                        <span className="ml-2 font-mono text-[11px] uppercase tracking-wider text-text-muted">
+                                            half-adder.cf
+                                        </span>
+                                    </div>
                                     <img
                                         src="/hero-illustration.png"
                                         alt="Student building electronic circuits with logic gates"
-                                        className="h-auto w-full rounded-2xl"
+                                        className="h-auto w-full"
                                     />
                                 </div>
-                                {/* Decorative elements */}
+                                {/* Decorative signal glows */}
                                 <div className="bg-primary/20 absolute -right-10 -top-10 -z-10 h-40 w-40 rounded-full blur-3xl" />
                                 <div className="bg-accent/20 absolute -bottom-10 -left-10 -z-10 h-40 w-40 rounded-full blur-3xl" />
                             </div>
@@ -360,10 +376,10 @@ export default function HomePage() {
             </section>
 
             {/* Stats Bar */}
-            <section className="border-border/50 bg-surface-secondary/50 border-y px-4 py-12">
+            <section className="border-y border-border bg-surface-secondary px-4 py-12">
                 <div className="mx-auto max-w-5xl">
                     <FadeIn direction="up" delay={0.2}>
-                        <div className="glass-card rounded-2xl p-8">
+                        <div className="rounded-2xl border border-border bg-surface p-8 shadow-glass">
                             <StaggerContainer className="grid grid-cols-2 gap-8 md:grid-cols-4">
                                 {stats.map((stat) => (
                                     <motion.div
@@ -391,7 +407,8 @@ export default function HomePage() {
                     <div className="grid items-center gap-16 lg:grid-cols-2">
                         {/* Left - Feature list */}
                         <FadeIn direction="right">
-                            <h2 className="mb-6 text-3xl font-bold text-foreground md:text-5xl">
+                            <p className="eyebrow mb-3">&#47;&#47; Toolkit</p>
+                            <h2 className="mb-6 font-heading text-3xl font-bold text-foreground md:text-5xl">
                                 Your Personal <GradientText>Learning Assistant</GradientText>
                             </h2>
                             <p className="mb-10 text-lg text-text-secondary">
@@ -403,9 +420,9 @@ export default function HomePage() {
                                     <motion.div
                                         key={feature.title}
                                         variants={fadeInItemVariants}
-                                        className="glass-card hover:bg-surface/60 flex items-start gap-4 rounded-xl p-5 transition-colors"
+                                        className="hover:border-primary/40 group flex items-start gap-4 rounded-xl border border-border bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow"
                                     >
-                                        <div className="bg-primary/10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-primary">
+                                        <div className="border-primary/30 bg-primary/10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border text-primary transition-colors group-hover:border-primary">
                                             {feature.icon}
                                         </div>
                                         <div>
@@ -423,11 +440,11 @@ export default function HomePage() {
 
                         {/* Right - Editor preview */}
                         <FadeIn direction="left" delay={0.2}>
-                            <div className="glass-card shadow-glass-lg border-primary/10 bg-surface/30 rounded-2xl p-2">
+                            <div className="clip-corner overflow-hidden rounded-2xl border border-border bg-surface p-2 shadow-glass-lg">
                                 <img
                                     src="/editor-preview.png"
                                     alt="CircuitForge editor interface showing a half-adder circuit"
-                                    className="h-auto w-full rounded-xl shadow-inner"
+                                    className="h-auto w-full rounded-xl"
                                 />
                             </div>
                         </FadeIn>
@@ -436,14 +453,16 @@ export default function HomePage() {
             </section>
 
             {/* Interactive Practice Section */}
-            <section className="bg-surface-secondary/30 border-border/50 border-y px-4 py-24">
+            <section className="border-y border-border bg-surface-secondary px-4 py-24">
                 <div className="mx-auto max-w-4xl">
                     <FadeIn direction="up">
-                        <div className="glass border-primary/20 relative overflow-hidden rounded-3xl border p-8 md:p-12">
-                            <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent" />
+                        <div className="clip-corner border-primary/30 relative overflow-hidden rounded-3xl border bg-surface p-8 md:p-12">
+                            <div className="bg-grid-sm pointer-events-none absolute inset-0 opacity-50" />
+                            <div className="bg-primary/10 pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full blur-3xl" />
 
                             <div className="relative z-10 mb-10 text-center">
-                                <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+                                <p className="eyebrow mb-3">&#47;&#47; Hands-on</p>
+                                <h2 className="mb-4 font-heading text-3xl font-bold text-foreground md:text-4xl">
                                     Master Circuits with{' '}
                                     <GradientText>Interactive Practice</GradientText>
                                 </h2>
@@ -463,8 +482,8 @@ export default function HomePage() {
                                     'No installation required',
                                 ].map((benefit, index) => (
                                     <div key={index} className="flex items-center gap-3">
-                                        <div className="bg-primary/20 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full">
-                                            <Check className="h-4 w-4 text-primary" />
+                                        <div className="border-primary/30 bg-primary/15 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded border">
+                                            <Check className="h-3.5 w-3.5 text-primary" />
                                         </div>
                                         <span className="text-foreground/80 text-sm font-medium">
                                             {benefit}
@@ -491,7 +510,8 @@ export default function HomePage() {
             <section id="topics" className="bg-background px-4 py-24">
                 <div className="mx-auto max-w-7xl">
                     <FadeIn direction="up" className="mb-16 text-center">
-                        <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+                        <p className="eyebrow mb-3">&#47;&#47; 11 Categories</p>
+                        <h2 className="mb-4 font-heading text-3xl font-bold text-foreground md:text-4xl">
                             Explore Topics
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-text-secondary">
@@ -514,10 +534,11 @@ export default function HomePage() {
             </section>
 
             {/* Templates Section */}
-            <section className="bg-surface-secondary/50 px-4 py-24">
+            <section className="border-y border-border bg-surface-secondary px-4 py-24">
                 <div className="mx-auto max-w-7xl">
                     <FadeIn direction="up" className="mb-16 text-center">
-                        <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+                        <p className="eyebrow mb-3">&#47;&#47; Guided builds</p>
+                        <h2 className="mb-4 font-heading text-3xl font-bold text-foreground md:text-4xl">
                             Practice Circuits
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-text-secondary">
@@ -546,12 +567,14 @@ export default function HomePage() {
 
             {/* Final CTA Section */}
             <section className="relative overflow-hidden px-4 py-32">
-                <div className="absolute inset-0 bg-gradient-to-br from-background via-surface-secondary to-background" />
-                <div className="bg-primary/10 absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 animate-pulse-slow rounded-full blur-3xl" />
+                <div className="bg-grid pointer-events-none absolute inset-0" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,var(--background)_80%)]" />
+                <div className="bg-primary/10 pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
 
                 <FadeIn direction="up" className="relative z-10 mx-auto max-w-3xl text-center">
-                    <h2 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-6xl">
-                        Ready to start your <GradientText>Journey</GradientText>?
+                    <p className="eyebrow mb-4">&#47;&#47; Power on</p>
+                    <h2 className="mb-6 font-heading text-4xl font-bold tracking-tight text-foreground md:text-6xl">
+                        Ready to start your <GradientText>journey</GradientText>?
                     </h2>
                     <p className="mx-auto mb-10 max-w-2xl text-xl text-text-secondary">
                         No account required. Create a session and start building circuits in
@@ -569,11 +592,7 @@ export default function HomePage() {
                             Get Started Free
                         </Button>
                         <Link href="/templates">
-                            <Button
-                                size="lg"
-                                variant="secondary"
-                                className="border-2 border-border px-10 py-6 text-lg"
-                            >
+                            <Button size="lg" variant="secondary" className="px-10 py-6 text-lg">
                                 Explore Templates
                             </Button>
                         </Link>
@@ -623,6 +642,3 @@ export default function HomePage() {
         </div>
     );
 }
-// I need to make sure I imported Navbar.
-// The original file imported { Button, Input, ... } from '@/components/ui'
-// I'll update the import list to include Navbar.

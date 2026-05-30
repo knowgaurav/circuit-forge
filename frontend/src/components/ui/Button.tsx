@@ -17,20 +17,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <button
                 ref={ref}
                 className={clsx(
-                    'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200',
+                    'group/btn relative inline-flex items-center justify-center rounded-md font-medium tracking-tight transition-all duration-200',
                     'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background',
                     'disabled:cursor-not-allowed disabled:opacity-50',
                     {
                         // Variants
-                        'hover:bg-primary/90 bg-primary text-primary-foreground shadow-sm focus:ring-primary':
+                        'bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover focus:ring-primary':
                             variant === 'primary',
-                        'hover:bg-secondary/80 bg-secondary text-secondary-foreground focus:ring-secondary':
+                        'border border-border bg-secondary text-secondary-foreground hover:border-border-strong hover:bg-surface-tertiary focus:ring-border':
                             variant === 'secondary',
-                        'bg-transparent text-foreground hover:bg-surface-secondary hover:text-foreground focus:ring-border':
+                        'bg-transparent text-text-secondary hover:bg-surface-secondary hover:text-foreground focus:ring-border':
                             variant === 'ghost',
                         'hover:bg-error/90 bg-error text-error-foreground focus:ring-error':
                             variant === 'danger',
-                        'shadow-glow hover:shadow-glow-lg bg-primary text-primary-foreground hover:-translate-y-0.5':
+                        'bg-primary font-semibold text-primary-foreground shadow-glow hover:-translate-y-0.5 hover:shadow-glow-lg focus:ring-primary':
                             variant === 'glow',
 
                         // Sizes

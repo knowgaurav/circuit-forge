@@ -63,7 +63,7 @@ export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
                 createPortal(
                     <div
                         ref={tooltipRef}
-                        className="pointer-events-none fixed whitespace-nowrap rounded bg-gray-900 px-2 py-1.5 text-xs text-white shadow-lg"
+                        className="pointer-events-none fixed whitespace-nowrap rounded bg-foreground px-2 py-1.5 font-mono text-xs text-background shadow-lg"
                         style={{
                             zIndex: 99999,
                             left: position === 'left' || position === 'right' ? coords.x : coords.x,

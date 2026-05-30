@@ -1,4 +1,4 @@
-import { Inter, Outfit, JetBrains_Mono } from 'next/font/google'; // Using JetBrains Mono for a better code aesthetic
+import { Sora, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 
 import './globals.css';
 import { FloatingLLMButton } from '@/components/ui/FloatingLLMButton';
@@ -8,21 +8,27 @@ import { ThemeProvider } from '@/components/ui';
 
 import type { Metadata } from 'next';
 
-const inter = Inter({
+// Display: clean geometric headline face
+const sora = Sora({
     subsets: ['latin'],
-    variable: '--font-inter',
+    weight: ['500', '600', '700', '800'],
+    variable: '--font-display',
     display: 'swap',
 });
 
-const outfit = Outfit({
+// Body: humanist, highly legible
+const plexSans = IBM_Plex_Sans({
     subsets: ['latin'],
-    variable: '--font-outfit',
+    weight: ['400', '500', '600', '700'],
+    variable: '--font-plex-sans',
     display: 'swap',
 });
 
-const jetbrainsMono = JetBrains_Mono({
+// Mono: instrument readouts, labels, data
+const plexMono = IBM_Plex_Mono({
     subsets: ['latin'],
-    variable: '--font-jetbrains-mono',
+    weight: ['400', '500', '600'],
+    variable: '--font-plex-mono',
     display: 'swap',
 });
 
@@ -90,7 +96,7 @@ export default function RootLayout({
                 />
             </head>
             <body
-                className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} bg-background font-sans text-foreground antialiased`}
+                className={`${plexSans.variable} ${sora.variable} ${plexMono.variable} bg-background font-sans text-foreground antialiased`}
             >
                 <AxiomProvider>
                     <ThemeProvider>

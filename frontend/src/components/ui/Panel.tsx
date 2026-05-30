@@ -15,14 +15,14 @@ export function Panel({ title, children, className, actions }: PanelProps) {
     return (
         <div
             className={clsx(
-                'rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800',
+                'rounded-lg border border-border bg-surface shadow-glass-sm',
                 className
             )}
         >
             {(title || actions) && (
-                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     {title && (
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                        <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-text-secondary">
                             {title}
                         </h3>
                     )}

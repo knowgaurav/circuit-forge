@@ -450,7 +450,7 @@ export function MiniCanvas({ blueprint, width = 500, height = 250 }: MiniCanvasP
                 ref={canvasRef}
                 width={width}
                 height={height}
-                className={`rounded-lg border border-gray-600 ${isPanning ? 'cursor-grabbing' : 'cursor-pointer'}`}
+                className={`rounded-lg border border-border ${isPanning ? 'cursor-grabbing' : 'cursor-pointer'}`}
                 onClick={handleCanvasClick}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}

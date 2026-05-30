@@ -24,16 +24,16 @@ export function LeaveConfirmModal({
         <Modal isOpen={isOpen} onClose={onStay} title="Leave Session?" size="sm">
             <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    <div className="bg-warning/15 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
+                        <AlertTriangle className="h-5 w-5 text-warning" />
                     </div>
                     <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
+                        <p className="font-medium text-foreground">
                             {studentCount === 1
                                 ? '1 student is still connected'
                                 : `${studentCount} students are still connected`}
                         </p>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-sm text-text-muted">
                             Leaving will disconnect you but keep the session active. Closing will
                             end the session for everyone.
                         </p>

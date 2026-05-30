@@ -32,17 +32,17 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                     <div
                         className={clsx(
                             'h-4 w-4 rounded border transition-colors',
-                            'peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-2',
+                            'peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 peer-focus:ring-offset-background',
                             'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
-                            checked ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
+                            checked ? 'border-primary bg-primary' : 'border-border bg-surface'
                         )}
                     >
                         {checked && (
-                            <Check className="absolute left-0.5 top-0.5 h-3 w-3 text-white" />
+                            <Check className="absolute left-0.5 top-0.5 h-3 w-3 text-primary-foreground" />
                         )}
                     </div>
                 </div>
-                {label && <span className="text-sm text-gray-700">{label}</span>}
+                {label && <span className="text-sm text-text-secondary">{label}</span>}
             </label>
         );
     }

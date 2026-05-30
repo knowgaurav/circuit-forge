@@ -118,7 +118,7 @@ export function Canvas({
 
         // Draw wire preview with orthogonal routing
         if (wireStart && wirePreview) {
-            ctx.strokeStyle = '#3B82F6';
+            ctx.strokeStyle = '#22d3ee';
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
             ctx.lineCap = 'round';

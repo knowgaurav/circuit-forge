@@ -237,7 +237,7 @@ export default function LevelPage() {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background transition-colors duration-300">
                 <div className="text-center">
-                    <p className="mb-4 text-red-400">{error || 'Level not found'}</p>
+                    <p className="mb-4 text-error">{error || 'Level not found'}</p>
                     <Link href={`/courses/${courseId}`} className="text-brand-link">
                         Back to course
                     </Link>
@@ -267,7 +267,7 @@ export default function LevelPage() {
                         </div>
                         <button
                             onClick={handleCompleteLevel}
-                            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                            className="rounded-lg bg-success px-4 py-2 text-sm font-medium text-success-foreground hover:brightness-110"
                         >
                             Complete Level
                         </button>
@@ -279,8 +279,8 @@ export default function LevelPage() {
                             onClick={() => setActiveTab('theory')}
                             className={`rounded-xl px-6 py-3 font-medium transition-colors ${
                                 activeTab === 'theory'
-                                    ? 'gradient-btn text-white'
-                                    : 'glass-card text-gray-300 hover:text-white'
+                                    ? 'gradient-btn text-foreground'
+                                    : 'glass-card text-text-secondary hover:text-foreground'
                             }`}
                         >
                             📖 Theory
@@ -289,8 +289,8 @@ export default function LevelPage() {
                             onClick={() => setActiveTab('practical')}
                             className={`rounded-xl px-6 py-3 font-medium transition-colors ${
                                 activeTab === 'practical'
-                                    ? 'gradient-btn text-white'
-                                    : 'glass-card text-gray-300 hover:text-white'
+                                    ? 'gradient-btn text-foreground'
+                                    : 'glass-card text-text-secondary hover:text-foreground'
                             }`}
                         >
                             🔧 Practical
@@ -302,14 +302,14 @@ export default function LevelPage() {
                         <div className="space-y-6">
                             {/* Learning Objectives */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                <h2 className="mb-4 text-lg font-semibold text-foreground">
                                     🎯 Learning Objectives
                                 </h2>
                                 <ul className="space-y-2">
                                     {theory.objectives.map((obj, i) => (
                                         <li key={i} className="flex items-start gap-2">
-                                            <span className="mt-1 text-green-400">✓</span>
-                                            <span className="text-gray-300">{obj}</span>
+                                            <span className="mt-1 text-success">✓</span>
+                                            <span className="text-text-secondary">{obj}</span>
                                         </li>
                                     ))}
                                 </ul>
@@ -317,11 +317,11 @@ export default function LevelPage() {
 
                             {/* Concept Explanation */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                <h2 className="mb-4 text-lg font-semibold text-foreground">
                                     📚 Concept Explanation
                                 </h2>
                                 <div className="prose max-w-none">
-                                    <p className="whitespace-pre-wrap text-gray-300">
+                                    <p className="whitespace-pre-wrap text-text-secondary">
                                         {theory.conceptExplanation}
                                     </p>
                                 </div>
@@ -330,7 +330,7 @@ export default function LevelPage() {
                             {/* Real World Examples */}
                             {theory.realWorldExamples.length > 0 && (
                                 <div className="glass-card rounded-2xl p-6">
-                                    <h2 className="mb-4 text-lg font-semibold text-white">
+                                    <h2 className="mb-4 text-lg font-semibold text-foreground">
                                         🌍 Real World Examples
                                     </h2>
                                     <ul className="space-y-3">
@@ -340,7 +340,9 @@ export default function LevelPage() {
                                                 className="bg-brand-subtle border-brand-subtle flex items-start gap-3 rounded-xl border p-3"
                                             >
                                                 <span className="text-brand-link">💡</span>
-                                                <span className="text-gray-300">{example}</span>
+                                                <span className="text-text-secondary">
+                                                    {example}
+                                                </span>
                                             </li>
                                         ))}
                                     </ul>
@@ -350,19 +352,19 @@ export default function LevelPage() {
                             {/* Key Terms */}
                             {theory.keyTerms.length > 0 && (
                                 <div className="glass-card rounded-2xl p-6">
-                                    <h2 className="mb-4 text-lg font-semibold text-white">
+                                    <h2 className="mb-4 text-lg font-semibold text-foreground">
                                         📝 Key Terms
                                     </h2>
                                     <div className="grid gap-3">
                                         {theory.keyTerms.map((term, i) => (
                                             <div
                                                 key={i}
-                                                className="rounded-xl border border-white/10 bg-white/5 p-3"
+                                                className="rounded-xl border border-border bg-surface-secondary p-3"
                                             >
-                                                <span className="font-medium text-white">
+                                                <span className="font-medium text-foreground">
                                                     {term.term}:
                                                 </span>{' '}
-                                                <span className="text-gray-400">
+                                                <span className="text-text-muted">
                                                     {term.definition}
                                                 </span>
                                             </div>
@@ -378,14 +380,14 @@ export default function LevelPage() {
                         <div className="space-y-6">
                             {/* Components Needed */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                <h2 className="mb-4 text-lg font-semibold text-foreground">
                                     🧩 Components Needed
                                 </h2>
                                 <div className="flex flex-wrap gap-2">
                                     {practical.componentsNeeded.map((comp, i) => (
                                         <span
                                             key={i}
-                                            className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm font-medium text-gray-300"
+                                            className="rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm font-medium text-text-secondary"
                                         >
                                             {comp.type} × {comp.count}
                                         </span>
@@ -395,19 +397,21 @@ export default function LevelPage() {
 
                             {/* Build Steps */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                <h2 className="mb-4 text-lg font-semibold text-foreground">
                                     📋 Build Steps
                                 </h2>
                                 <div className="space-y-4">
                                     {practical.steps.map((step) => (
                                         <div key={step.stepNumber} className="flex gap-4">
-                                            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20 font-medium text-blue-400">
+                                            <span className="bg-primary/15 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-medium text-primary">
                                                 {step.stepNumber}
                                             </span>
                                             <div className="flex-1">
-                                                <p className="text-gray-300">{step.instruction}</p>
+                                                <p className="text-text-secondary">
+                                                    {step.instruction}
+                                                </p>
                                                 {step.hint && (
-                                                    <p className="mt-1 text-sm text-gray-500">
+                                                    <p className="mt-1 text-sm text-text-muted">
                                                         💡 Hint: {step.hint}
                                                     </p>
                                                 )}
@@ -419,25 +423,25 @@ export default function LevelPage() {
 
                             {/* Expected Behavior */}
                             <div className="glass-card rounded-2xl p-6">
-                                <h2 className="mb-4 text-lg font-semibold text-white">
+                                <h2 className="mb-4 text-lg font-semibold text-foreground">
                                     ✅ Expected Behavior
                                 </h2>
-                                <p className="text-gray-300">{practical.expectedBehavior}</p>
+                                <p className="text-text-secondary">{practical.expectedBehavior}</p>
                             </div>
 
                             {/* Common Mistakes */}
                             {practical.commonMistakes.length > 0 && (
                                 <div className="glass-card rounded-2xl p-6">
-                                    <h2 className="mb-4 text-lg font-semibold text-white">
+                                    <h2 className="mb-4 text-lg font-semibold text-foreground">
                                         ⚠️ Common Mistakes to Avoid
                                     </h2>
                                     <ul className="space-y-2">
                                         {practical.commonMistakes.map((mistake, i) => (
                                             <li
                                                 key={i}
-                                                className="flex items-start gap-2 text-gray-300"
+                                                className="flex items-start gap-2 text-text-secondary"
                                             >
-                                                <span className="text-red-400">✗</span>
+                                                <span className="text-error">✗</span>
                                                 <span>{mistake}</span>
                                             </li>
                                         ))}
@@ -448,14 +452,14 @@ export default function LevelPage() {
                             {/* Circuit Canvas */}
                             <div className="glass-card rounded-2xl p-6">
                                 <div className="mb-4 flex items-center justify-between">
-                                    <h2 className="text-lg font-semibold text-white">
+                                    <h2 className="text-lg font-semibold text-foreground">
                                         🔌 Build Your Circuit
                                     </h2>
                                     <div className="flex items-center gap-2">
                                         {practical.circuitBlueprint && !blueprintLoaded && (
                                             <button
                                                 onClick={handleLoadBlueprint}
-                                                className="gradient-btn rounded-lg px-4 py-2 text-sm font-medium text-white"
+                                                className="gradient-btn rounded-lg px-4 py-2 text-sm font-medium text-foreground"
                                             >
                                                 Load Example Circuit
                                             </button>
@@ -463,14 +467,14 @@ export default function LevelPage() {
                                         {blueprintLoaded && (
                                             <button
                                                 onClick={handleClearCircuit}
-                                                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/20"
+                                                className="rounded-lg bg-surface-tertiary px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-secondary"
                                             >
                                                 Clear Circuit
                                             </button>
                                         )}
                                         <Link
                                             href="/playground"
-                                            className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/5"
+                                            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-secondary"
                                         >
                                             Open Full Playground
                                         </Link>
@@ -479,11 +483,11 @@ export default function LevelPage() {
 
                                 {/* Blueprint errors */}
                                 {blueprintErrors.length > 0 && (
-                                    <div className="mb-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3">
-                                        <p className="mb-1 text-sm font-medium text-yellow-400">
+                                    <div className="border-warning/30 bg-warning/10 mb-4 rounded-xl border p-3">
+                                        <p className="mb-1 text-sm font-medium text-warning">
                                             ⚠️ Some wires could not be connected:
                                         </p>
-                                        <ul className="list-inside list-disc text-sm text-yellow-300">
+                                        <ul className="list-inside list-disc text-sm text-warning">
                                             {blueprintErrors.map((err, i) => (
                                                 <li key={i}>{err}</li>
                                             ))}
@@ -493,8 +497,8 @@ export default function LevelPage() {
 
                                 {/* Blueprint loaded indicator */}
                                 {blueprintLoaded && blueprintErrors.length === 0 && (
-                                    <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 p-3">
-                                        <p className="text-sm text-green-400">
+                                    <div className="border-success/30 bg-success/10 mb-4 rounded-xl border p-3">
+                                        <p className="text-sm text-success">
                                             ✓ Example circuit loaded! Click the Play button to run
                                             the simulation.
                                         </p>
@@ -506,7 +510,7 @@ export default function LevelPage() {
 
                                 {/* No blueprint available message */}
                                 {!practical.circuitBlueprint && (
-                                    <p className="mt-3 text-sm text-gray-500">
+                                    <p className="mt-3 text-sm text-text-muted">
                                         💡 No pre-built circuit available for this level. Build your
                                         own following the steps above!
                                     </p>
@@ -518,7 +522,7 @@ export default function LevelPage() {
                     {/* No content yet */}
                     {!theory && !practical && (
                         <div className="glass-card rounded-2xl p-8 text-center">
-                            <p className="text-gray-400">
+                            <p className="text-text-muted">
                                 Content for this level is not available yet.
                             </p>
                         </div>

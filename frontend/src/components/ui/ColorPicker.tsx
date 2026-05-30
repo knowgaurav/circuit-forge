@@ -33,9 +33,9 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
                     key={color.value}
                     className={clsx(
                         'h-6 w-6 rounded-full border-2 transition-transform hover:scale-110',
-                        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
                         'flex items-center justify-center',
-                        value === color.value ? 'border-gray-900' : 'border-gray-300'
+                        value === color.value ? 'border-foreground' : 'border-border'
                     )}
                     style={{ backgroundColor: color.value }}
                     onClick={() => onChange(color.value)}

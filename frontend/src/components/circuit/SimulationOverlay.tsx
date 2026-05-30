@@ -169,7 +169,7 @@ export function SimulationOverlay({
     return (
         <div className="relative flex items-center gap-2">
             {/* Simulation Controls */}
-            <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1 shadow-sm dark:border-gray-600 dark:bg-gray-700">
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-surface px-2 py-1 shadow-sm">
                 {!isRunning ? (
                     <Tooltip
                         content={
@@ -186,8 +186,8 @@ export function SimulationOverlay({
                             disabled={!canSimulate}
                             className={
                                 canSimulate
-                                    ? 'text-green-600 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900/30 dark:hover:text-green-300'
-                                    : 'cursor-not-allowed text-gray-400'
+                                    ? 'hover:bg-success/10 text-success'
+                                    : 'cursor-not-allowed text-text-muted'
                             }
                         >
                             <Play className="mr-1 h-4 w-4" />
@@ -210,8 +210,8 @@ export function SimulationOverlay({
                             disabled={!canSimulate}
                             className={
                                 canSimulate
-                                    ? 'text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300'
-                                    : 'cursor-not-allowed text-gray-400'
+                                    ? 'hover:bg-error/10 text-error'
+                                    : 'cursor-not-allowed text-text-muted'
                             }
                         >
                             <Pause className="mr-1 h-4 w-4" />
@@ -248,7 +248,7 @@ export function SimulationOverlay({
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowErrors(true)}
-                        className="text-red-600"
+                        className="text-error"
                     >
                         <AlertCircle className="mr-1 h-4 w-4" />
                         {errorCount}
@@ -258,11 +258,9 @@ export function SimulationOverlay({
 
             {/* Error Panel */}
             {showErrors && result?.errors && result.errors.length > 0 && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-red-200 bg-red-50 p-3 shadow-lg dark:border-red-800 dark:bg-red-950">
+                <div className="border-error/30 bg-error/10 absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border p-3 shadow-lg">
                     <div className="mb-2 flex items-center justify-between">
-                        <span className="font-medium text-red-800 dark:text-red-300">
-                            Simulation Errors
-                        </span>
+                        <span className="font-medium text-error">Simulation Errors</span>
                         <button
                             type="button"
                             onClick={(e) => {
@@ -271,9 +269,9 @@ export function SimulationOverlay({
                                 setShowErrors(false);
                                 setShowAllErrors(false);
                             }}
-                            className="cursor-pointer rounded p-1 hover:bg-red-100 dark:hover:bg-red-800/50"
+                            className="hover:bg-error/15 cursor-pointer rounded p-1"
                         >
-                            <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            <X className="h-4 w-4 text-error" />
                         </button>
                     </div>
                     <div className="max-h-64 space-y-1 overflow-y-auto">
@@ -281,7 +279,7 @@ export function SimulationOverlay({
                             (error, i) => (
                                 <div
                                     key={`${error.componentId}-${error.pinId}-${i}`}
-                                    className="text-sm text-red-700 dark:text-red-300"
+                                    className="text-sm text-error"
                                 >
                                     • {error.message}
                                 </div>
@@ -295,7 +293,7 @@ export function SimulationOverlay({
                                     e.stopPropagation();
                                     setShowAllErrors(true);
                                 }}
-                                className="cursor-pointer text-sm text-red-500 hover:text-red-700 hover:underline dark:text-red-400 dark:hover:text-red-300"
+                                className="cursor-pointer text-sm text-error hover:underline"
                             >
                                 +{uniqueErrors.length - 5} more errors
                             </button>
@@ -308,7 +306,7 @@ export function SimulationOverlay({
                                     e.stopPropagation();
                                     setShowAllErrors(false);
                                 }}
-                                className="cursor-pointer text-sm text-red-500 hover:text-red-700 hover:underline dark:text-red-400 dark:hover:text-red-300"
+                                className="cursor-pointer text-sm text-error hover:underline"
                             >
                                 Show less
                             </button>
