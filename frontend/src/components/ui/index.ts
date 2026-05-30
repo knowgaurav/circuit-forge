@@ -39,7 +39,7 @@ export { Badge } from './Badge';
 export type { BadgeProps } from './Badge';
 
 export { DifficultyBadge } from './DifficultyBadge';
-export type { DifficultyBadgeProps, Difficulty } from './DifficultyBadge';
+export type { DifficultyBadgeProps, Difficulty, DifficultyVariant } from './DifficultyBadge';
 
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';

@@ -3,37 +3,57 @@
 import clsx from 'clsx';
 
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
+export type DifficultyVariant = 'tint' | 'solid' | 'outline';
 
 export interface DifficultyBadgeProps {
     difficulty: Difficulty;
     size?: 'sm' | 'md';
+    /**
+     * tint    — soft color-tinted bg + color border/text (default)
+     * solid   — solid difficulty-color bg + light text/bars/border
+     * outline — light/surface bg + difficulty-color border/text/bars
+     */
+    variant?: DifficultyVariant;
     className?: string;
 }
 
 const config: Record<
     Difficulty,
-    { label: string; level: number; text: string; bar: string; ring: string }
+    {
+        label: string;
+        level: number;
+        // tint
+        tint: string;
+        // solid
+        solidBg: string;
+        // outline / text color
+        color: string;
+        bar: string;
+    }
 > = {
     beginner: {
         label: 'Beginner',
         level: 1,
-        text: 'text-success',
+        tint: 'border-success/30 bg-success/10 text-success',
+        solidBg: 'bg-emerald-700 border-emerald-600',
+        color: 'text-success border-success/60',
         bar: 'bg-success',
-        ring: 'border-success/30 bg-success/10',
     },
     intermediate: {
         label: 'Intermediate',
         level: 2,
-        text: 'text-warning',
+        tint: 'border-warning/30 bg-warning/10 text-warning',
+        solidBg: 'bg-amber-700 border-amber-600',
+        color: 'text-warning border-warning/60',
         bar: 'bg-warning',
-        ring: 'border-warning/30 bg-warning/10',
     },
     advanced: {
         label: 'Advanced',
         level: 3,
-        text: 'text-error',
+        tint: 'border-error/30 bg-error/10 text-error',
+        solidBg: 'bg-rose-800 border-rose-700',
+        color: 'text-error border-error/60',
         bar: 'bg-error',
-        ring: 'border-error/30 bg-error/10',
     },
 };
 
@@ -41,21 +61,37 @@ const config: Record<
  * Difficulty shown as a signal-strength meter (1-3 bars) plus a label,
  * matching the circuit-instrument aesthetic.
  */
-export function DifficultyBadge({ difficulty, size = 'md', className }: DifficultyBadgeProps) {
-    const { label, level, text, bar, ring } = config[difficulty];
+export function DifficultyBadge({
+    difficulty,
+    size = 'md',
+    variant = 'solid',
+    className,
+}: DifficultyBadgeProps) {
+    const c = config[difficulty];
     const isSm = size === 'sm';
+
+    // Per-variant container + bar styling
+    const container =
+        variant === 'solid'
+            ? clsx(c.solidBg, 'border text-white')
+            : variant === 'outline'
+              ? clsx('border bg-surface', c.color)
+              : clsx('border', c.tint);
+
+    // In solid mode bars are light; otherwise they use the difficulty color
+    const filledBar = variant === 'solid' ? 'bg-white' : c.bar;
+    const emptyBar = variant === 'solid' ? 'bg-white/30' : 'bg-current opacity-25';
 
     return (
         <span
             className={clsx(
-                'inline-flex items-center gap-1.5 rounded border font-mono font-medium uppercase tracking-wider',
+                'inline-flex items-center gap-1.5 rounded font-mono font-bold uppercase tracking-wider',
                 isSm ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]',
-                ring,
-                text,
+                container,
                 className
             )}
             data-testid="template-difficulty"
-            title={`Difficulty: ${label}`}
+            title={`Difficulty: ${c.label}`}
         >
             {/* Signal-strength meter */}
             <span className="flex items-end gap-[2px]" aria-hidden="true">
@@ -67,12 +103,12 @@ export function DifficultyBadge({ difficulty, size = 'md', className }: Difficul
                             i === 1 && 'h-1.5',
                             i === 2 && 'h-2.5',
                             i === 3 && 'h-3.5',
-                            i <= level ? bar : 'bg-current opacity-25'
+                            i <= c.level ? filledBar : emptyBar
                         )}
                     />
                 ))}
             </span>
-            {label}
+            {c.label}
         </span>
     );
 }
