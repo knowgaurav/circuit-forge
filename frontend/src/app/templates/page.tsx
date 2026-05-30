@@ -8,7 +8,7 @@ import { BookOpen, Wrench, ChevronRight, Sparkles, Zap, ArrowLeft } from 'lucide
 
 import { Navbar } from '@/components/ui/Navbar';
 
-import { Button, Badge, Panel } from '@/components/ui';
+import { Button, Badge, Panel, DifficultyBadge } from '@/components/ui';
 
 import {
     TEMPLATES,
@@ -36,19 +36,6 @@ export default function TemplatesPage() {
 
     const handleOpenPlayground = () => {
         router.push('/playground');
-    };
-
-    const getDifficultyColor = (difficulty: Template['difficulty']) => {
-        switch (difficulty) {
-            case 'beginner':
-                return 'success';
-            case 'intermediate':
-                return 'warning';
-            case 'advanced':
-                return 'danger';
-            default:
-                return 'default';
-        }
     };
 
     return (
@@ -119,13 +106,9 @@ export default function TemplatesPage() {
                                             {selectedTemplate.description}
                                         </p>
                                         <div className="mt-3 flex items-center gap-2">
-                                            <Badge
-                                                variant={getDifficultyColor(
-                                                    selectedTemplate.difficulty
-                                                )}
-                                            >
-                                                {selectedTemplate.difficulty}
-                                            </Badge>
+                                            <DifficultyBadge
+                                                difficulty={selectedTemplate.difficulty}
+                                            />
                                             <Badge variant="default">
                                                 {
                                                     TEMPLATE_CATEGORIES[selectedTemplate.category]
@@ -267,12 +250,10 @@ export default function TemplatesPage() {
                                             {template.description}
                                         </p>
                                         <div className="flex items-center gap-2">
-                                            <Badge
-                                                variant={getDifficultyColor(template.difficulty)}
+                                            <DifficultyBadge
+                                                difficulty={template.difficulty}
                                                 size="sm"
-                                            >
-                                                {template.difficulty}
-                                            </Badge>
+                                            />
                                             <span className="font-mono text-xs text-text-muted">
                                                 {template.steps.length} steps
                                             </span>

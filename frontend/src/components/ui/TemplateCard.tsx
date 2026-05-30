@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 
+import { DifficultyBadge } from './DifficultyBadge';
+
 export interface TemplateCardProps {
     id: string;
     name: string;
@@ -10,12 +12,6 @@ export interface TemplateCardProps {
     description: string;
     href?: string;
 }
-
-const difficultyColors = {
-    beginner: 'bg-success/10 text-success border-success/30',
-    intermediate: 'bg-warning/10 text-warning border-warning/30',
-    advanced: 'bg-error/10 text-error border-error/30',
-};
 
 export function TemplateCard({
     id,
@@ -31,12 +27,7 @@ export function TemplateCard({
             data-testid={`template-card-${id}`}
         >
             <div className="mb-3 flex items-center gap-2">
-                <span
-                    className={`rounded border px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider ${difficultyColors[difficulty]}`}
-                    data-testid="template-difficulty"
-                >
-                    {difficulty}
-                </span>
+                <DifficultyBadge difficulty={difficulty} />
                 <span
                     className="border-primary/30 bg-primary/10 rounded border px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-primary"
                     data-testid="template-category"
