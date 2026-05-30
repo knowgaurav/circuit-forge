@@ -384,15 +384,14 @@ def test_llm_response_normalization_preserves_content(
     assert json_data["token_usage"] == token_usage
     assert json_data["finish_reason"] == finish_reason
 
-    # No API key information should be present
+    # No API key information should be present beyond what the caller already
+    # put in `content` (which is preserved verbatim). The generated content is
+    # arbitrary user data, so a key that happens to spell "authorization" is
+    # allowed only when it was in the original content.
     json_str = str(json_data).lower()
-    assert (
-        "sk-" not in json_str or "sk-" in str(content).lower()
-    )  # Allow if it was in original content
-    assert "api_key" not in json_str
-    assert "apikey" not in json_str
-    assert "authorization" not in json_str
-    assert "bearer" not in json_str
+    content_str = str(content).lower()
+    for token in ("sk-", "api_key", "apikey", "authorization", "bearer"):
+        assert token not in json_str or token in content_str
 
 
 def test_provider_factory_returns_correct_strategies() -> None:
