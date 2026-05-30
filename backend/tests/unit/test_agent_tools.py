@@ -296,6 +296,7 @@ async def test_add_component_creates_event_and_returns_seq() -> None:
     assert placed.position.x == 42
     assert placed.position.y == 84
     assert {p.id for p in placed.pins} == {"A", "B", "Y"}
+    assert placed.properties["label"] == "U1"
 
 
 @pytest.mark.asyncio
