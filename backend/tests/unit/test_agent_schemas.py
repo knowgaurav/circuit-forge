@@ -215,7 +215,7 @@ class TestExplainSignalPath:
 # ---------------------------------------------------------------------------
 
 
-def test_tool_schemas_registry_has_exact_six_entries() -> None:
+def test_tool_schemas_registry_has_exact_nine_entries() -> None:
     expected = {
         "get_circuit_state",
         "simulate",
@@ -223,9 +223,12 @@ def test_tool_schemas_registry_has_exact_six_entries() -> None:
         "remove_component",
         "validate_circuit",
         "explain_signal_path",
+        "add_wire",
+        "remove_wire",
+        "move_component",
     }
     assert set(TOOL_SCHEMAS.keys()) == expected
-    assert len(TOOL_SCHEMAS) == 6
+    assert len(TOOL_SCHEMAS) == 9
     for name, (args_cls, result_cls) in TOOL_SCHEMAS.items():
         assert issubclass(args_cls, BaseModel), name
         assert issubclass(result_cls, BaseModel), name
