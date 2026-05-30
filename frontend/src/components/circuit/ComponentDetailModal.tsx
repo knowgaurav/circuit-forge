@@ -64,20 +64,20 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
             <div className="space-y-4">
                 {/* Category Badge */}
                 <div className="flex items-center gap-2">
-                    <span className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    <span className="border-accent/30 bg-accent/10 rounded border px-2 py-1 font-mono text-xs font-medium text-accent">
                         {component.category}
                     </span>
                 </div>
 
                 {/* Short Description */}
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <p className="text-sm font-medium text-text-secondary">
                     {detail?.shortDescription || component.description}
                 </p>
 
                 {/* Full Description */}
                 {detail?.fullDescription && (
-                    <div className="rounded-lg border border-gray-200 bg-gray-100 p-3 dark:border-gray-600 dark:bg-gray-700">
-                        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                    <div className="rounded-lg border border-border bg-surface-secondary p-3">
+                        <p className="text-sm leading-relaxed text-text-secondary">
                             {detail.fullDescription}
                         </p>
                     </div>
@@ -86,26 +86,24 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                 {/* Truth Table */}
                 {detail?.truthTable && (
                     <div>
-                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Truth Table
-                        </h4>
-                        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-600">
+                        <h4 className="eyebrow mb-2">Truth Table</h4>
+                        <div className="overflow-x-auto rounded-lg border border-border">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="bg-gray-100 dark:bg-gray-700">
+                                    <tr className="bg-surface-secondary">
                                         {detail.truthTable.inputLabels.map((label, i) => (
                                             <th
                                                 key={`in-${i}`}
-                                                className="px-4 py-2 text-center font-semibold text-green-600 dark:text-green-400"
+                                                className="px-4 py-2 text-center font-semibold text-success"
                                             >
                                                 {label}
                                             </th>
                                         ))}
-                                        <th className="px-3 py-2 text-gray-400">→</th>
+                                        <th className="px-3 py-2 text-text-muted">→</th>
                                         {detail.truthTable.outputLabels.map((label, i) => (
                                             <th
                                                 key={`out-${i}`}
-                                                className="px-4 py-2 text-center font-semibold text-red-600 dark:text-red-400"
+                                                className="px-4 py-2 text-center font-semibold text-error"
                                             >
                                                 {label}
                                             </th>
@@ -116,7 +114,7 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                                     {detail.truthTable.rows.map((row, rowIndex) => (
                                         <tr
                                             key={rowIndex}
-                                            className="border-t border-gray-200 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700/50"
+                                            className="border-t border-border hover:bg-surface-secondary"
                                         >
                                             {row.inputs.map((val, i) => (
                                                 <td
@@ -149,16 +147,14 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                     if (!exampleCircuit) return null;
                     return (
                         <div>
-                            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                Interactive Demo
-                            </h4>
+                            <h4 className="eyebrow mb-2">Interactive Demo</h4>
                             <div className="flex flex-col items-center">
                                 <MiniCanvas
                                     blueprint={exampleCircuit.blueprint}
                                     width={380}
                                     height={180}
                                 />
-                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                <p className="mt-2 text-xs text-text-muted">
                                     {exampleCircuit.description}
                                 </p>
                             </div>
@@ -169,16 +165,14 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                 {/* Tips */}
                 {detail?.tips && detail.tips.length > 0 && (
                     <div>
-                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Tips
-                        </h4>
+                        <h4 className="eyebrow mb-2">Tips</h4>
                         <ul className="space-y-1.5">
                             {detail.tips.map((tip, i) => (
                                 <li
                                     key={i}
-                                    className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
+                                    className="flex items-start gap-2 text-sm text-text-secondary"
                                 >
-                                    <span className="mt-0.5 text-green-500">✓</span>
+                                    <span className="mt-0.5 text-success">✓</span>
                                     {tip}
                                 </li>
                             ))}
@@ -189,14 +183,12 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                 {/* Related Components */}
                 {detail?.relatedComponents && detail.relatedComponents.length > 0 && (
                     <div>
-                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Related Components
-                        </h4>
+                        <h4 className="eyebrow mb-2">Related Components</h4>
                         <div className="flex flex-wrap gap-2">
                             {detail.relatedComponents.map((relType) => (
                                 <span
                                     key={relType}
-                                    className="rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                                    className="rounded-md border border-border bg-surface-secondary px-2.5 py-1 font-mono text-xs font-medium text-text-secondary"
                                 >
                                     {relType.replace(/_/g, ' ')}
                                 </span>
@@ -208,17 +200,15 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
                 {/* Pins - matches canvas pin colors exactly */}
                 {component.pins && component.pins.length > 0 && (
                     <div>
-                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Pins ({component.pins.length})
-                        </h4>
+                        <h4 className="eyebrow mb-2">Pins ({component.pins.length})</h4>
                         <div className="flex flex-wrap gap-2">
                             {component.pins.map((pin, index) => (
                                 <span
                                     key={`${pin.name}-${index}`}
                                     className={`rounded-md border px-2.5 py-1 text-xs font-medium ${
                                         pin.type === 'input'
-                                            ? 'border-green-200 bg-green-100 text-green-700 dark:border-green-700/50 dark:bg-green-900/30 dark:text-green-400'
-                                            : 'border-red-200 bg-red-100 text-red-700 dark:border-red-700/50 dark:bg-red-900/30 dark:text-red-400'
+                                            ? 'border-success/30 bg-success/10 text-success'
+                                            : 'border-error/30 bg-error/10 text-error'
                                     }`}
                                 >
                                     {pin.name}
@@ -235,27 +225,25 @@ export function ComponentDetailModal({ component, isOpen, onClose }: ComponentDe
 // Truth table value with color coding
 function TruthValue({ value, isOutput }: { value: string; isOutput: boolean }) {
     if (value === '0') {
-        return <span className="text-gray-400">0</span>;
+        return <span className="text-text-muted">0</span>;
     }
     if (value === '1') {
-        return (
-            <span className={`font-bold ${isOutput ? 'text-red-500' : 'text-green-500'}`}>1</span>
-        );
+        return <span className={`font-bold ${isOutput ? 'text-error' : 'text-success'}`}>1</span>;
     }
     if (value === '↑') {
-        return <span className="text-blue-500">↑</span>;
+        return <span className="text-primary">↑</span>;
     }
     if (value.includes('Toggle')) {
-        return <span className="text-xs font-medium text-amber-500">Toggle</span>;
+        return <span className="text-xs font-medium text-accent">Toggle</span>;
     }
     if (value.includes('Q₀') || value.includes('Hold')) {
-        return <span className="text-xs italic text-gray-400">Hold</span>;
+        return <span className="text-xs italic text-text-muted">Hold</span>;
     }
     if (value === '?') {
-        return <span className="text-red-500">✗</span>;
+        return <span className="text-error">✗</span>;
     }
     if (value === 'X' || value === '-') {
-        return <span className="text-gray-400">—</span>;
+        return <span className="text-text-muted">—</span>;
     }
-    return <span className="text-gray-600 dark:text-gray-300">{value}</span>;
+    return <span className="text-text-secondary">{value}</span>;
 }

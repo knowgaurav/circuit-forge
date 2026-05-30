@@ -260,14 +260,14 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
-            <div className="shadow-brand-500/10 relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gray-900 to-[#0a0a0f] shadow-2xl">
-                <div className="from-brand-500/5 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent to-blue-500/5" />
+            <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gray-900 to-[#0a0a0f] shadow-2xl">
+                <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent to-blue-500/5" />
 
                 <div className="relative p-6">
                     <div className="mb-6 flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="from-brand-500 shadow-brand-500/30 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br to-blue-500 shadow-lg">
-                                <Key className="h-6 w-6 text-white" />
+                            <div className="border-primary/40 bg-primary/15 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-glow">
+                                <Key className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-bold text-white">
@@ -289,7 +289,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                     <div className="space-y-6">
                         <div>
                             <label className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-300">
-                                <Cpu className="text-brand-400 h-4 w-4" />
+                                <Cpu className="h-4 w-4 text-primary" />
                                 Select Provider
                             </label>
                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -299,7 +299,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                         onClick={() => setSelectedProvider(p.id)}
                                         className={`group relative rounded-xl border p-3 transition-all duration-200 ${
                                             selectedProvider === p.id
-                                                ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
+                                                ? 'bg-primary/15 border-primary shadow-glow'
                                                 : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                         }`}
                                     >
@@ -318,7 +318,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             {p.name}
                                         </div>
                                         {selectedProvider === p.id && (
-                                            <div className="bg-brand-500 absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-gray-900" />
+                                            <div className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-gray-900 bg-primary" />
                                         )}
                                     </button>
                                 ))}
@@ -330,7 +330,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                         onClick={() => setSelectedProvider(p.id)}
                                         className={`group relative rounded-xl border p-3 transition-all duration-200 ${
                                             selectedProvider === p.id
-                                                ? 'border-brand-500 bg-brand-500/20 shadow-brand-500/20 shadow-lg'
+                                                ? 'bg-primary/15 border-primary shadow-glow'
                                                 : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                         }`}
                                     >
@@ -349,7 +349,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             {p.name}
                                         </div>
                                         {selectedProvider === p.id && (
-                                            <div className="bg-brand-500 absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-gray-900" />
+                                            <div className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-gray-900 bg-primary" />
                                         )}
                                     </button>
                                 ))}
@@ -361,7 +361,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                 href={provider.docsUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-brand-400 inline-flex items-center gap-2 text-sm transition-colors hover:text-purple-300"
+                                className="inline-flex items-center gap-2 text-sm text-primary transition-colors hover:text-purple-300"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 Get your {provider.name} API key
@@ -373,20 +373,20 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                         {isLocalProvider && (
                             <div className="rounded-xl border border-white/5 bg-black/20 p-4">
                                 <div className="mb-3 flex items-center gap-2">
-                                    <Terminal className="text-brand-400 h-4 w-4" />
+                                    <Terminal className="h-4 w-4 text-primary" />
                                     <span className="text-sm font-medium text-gray-300">
                                         Quick Setup
                                     </span>
                                 </div>
                                 <div className="space-y-2 text-xs text-gray-400">
                                     <p>1. Install the bridge CLI:</p>
-                                    <code className="text-brand-300 block break-all rounded-lg bg-black/40 p-2 font-mono text-[11px]">
+                                    <code className="block break-all rounded-lg bg-black/40 p-2 font-mono text-[11px] text-primary">
                                         pip install
                                         git+https://github.com/Algozenith/circuit-forge.git#subdirectory=cli
                                     </code>
                                     <p>
                                         2. Run{' '}
-                                        <code className="text-brand-300">circuitforge-bridge</code>{' '}
+                                        <code className="text-primary">circuitforge-bridge</code>{' '}
                                         and paste the URL &amp; token below
                                     </p>
                                 </div>
@@ -394,7 +394,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     href={provider.docsUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-brand-400 mt-3 inline-flex items-center gap-1 text-xs hover:text-purple-300"
+                                    className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:text-purple-300"
                                 >
                                     View full setup guide
                                     <ExternalLink className="h-3 w-3" />
@@ -419,7 +419,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                                     ? `${provider.keyPrefix}...`
                                                     : 'Paste your API key'
                                             }
-                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                            className={`focus:ring-primary/50 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:border-primary focus:ring-2 ${
                                                 validationError
                                                     ? 'border-red-500/50'
                                                     : 'border-white/10'
@@ -455,7 +455,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                         <select
                                             value={selectedModel}
                                             onChange={(e) => setSelectedModel(e.target.value)}
-                                            className="focus:ring-brand-500/50 focus:border-brand-500 w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition-all focus:ring-2"
+                                            className="focus:ring-primary/50 w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition-all focus:border-primary focus:ring-2"
                                         >
                                             {models.map((m) => (
                                                 <option
@@ -491,7 +491,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                         setTestError(null);
                                     }}
                                     placeholder="global"
-                                    className="focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:ring-2"
+                                    className="focus:ring-primary/50 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:border-primary focus:ring-2"
                                 />
                                 <p className="mt-1.5 h-4 truncate text-xs text-gray-500">
                                     Vertex AI region (e.g. us-central1) or &quot;global&quot;
@@ -512,7 +512,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             value={baseUrl}
                                             onChange={(e) => handleBaseUrlChange(e.target.value)}
                                             placeholder="https://xxx.trycloudflare.com"
-                                            className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                            className={`focus:ring-primary/50 w-full rounded-xl border bg-black/40 px-4 py-3 text-white placeholder-gray-500 outline-none transition-all focus:border-primary focus:ring-2 ${
                                                 baseUrlError
                                                     ? 'border-red-500/50'
                                                     : 'border-white/10'
@@ -538,7 +538,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                                 value={bridgeToken}
                                                 onChange={(e) => handleTokenChange(e.target.value)}
                                                 placeholder="Paste token from CLI"
-                                                className={`focus:ring-brand-500/50 focus:border-brand-500 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 ${
+                                                className={`focus:ring-primary/50 w-full rounded-xl border bg-black/40 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition-all focus:border-primary focus:ring-2 ${
                                                     tokenError
                                                         ? 'border-red-500/50'
                                                         : 'border-white/10'
@@ -595,7 +595,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                                     onChange={(e) =>
                                                         setSelectedModel(e.target.value)
                                                     }
-                                                    className="focus:ring-brand-500/50 focus:border-brand-500 w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-2 text-sm text-white outline-none transition-all focus:ring-2"
+                                                    className="focus:ring-primary/50 w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-2 text-sm text-white outline-none transition-all focus:border-primary focus:ring-2"
                                                 >
                                                     {localModels.map((m) => (
                                                         <option
@@ -671,7 +671,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     <div>
                                         <label className="mb-2 block text-xs font-medium text-gray-400">
                                             Temperature:{' '}
-                                            <span className="text-brand-400">{temperature}</span>
+                                            <span className="text-primary">{temperature}</span>
                                         </label>
                                         <input
                                             type="range"
@@ -682,7 +682,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             onChange={(e) =>
                                                 setTemperature(parseFloat(e.target.value))
                                             }
-                                            className="accent-brand-500 w-full"
+                                            className="w-full accent-primary"
                                         />
                                         <p className="mt-1 text-[10px] text-gray-600">
                                             Lower = focused, Higher = creative
@@ -691,7 +691,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     <div>
                                         <label className="mb-2 block text-xs font-medium text-gray-400">
                                             Max Tokens:{' '}
-                                            <span className="text-brand-400">{maxTokens}</span>
+                                            <span className="text-primary">{maxTokens}</span>
                                         </label>
                                         <input
                                             type="range"
@@ -700,7 +700,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                             step="500"
                                             value={maxTokens}
                                             onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                                            className="accent-brand-500 w-full"
+                                            className="w-full accent-primary"
                                         />
                                     </div>
                                 </div>
@@ -717,7 +717,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                             <button
                                 onClick={handleSave}
                                 disabled={!canSave}
-                                className="gradient-btn shadow-brand-500/25 flex-1 rounded-xl py-3 font-medium text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                                className="gradient-btn flex-1 rounded-xl py-3 font-medium shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 Save & Continue
                             </button>

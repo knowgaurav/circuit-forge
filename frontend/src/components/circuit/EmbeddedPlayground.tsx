@@ -114,9 +114,9 @@ export function EmbeddedPlayground({ height = 500 }: EmbeddedPlaygroundProps) {
     );
 
     return (
-        <div className="flex overflow-hidden rounded-xl border border-white/10" style={{ height }}>
+        <div className="flex overflow-hidden rounded-xl border border-border" style={{ height }}>
             {/* Mini Toolbar */}
-            <div className="flex w-10 flex-col items-center gap-1 border-r border-white/10 bg-gray-800 py-2">
+            <div className="flex w-10 flex-col items-center gap-1 border-r border-border bg-surface py-2">
                 <Tooltip content="Select" position="right">
                     <IconButton
                         icon={<MousePointer2 className="h-4 w-4" />}
@@ -145,7 +145,7 @@ export function EmbeddedPlayground({ height = 500 }: EmbeddedPlaygroundProps) {
                     />
                 </Tooltip>
 
-                <div className="my-1 h-px w-6 bg-white/10" />
+                <div className="my-1 h-px w-6 bg-border" />
 
                 <Tooltip content="Delete selected" position="right">
                     <IconButton
@@ -160,7 +160,7 @@ export function EmbeddedPlayground({ height = 500 }: EmbeddedPlaygroundProps) {
 
                 <div className="flex-1" />
 
-                <div className="mb-1 text-[10px] text-gray-400">
+                <div className="mb-1 font-mono text-[10px] text-text-muted">
                     {Math.round(uiStore.zoom * 100)}%
                 </div>
                 <IconButton
@@ -178,12 +178,12 @@ export function EmbeddedPlayground({ height = 500 }: EmbeddedPlaygroundProps) {
             </div>
 
             {/* Component Palette */}
-            <div className="w-48 overflow-hidden border-r border-white/10 bg-gray-800">
+            <div className="w-48 overflow-hidden border-r border-border bg-surface">
                 <ComponentPalette onDragStart={setDraggingComponent} />
             </div>
 
             {/* Canvas */}
-            <div className="relative flex-1 bg-gray-900">
+            <div className="relative flex-1 bg-circuit-canvas">
                 {/* Simulation controls overlay */}
                 <div className="absolute right-2 top-2 z-10">
                     <SimulationOverlay
