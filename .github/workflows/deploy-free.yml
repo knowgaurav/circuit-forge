@@ -1,15 +1,27 @@
 name: Deploy to Free Services
 
+# Validates both apps on every push/PR to main, then deploys the frontend to
+# Vercel and triggers a backend deploy on Render for pushes to main only.
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
+# Cancel in-progress runs for the same ref to save free-tier minutes.
+concurrency:
+  group: deploy-free-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # Lint and type check
-  lint:
+  # --- Validate frontend: lint, type-check, build ---
+  validate-frontend:
+    name: Validate Frontend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -20,23 +32,52 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install frontend dependencies
-        working-directory: frontend
+      - name: Install dependencies
         run: npm ci
 
-      - name: Lint frontend
-        working-directory: frontend
+      - name: Lint
         run: npm run lint
 
-      - name: Type check frontend
-        working-directory: frontend
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
         run: npm run build
 
-  # Deploy Frontend to Vercel
+  # --- Validate backend: lint, type-check ---
+  validate-backend:
+    name: Validate Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]" --system
+
+      - name: Lint (ruff)
+        run: ruff check app
+
+      - name: Type check (mypy)
+        run: mypy app
+
+  # --- Deploy frontend to Vercel (main only) ---
   deploy-frontend:
-    needs: lint
+    name: Deploy Frontend (Vercel)
+    needs: [validate-frontend, validate-backend]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -49,12 +90,18 @@ jobs:
           working-directory: frontend
           vercel-args: '--prod'
 
-  # Deploy Backend to Render
+  # --- Deploy backend to Render via deploy hook (main only) ---
   deploy-backend:
-    needs: lint
+    name: Deploy Backend (Render)
+    needs: [validate-frontend, validate-backend]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
     steps:
-      - name: Deploy to Render
+      - name: Trigger Render deploy
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL secret is not set" >&2
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
