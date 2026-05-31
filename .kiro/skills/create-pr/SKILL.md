@@ -2,7 +2,7 @@
 name: create-pr
 description: Generate a highly professional, structured, and classified Pull Request (PR) description based on git diff, status, and project specs. It formats the PR description using a standardized layout, classifying the change (e.g., Feature, Bug Fix, Refactor, etc.), detailing key changes, referencing specifications, and summarizing verification results without unnecessary checklists.
 license: MIT
-compatibility: Kiro, Claude Code, Antigravity
+compatibility: Kiro, Claude Code, Antigravity, VS Code
 metadata:
   category: methodology
   complexity: intermediate
