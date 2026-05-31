@@ -46,7 +46,7 @@ import type { ToastItem } from '@/components/ui';
 import type { ComponentDefinition } from '@/constants/components';
 import type { SimulationResult } from '@/features/simulation';
 import type { Tool } from '@/stores';
-import type { Position, Annotation, CircuitState, CircuitComponent } from '@/types';
+import type { Position, Annotation, CircuitState, CircuitComponent, TutorMessage } from '@/types';
 
 const PLAYGROUND_AUTOSAVE_KEY = 'circuitforge_playground_autosave';
 const SAVED_CIRCUITS_KEY = 'circuitforge_saved_circuits';
@@ -68,6 +68,7 @@ export default function PlaygroundPage() {
     const [isSimulationRunning, setIsSimulationRunning] = useState(false);
     const [showZoomDropdown, setShowZoomDropdown] = useState(false);
     const [showAssistant, setShowAssistant] = useState(false);
+    const [assistantMessages, setAssistantMessages] = useState<TutorMessage[]>([]);
 
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [showSaveModal, setShowSaveModal] = useState(false);
@@ -722,7 +723,11 @@ export default function PlaygroundPage() {
                                 className="absolute left-0 top-0 z-50 h-full w-1 cursor-col-resize bg-border opacity-0 transition-opacity hover:bg-primary hover:opacity-100"
                                 onMouseDown={handleResizeMouseDown('right')}
                             />
-                            <PlaygroundChat onClose={() => setShowAssistant(false)} />
+                            <PlaygroundChat
+                                onClose={() => setShowAssistant(false)}
+                                messages={assistantMessages}
+                                setMessages={setAssistantMessages}
+                            />
                         </>
                     )}
                 </div>

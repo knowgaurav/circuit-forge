@@ -16,15 +16,16 @@ import type { TutorMessage } from '@/types';
 
 interface PlaygroundChatProps {
     onClose: () => void;
+    messages: TutorMessage[];
+    setMessages: React.Dispatch<React.SetStateAction<TutorMessage[]>>;
 }
 
 const PLAYGROUND_ACTOR_ID = 'playground-user';
 
-export function PlaygroundChat({ onClose }: PlaygroundChatProps) {
+export function PlaygroundChat({ onClose, messages, setMessages }: PlaygroundChatProps) {
     const llmStore = useLLMConfigStore();
     const circuitStore = useCircuitStore();
 
-    const [messages, setMessages] = useState<TutorMessage[]>([]);
     const [input, setInput] = useState('');
     const [pending, setPending] = useState(false);
     const [showApiKeyModal, setShowApiKeyModal] = useState(false);
@@ -92,7 +93,7 @@ export function PlaygroundChat({ onClose }: PlaygroundChatProps) {
         } finally {
             setPending(false);
         }
-    }, [input, pending, llmStore, circuitStore]);
+    }, [input, pending, llmStore, circuitStore, setMessages]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
