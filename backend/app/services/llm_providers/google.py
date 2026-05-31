@@ -60,11 +60,14 @@ class GoogleStrategy(LLMProviderStrategy):
         return f"https://{host}/v1/publishers/google/models/{model}:generateContent"
 
     def validate_key_format(self, api_key: str) -> tuple[bool, str]:
-        """Validate Google API key format."""
+        """Validate Google API key format.
+
+        Accepts both AI Studio keys (alphanumeric, ``_``/``-``) and Vertex AI
+        express-mode keys, which start with ``AQ.`` and contain a period.
+        """
         if not api_key or len(api_key) < 30:
             return False, "API key is too short for Google"
-        # Google API keys are typically 39 characters
-        if not re.match(r'^[A-Za-z0-9_-]+$', api_key):
+        if not re.match(r'^[A-Za-z0-9._-]+$', api_key):
             return False, "Google API key contains invalid characters"
         return True, ""
 

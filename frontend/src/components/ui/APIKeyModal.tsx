@@ -142,15 +142,12 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
     }, [selectedProvider]);
 
     const handleApiKeyChange = (value: string) => {
-        // Trim copy-paste whitespace/newlines so the key passes provider
-        // format checks (e.g. Google's strict character regex).
-        const key = value.trim();
-        setApiKey(key);
+        setApiKey(value);
         setTestStatus('idle');
         setTestError(null);
 
-        if (key) {
-            const result = validateKeyFormat(selectedProvider, key);
+        if (value) {
+            const result = validateKeyFormat(selectedProvider, value);
             setValidationError(result.valid ? null : result.error || null);
         } else {
             setValidationError(null);

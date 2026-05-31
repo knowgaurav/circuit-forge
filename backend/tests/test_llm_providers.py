@@ -55,11 +55,12 @@ anthropic_key_strategy = st.builds(
     ),
 )
 
-# Strategy for Google-style API keys (39 chars alphanumeric only)
+# Strategy for Google-style API keys (alphanumeric, plus . _ - for
+# Vertex AI express-mode keys that start with "AQ." and contain a period)
 google_key_strategy = st.text(
     min_size=39,
     max_size=39,
-    alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-",
+    alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-",
 )
 
 # Strategy for model names
