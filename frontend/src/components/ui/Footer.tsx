@@ -8,12 +8,17 @@ import { IconButton } from '@/components/ui';
 
 export function Footer() {
     return (
-        <footer className="border-t border-border bg-surface">
-            <div className="mx-auto max-w-7xl px-4 py-12">
+        <footer className="relative overflow-hidden border-t border-border bg-surface">
+            {/* Blueprint grid texture */}
+            <div className="bg-grid pointer-events-none absolute inset-0 z-0 opacity-60" />
+            {/* Top signal rail */}
+            <div className="via-primary/60 absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />
+
+            <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 pt-12">
                 <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
                     {/* Brand */}
                     <Link href="/" className="group flex items-center gap-2.5">
-                        <div className="border-primary/40 bg-primary/10 flex h-10 w-10 items-center justify-center rounded-md border text-primary">
+                        <div className="border-primary/40 bg-primary/10 flex h-10 w-10 items-center justify-center rounded-md border text-primary transition-all duration-200 group-hover:shadow-glow">
                             <Zap className="h-6 w-6 fill-current" />
                         </div>
                         <span className="font-heading text-xl font-bold tracking-tight text-foreground">
@@ -31,6 +36,9 @@ export function Footer() {
                         </Link>
                         <Link href="/templates" className="transition-colors hover:text-primary">
                             Templates
+                        </Link>
+                        <Link href="/local-llm" className="transition-colors hover:text-primary">
+                            Local LLM Setup
                         </Link>
                     </nav>
 
@@ -65,8 +73,20 @@ export function Footer() {
                     </div>
                 </div>
 
+                {/* Big Text Overlay */}
+                <div className="pointer-events-none relative flex h-32 w-full select-none items-end justify-center overflow-hidden md:h-48">
+                    <h1
+                        className="font-heading text-[15vw] font-bold leading-[0.8] tracking-tighter text-transparent"
+                        style={{
+                            WebkitTextStroke: '1px var(--border-strong)',
+                        }}
+                    >
+                        CircuitForge
+                    </h1>
+                </div>
+
                 {/* Bottom Bar */}
-                <div className="mt-8 border-t border-border pt-6 font-mono text-xs text-text-muted">
+                <div className="border-t border-border pt-8 font-mono text-xs text-text-muted">
                     <p>© 2025 CircuitForge. All rights reserved.</p>
                 </div>
             </div>
