@@ -59,6 +59,21 @@ class ModelUnavailableError(LLMError):
         )
 
 
+class InvalidRequestError(LLMError):
+    """Provider rejected the request as malformed (HTTP 400).
+
+    Unlike ``ProviderUnavailableError`` (the provider is down), this means the
+    request itself was bad — so we carry the provider's own message through
+    instead of a generic "unavailable" string.
+    """
+    def __init__(self, provider: str, message: str | None = None):
+        super().__init__(
+            "INVALID_REQUEST",
+            message or f"{provider} rejected the request as invalid",
+            provider,
+        )
+
+
 class ProviderUnavailableError(LLMError):
     """Provider API is unavailable."""
     def __init__(self, provider: str, message: str | None = None):

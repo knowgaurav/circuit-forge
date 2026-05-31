@@ -40,6 +40,7 @@ from app.core.config import settings
 from .base import LLMProviderStrategy
 from .errors import (
     AuthenticationError,
+    InvalidRequestError,
     ProviderUnavailableError,
     RateLimitError,
 )
@@ -245,6 +246,13 @@ class GoogleStrategy(LLMProviderStrategy):
                     raise RateLimitError(self.provider_id)
                 elif response.status_code >= 500:
                     raise ProviderUnavailableError(self.provider_id)
+                elif response.status_code >= 400:
+                    # A 4xx other than auth/rate-limit means the request itself
+                    # was rejected. Surface Google's own message instead of a
+                    # generic "unavailable" so the cause is visible.
+                    raise InvalidRequestError(
+                        self.provider_id, self._extract_error_message(response)
+                    )
 
                 response.raise_for_status()
                 result = response.json()
@@ -310,7 +318,19 @@ class GoogleStrategy(LLMProviderStrategy):
                 raise AuthenticationError(self.provider_id)
             elif e.response.status_code == 429:
                 raise RateLimitError(self.provider_id)
+            elif 400 <= e.response.status_code < 500:
+                raise InvalidRequestError(
+                    self.provider_id, self._extract_error_message(e.response)
+                )
             raise ProviderUnavailableError(self.provider_id)
         except httpx.RequestError as e:
             logger.error(f"Request error to Google: {e}")
             raise ProviderUnavailableError(self.provider_id)
+
+    @staticmethod
+    def _extract_error_message(response: httpx.Response) -> str:
+        """Pull Google's ``error.message`` from a JSON error body, if present."""
+        try:
+            return response.json()["error"]["message"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return f"Google rejected the request (HTTP {response.status_code})"
