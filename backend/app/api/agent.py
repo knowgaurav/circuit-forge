@@ -38,7 +38,11 @@ from app.services.agent.course_session import (
 )
 from app.services.agent.framing import render_circuit_framing
 from app.services.agent.orchestrator import Orchestrator
-from app.services.agent.prompt import LevelContext, build_tutor_system_prompt
+from app.services.agent.prompt import (
+    LevelContext,
+    build_playground_system_prompt,
+    build_tutor_system_prompt,
+)
 from app.services.agent.schemas import TOOL_SCHEMAS
 from app.services.agent.tool_selection import select_tools
 from app.services.agent.tools import ToolDeps
@@ -317,6 +321,82 @@ async def agent_course_turn(
             context=context,
             trace_repo=trace_repo,
             allowed_tools=allowed,
+        )
+        events = await event_repo.get_events_since_seq(session_id, base_seq)
+        mutations = collect_mutations(events)
+    finally:
+        await discard_session(circuit_service, event_repo, session_id)
+
+    return CourseTurnResponse(
+        finalMessage=result.final_message,
+        mutations=mutations,
+        trace=result.trace,
+        tokensIn=result.tokens_in,
+        tokensOut=result.tokens_out,
+        iterations=result.iterations,
+        aborted=result.aborted,
+        abortReason=result.abort_reason,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Playground-turn endpoint (playground-ai-assistant)
+# ---------------------------------------------------------------------------
+
+
+class PlaygroundTurnRequest(BaseModel):
+    """``POST /api/agent/playground-turn`` request body.
+
+    The free-practice playground has no course or level, so the only context
+    is the learner's current board snapshot. The LLM provider/key/model arrive
+    per request and are never stored.
+    """
+
+    actor_id: str = Field(alias="actorId")
+    message: str
+    circuit: CircuitState
+    provider_id: str = Field(alias="providerId")
+    api_key: str = Field(alias="apiKey")
+    model: str
+
+    model_config = {"populate_by_name": True}
+
+
+@router.post("/agent/playground-turn", response_model=CourseTurnResponse)
+async def agent_playground_turn(
+    req: PlaygroundTurnRequest,
+    trace_repo: AgentTraceRepository = Depends(get_trace_repository),
+    orchestrator: Orchestrator = Depends(get_orchestrator),
+    circuit_service: CircuitService = Depends(get_circuit_service),
+    event_repo: EventRepository = Depends(get_event_repository),
+) -> CourseTurnResponse:
+    """Run one playground assistant turn against a session seeded from the board."""
+    system_prompt = build_playground_system_prompt(get_component_registry())
+
+    deps = ToolDeps(
+        circuit_service=circuit_service,
+        simulation_engine_factory=SimulationEngine,
+        component_registry=get_component_registry(),
+    )
+
+    session_id = await seed_session(circuit_service, req.circuit)
+    base_seq = await event_repo.get_latest_seq(session_id)
+    tools_registry = build_tool_registry(deps, session_id, req.actor_id)
+
+    try:
+        context = AgentContext(system_prompt)
+        framing = render_circuit_framing(req.circuit)
+        result = await orchestrator.run_turn(
+            session_id=session_id,
+            actor_id=req.actor_id,
+            message=f"{framing}\n\n{req.message}",
+            provider_id=req.provider_id,
+            api_key=req.api_key,
+            model=req.model,
+            tools_registry=tools_registry,
+            context=context,
+            trace_repo=trace_repo,
+            allowed_tools=set(TOOL_SCHEMAS),
         )
         events = await event_repo.get_events_since_seq(session_id, base_seq)
         mutations = collect_mutations(events)
