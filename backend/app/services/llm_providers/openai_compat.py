@@ -150,6 +150,17 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
                 response.raise_for_status()
                 result = response.json()
 
+                if "choices" not in result or not result["choices"]:
+                    # Some OpenAI-compatible providers return a 200 with an
+                    # error payload instead of `choices`. Surface that message
+                    # rather than crashing with a KeyError.
+                    err = result.get("error")
+                    detail = (
+                        err.get("message") if isinstance(err, dict) else err
+                    ) or "Provider returned no choices in the response."
+                    logger.error(f"No choices from {self.provider_id}: {result}")
+                    raise ProviderUnavailableError(self.provider_id, str(detail))
+
                 message = result["choices"][0]["message"]
                 usage = result.get("usage", {})
 

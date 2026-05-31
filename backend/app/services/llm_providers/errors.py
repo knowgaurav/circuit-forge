@@ -57,5 +57,9 @@ class ModelUnavailableError(LLMError):
 
 class ProviderUnavailableError(LLMError):
     """Provider API is unavailable."""
-    def __init__(self, provider: str):
-        super().__init__("PROVIDER_UNAVAILABLE", f"{provider} API is currently unavailable", provider)
+    def __init__(self, provider: str, message: str | None = None):
+        super().__init__(
+            "PROVIDER_UNAVAILABLE",
+            message or f"{provider} API is currently unavailable",
+            provider,
+        )

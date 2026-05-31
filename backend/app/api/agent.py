@@ -20,6 +20,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.api.courses._shared import handle_exception
 from app.core.database import db_manager
 from app.models.circuit import CircuitState
 from app.repositories.agent_trace_repository import AgentTraceRepository
@@ -400,6 +401,9 @@ async def agent_playground_turn(
         )
         events = await event_repo.get_events_since_seq(session_id, base_seq)
         mutations = collect_mutations(events)
+    except Exception as e:
+        handle_exception(e)
+        raise
     finally:
         await discard_session(circuit_service, event_repo, session_id)
 
