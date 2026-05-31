@@ -136,7 +136,11 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
                     retry_after = response.headers.get("retry-after")
                     error_body = response.text
                     logger.warning(f"Rate limit hit for {self.provider_id}: {error_body}")
-                    raise RateLimitError(self.provider_id, int(retry_after) if retry_after else None)
+                    raise RateLimitError(
+                        self.provider_id,
+                        int(retry_after) if retry_after else None,
+                        self._extract_error_message(response),
+                    )
                 elif response.status_code == 402:
                     raise QuotaExceededError(self.provider_id)
                 elif response.status_code == 403:
@@ -205,3 +209,25 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
         except httpx.RequestError as e:
             logger.error(f"Request error to {self.provider_id}: {e}")
             raise ProviderUnavailableError(self.provider_id)
+
+    @staticmethod
+    def _extract_error_message(response: httpx.Response) -> str | None:
+        """Pull the human-readable error out of an OpenAI-compatible error body.
+
+        OpenRouter nests the actionable detail under
+        ``error.metadata.raw`` (e.g. "model is temporarily rate-limited
+        upstream, retry shortly or add your own key"), with ``error.message``
+        as the fallback. Returns ``None`` if the body isn't the expected shape
+        so the caller keeps its default message.
+        """
+        try:
+            err = response.json().get("error")
+        except (json.JSONDecodeError, ValueError):
+            return None
+        if not isinstance(err, dict):
+            return err if isinstance(err, str) else None
+        metadata = err.get("metadata")
+        if isinstance(metadata, dict) and metadata.get("raw"):
+            return str(metadata["raw"])
+        message = err.get("message")
+        return str(message) if message else None

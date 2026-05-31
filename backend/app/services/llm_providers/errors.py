@@ -33,8 +33,12 @@ class AuthenticationError(LLMError):
 
 class RateLimitError(LLMError):
     """Rate limit exceeded."""
-    def __init__(self, provider: str, retry_after: int | None = None):
-        super().__init__("RATE_LIMITED", "Rate limit exceeded. Please wait and try again.", provider)
+    def __init__(self, provider: str, retry_after: int | None = None, message: str | None = None):
+        super().__init__(
+            "RATE_LIMITED",
+            message or "Rate limit exceeded. Please wait and try again.",
+            provider,
+        )
         self.retry_after = retry_after
 
 
