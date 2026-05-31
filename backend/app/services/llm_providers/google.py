@@ -71,7 +71,9 @@ class GoogleStrategy(LLMProviderStrategy):
         refreshes its own token when expired).
         """
         if self._credentials is None:
-            credentials, adc_project = google.auth.default(scopes=[_CLOUD_PLATFORM_SCOPE])
+            credentials, adc_project = google.auth.default(
+                scopes=[_CLOUD_PLATFORM_SCOPE]
+            )
             self._credentials = credentials
             self._project = settings.google_cloud_project or adc_project
 
@@ -103,7 +105,9 @@ class GoogleStrategy(LLMProviderStrategy):
         """Google uses ADC, not an API key, so any value is accepted."""
         return True, ""
 
-    def _inline_schema(self, schema: dict[str, Any], defs: dict[str, Any]) -> dict[str, Any]:
+    def _inline_schema(
+        self, schema: dict[str, Any], defs: dict[str, Any]
+    ) -> dict[str, Any]:
         """Inline ``$ref``/``$defs`` and drop keywords Vertex rejects.
 
         Pydantic's ``model_json_schema`` emits nested models as ``$ref`` into a
@@ -134,22 +138,34 @@ class GoogleStrategy(LLMProviderStrategy):
                 cleaned[key] = value
         return cleaned
 
-    def _convert_tools_to_google(self, tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _convert_tools_to_google(
+        self, tools: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Convert OpenAI tool format to Google function declarations."""
         function_declarations = []
         for tool in tools:
             if tool.get("type") == "function":
                 func = tool["function"]
-                parameters = func.get("parameters", {"type": "object", "properties": {}})
+                parameters = func.get(
+                    "parameters", {"type": "object", "properties": {}}
+                )
                 defs = parameters.get("$defs", {})
-                function_declarations.append({
-                    "name": func["name"],
-                    "description": func.get("description", ""),
-                    "parameters": self._inline_schema(parameters, defs),
-                })
-        return [{"functionDeclarations": function_declarations}] if function_declarations else []
+                function_declarations.append(
+                    {
+                        "name": func["name"],
+                        "description": func.get("description", ""),
+                        "parameters": self._inline_schema(parameters, defs),
+                    }
+                )
+        return (
+            [{"functionDeclarations": function_declarations}]
+            if function_declarations
+            else []
+        )
 
-    def _convert_messages_to_google(self, messages: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+    def _convert_messages_to_google(
+        self, messages: list[dict[str, Any]]
+    ) -> tuple[str, list[dict[str, Any]]]:
         """Convert OpenAI messages to Google format. Returns (system_instruction, contents)."""
         system_instruction = ""
         contents: list[dict[str, Any]] = []
@@ -170,7 +186,9 @@ class GoogleStrategy(LLMProviderStrategy):
                         part: dict[str, Any] = {
                             "functionCall": {
                                 "name": tc["function"]["name"],
-                                "args": json.loads(tc["function"]["arguments"]) if isinstance(tc["function"]["arguments"], str) else tc["function"]["arguments"],
+                                "args": json.loads(tc["function"]["arguments"])
+                                if isinstance(tc["function"]["arguments"], str)
+                                else tc["function"]["arguments"],
                             }
                         }
                         # Echo back the Gemini 3.x thought_signature captured on
@@ -193,8 +211,10 @@ class GoogleStrategy(LLMProviderStrategy):
                         "response": {"result": msg.get("content", "")},
                     }
                 }
-                if contents and contents[-1]["role"] == "user" and all(
-                    "functionResponse" in p for p in contents[-1]["parts"]
+                if (
+                    contents
+                    and contents[-1]["role"] == "user"
+                    and all("functionResponse" in p for p in contents[-1]["parts"])
                 ):
                     contents[-1]["parts"].append(response_part)
                 else:
@@ -202,7 +222,9 @@ class GoogleStrategy(LLMProviderStrategy):
 
         return system_instruction, contents
 
-    async def call(self, api_key: str, request: LLMRequest, location: str = "global") -> LLMResponse:
+    async def call(
+        self, api_key: str, request: LLMRequest, location: str = "global"
+    ) -> LLMResponse:
         """Make API call using Vertex AI generateContent with ADC auth.
 
         ``api_key`` is ignored; authentication uses Application Default
@@ -216,7 +238,9 @@ class GoogleStrategy(LLMProviderStrategy):
             "Authorization": f"Bearer {token}",
         }
 
-        system_instruction, contents = self._convert_messages_to_google(request.messages)
+        system_instruction, contents = self._convert_messages_to_google(
+            request.messages
+        )
 
         payload: dict[str, Any] = {
             "contents": contents,
@@ -271,7 +295,7 @@ class GoogleStrategy(LLMProviderStrategy):
                             try:
                                 content = json.loads(raw_content)
                             except json.JSONDecodeError:
-                                json_match = re.search(r'\{[\s\S]*\}', raw_content)
+                                json_match = re.search(r"\{[\s\S]*\}", raw_content)
                                 if json_match:
                                     try:
                                         content = json.loads(json_match.group())
@@ -285,7 +309,7 @@ class GoogleStrategy(LLMProviderStrategy):
                                 "function": {
                                     "name": fc["name"],
                                     "arguments": json.dumps(fc.get("args", {})),
-                                }
+                                },
                             }
                             # Gemini 3.x returns a thought_signature alongside
                             # each functionCall that MUST be echoed back on the
@@ -293,7 +317,9 @@ class GoogleStrategy(LLMProviderStrategy):
                             # Stash it on the tool_call so it round-trips
                             # through AgentContext untouched.
                             if "thoughtSignature" in part:
-                                tool_call["thought_signature"] = part["thoughtSignature"]
+                                tool_call["thought_signature"] = part[
+                                    "thoughtSignature"
+                                ]
                             tool_calls.append(tool_call)
 
                 # Google doesn't provide detailed token usage in the same way

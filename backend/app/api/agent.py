@@ -342,9 +342,7 @@ async def agent_course_turn(
             detail={"error": {"code": "NOT_FOUND", "message": "Level not found"}},
         )
 
-    content = await level_repo.get_by_course_and_level(
-        req.course_id, req.level_number
-    )
+    content = await level_repo.get_by_course_and_level(req.course_id, req.level_number)
     if content is None:
         raise HTTPException(
             status_code=404,

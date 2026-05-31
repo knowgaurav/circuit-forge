@@ -80,7 +80,11 @@ class LLMService(GenerationMixin, ToolCallMixin, BlueprintFixerMixin):
             try:
                 return await provider.verify_key(api_key)
             except AuthenticationError as e:
-                return {"success": False, "error": "authentication", "message": e.message}
+                return {
+                    "success": False,
+                    "error": "authentication",
+                    "message": e.message,
+                }
             except RateLimitError as e:
                 return {"success": False, "error": "rate_limit", "message": e.message}
             except ProviderUnavailableError as e:

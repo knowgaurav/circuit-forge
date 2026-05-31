@@ -51,14 +51,51 @@ def log_request(
         log_data["request_id"] = request_id
     print(json.dumps(log_data))
 
+
 # Common local LLM servers and their configurations
 LLM_SERVERS = [
-    {"name": "Ollama", "port": 11434, "models_path": "/api/tags", "key": "models", "name_field": "name"},
-    {"name": "LM Studio", "port": 1234, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "vLLM", "port": 8000, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "LocalAI", "port": 8080, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "Jan", "port": 1337, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "text-gen-webui", "port": 5000, "models_path": "/v1/models", "key": "data", "name_field": "id"},
+    {
+        "name": "Ollama",
+        "port": 11434,
+        "models_path": "/api/tags",
+        "key": "models",
+        "name_field": "name",
+    },
+    {
+        "name": "LM Studio",
+        "port": 1234,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "vLLM",
+        "port": 8000,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "LocalAI",
+        "port": 8080,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "Jan",
+        "port": 1337,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "text-gen-webui",
+        "port": 5000,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
 ]
 
 # Global state
@@ -94,7 +131,10 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Bridge-Token, X-Trace-ID, X-Request-ID")
+        self.send_header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, X-Bridge-Token, X-Trace-ID, X-Request-ID",
+        )
 
     def _proxy_request(self) -> None:
         start_time = time.perf_counter()
@@ -128,7 +168,9 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
             self.send_error(500, str(e))
         finally:
             duration_ms = (time.perf_counter() - start_time) * 1000
-            log_request(self.command, self.path, status, duration_ms, trace_id, request_id)
+            log_request(
+                self.command, self.path, status, duration_ms, trace_id, request_id
+            )
 
     def _relay_response(
         self,
@@ -150,7 +192,9 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
         pass  # Suppress default logging
 
 
-def check_server(port: int, models_path: str, key: str, name_field: str) -> list[str] | None:
+def check_server(
+    port: int, models_path: str, key: str, name_field: str
+) -> list[str] | None:
     """Check if an LLM server is running and return available models."""
     try:
         url = f"http://localhost:{port}{models_path}"
@@ -198,7 +242,9 @@ def print_install_instructions() -> None:
     print("Install cloudflared:")
     print("  macOS:   brew install cloudflared")
     print("  Windows: winget install Cloudflare.cloudflared")
-    print("  Linux:   See https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/")
+    print(
+        "  Linux:   See https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/"
+    )
     print()
 
 

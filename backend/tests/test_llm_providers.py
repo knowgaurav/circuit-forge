@@ -510,8 +510,16 @@ def test_google_groups_consecutive_tool_results_into_one_turn() -> None:
             "role": "assistant",
             "content": "",
             "tool_calls": [
-                {"id": "c1", "type": "function", "function": {"name": "add_component", "arguments": "{}"}},
-                {"id": "c2", "type": "function", "function": {"name": "add_component", "arguments": "{}"}},
+                {
+                    "id": "c1",
+                    "type": "function",
+                    "function": {"name": "add_component", "arguments": "{}"},
+                },
+                {
+                    "id": "c2",
+                    "type": "function",
+                    "function": {"name": "add_component", "arguments": "{}"},
+                },
             ],
         },
         {"role": "tool", "name": "add_component", "content": '{"component_id": "a"}'},
