@@ -4,8 +4,9 @@
  * **Feature: user-llm-api-keys**
  * **Validates: Requirements 2.5, 7.7, 7.8**
  *
- * - API key stored in session storage (cleared on tab close)
- * - Provider/model preferences stored in local storage (persisted)
+ * - Cloud API key + provider/model preferences persisted in local storage
+ *   (saved once, survives tab close).
+ * - Local LLM tunnel URL/token kept in session storage (ephemeral per CLI run).
  */
 
 import { create } from 'zustand';
@@ -14,7 +15,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { getDefaultModel } from '@/constants/llmProviders';
 
 interface LLMConfigState {
-    // Session storage (cleared on tab close) - managed separately
+    // Local storage (persisted, saved once)
     apiKey: string | null;
 
     // Local LLM specific (session storage)
@@ -55,25 +56,8 @@ export interface LLMConfig {
     location?: string;
 }
 
-const SESSION_KEY = 'llm-api-key';
 const SESSION_BASE_URL_KEY = 'llm-base-url';
 const SESSION_TOKEN_KEY = 'llm-bridge-token';
-
-// Session storage helpers
-const getSessionApiKey = (): string | null => {
-    if (typeof window === 'undefined') return null;
-    return sessionStorage.getItem(SESSION_KEY);
-};
-
-const setSessionApiKey = (key: string): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.setItem(SESSION_KEY, key);
-};
-
-const clearSessionApiKey = (): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.removeItem(SESSION_KEY);
-};
 
 // Local LLM session storage helpers
 const getSessionBaseUrl = (): string | null => {
@@ -105,7 +89,7 @@ const clearLocalSessionData = (): void => {
 export const useLLMConfigStore = create<LLMConfigState>()(
     persist(
         (set, get) => ({
-            // API key is managed via session storage, not persisted
+            // API key persisted in local storage (saved once)
             apiKey: null,
 
             // Local LLM specific (session storage)
@@ -120,12 +104,10 @@ export const useLLMConfigStore = create<LLMConfigState>()(
             location: 'global',
 
             setApiKey: (key: string) => {
-                setSessionApiKey(key);
                 set({ apiKey: key });
             },
 
             clearApiKey: () => {
-                clearSessionApiKey();
                 set({ apiKey: null });
             },
 
@@ -164,7 +146,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
                     const token = state.bridgeToken || getSessionBridgeToken();
                     return !!(baseUrl && token && state.model);
                 } else {
-                    const apiKey = state.apiKey || getSessionApiKey();
+                    const apiKey = state.apiKey;
                     return !!(apiKey && state.provider && state.model);
                 }
             },
@@ -187,7 +169,7 @@ export const useLLMConfigStore = create<LLMConfigState>()(
                         bridgeToken: token,
                     };
                 } else {
-                    const apiKey = state.apiKey || getSessionApiKey();
+                    const apiKey = state.apiKey;
                     if (!apiKey || !state.provider || !state.model) return null;
                     return {
                         provider: state.provider,
@@ -203,8 +185,10 @@ export const useLLMConfigStore = create<LLMConfigState>()(
         {
             name: 'llm-config',
             storage: createJSONStorage(() => localStorage),
-            // Only persist preferences, not the API key
+            // Persist preferences and the cloud API key (saved once). Local LLM
+            // tunnel URL/token stay in session storage (ephemeral per CLI run).
             partialize: (state) => ({
+                apiKey: state.apiKey,
                 provider: state.provider,
                 model: state.model,
                 temperature: state.temperature,
