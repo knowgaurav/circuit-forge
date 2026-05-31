@@ -151,7 +151,7 @@ class GoogleStrategy(LLMProviderStrategy):
     def _convert_messages_to_google(self, messages: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
         """Convert OpenAI messages to Google format. Returns (system_instruction, contents)."""
         system_instruction = ""
-        contents = []
+        contents: list[dict[str, Any]] = []
 
         for msg in messages:
             role = msg.get("role")
@@ -181,16 +181,23 @@ class GoogleStrategy(LLMProviderStrategy):
                 else:
                     contents.append({"role": "model", "parts": [{"text": content}]})
             elif role == "tool":
-                # Tool results in Google format
-                contents.append({
-                    "role": "user",
-                    "parts": [{
-                        "functionResponse": {
-                            "name": msg.get("name", "function"),
-                            "response": {"result": msg.get("content", "")},
-                        }
-                    }]
-                })
+                # Gemini requires the number of functionResponse parts in a turn
+                # to equal the number of functionCall parts in the preceding
+                # model turn. OpenAI emits one `tool` message per result, so we
+                # merge consecutive tool results into the same user turn rather
+                # than starting a new turn for each.
+                response_part = {
+                    "functionResponse": {
+                        "name": msg.get("name", "function"),
+                        "response": {"result": msg.get("content", "")},
+                    }
+                }
+                if contents and contents[-1]["role"] == "user" and all(
+                    "functionResponse" in p for p in contents[-1]["parts"]
+                ):
+                    contents[-1]["parts"].append(response_part)
+                else:
+                    contents.append({"role": "user", "parts": [response_part]})
 
         return system_instruction, contents
 

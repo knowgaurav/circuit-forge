@@ -451,3 +451,102 @@ def test_all_providers_are_supported() -> None:
 
     for provider in required_providers:
         assert provider in supported, f"Provider {provider} should be supported"
+
+
+def test_google_tool_conversion_inlines_refs() -> None:
+    """Nested-model schemas ($ref/$defs) are inlined; Vertex rejects $ref."""
+    strategy = GoogleStrategy()
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "add_component",
+                "description": "add",
+                "parameters": {
+                    "type": "object",
+                    "$defs": {
+                        "Position": {
+                            "type": "object",
+                            "title": "Position",
+                            "properties": {
+                                "x": {"type": "number", "title": "X"},
+                                "y": {"type": "number"},
+                            },
+                        }
+                    },
+                    "properties": {
+                        "label": {"type": "string", "title": "Label"},
+                        "position": {"$ref": "#/$defs/Position"},
+                    },
+                },
+            },
+        }
+    ]
+
+    result = strategy._convert_tools_to_google(tools)
+
+    import json as _json
+
+    blob = _json.dumps(result)
+    assert "$ref" not in blob
+    assert "$defs" not in blob
+    assert "title" not in blob
+    params = result[0]["functionDeclarations"][0]["parameters"]
+    # Position is inlined as an object with its own properties.
+    assert params["properties"]["position"]["type"] == "object"
+    assert set(params["properties"]["position"]["properties"]) == {"x", "y"}
+
+
+def test_google_groups_consecutive_tool_results_into_one_turn() -> None:
+    """Multiple tool results map to one user turn with matching functionResponse count.
+
+    Gemini requires the number of functionResponse parts to equal the number
+    of functionCall parts in the preceding model turn.
+    """
+    strategy = GoogleStrategy()
+    messages = [
+        {"role": "user", "content": "build it"},
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {"id": "c1", "type": "function", "function": {"name": "add_component", "arguments": "{}"}},
+                {"id": "c2", "type": "function", "function": {"name": "add_component", "arguments": "{}"}},
+            ],
+        },
+        {"role": "tool", "name": "add_component", "content": '{"component_id": "a"}'},
+        {"role": "tool", "name": "add_component", "content": '{"component_id": "b"}'},
+    ]
+
+    _system, contents = strategy._convert_messages_to_google(messages)
+
+    # model turn with 2 functionCall parts, then ONE user turn with 2 responses.
+    model_turn = contents[1]
+    tool_turn = contents[2]
+    assert len(model_turn["parts"]) == 2
+    assert tool_turn["role"] == "user"
+    assert len(tool_turn["parts"]) == 2
+    assert all("functionResponse" in p for p in tool_turn["parts"])
+
+
+def test_google_round_trips_thought_signature() -> None:
+    """A captured thought_signature is echoed back on the model functionCall part."""
+    strategy = GoogleStrategy()
+    messages = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "c1",
+                    "type": "function",
+                    "function": {"name": "add_component", "arguments": "{}"},
+                    "thought_signature": "SIG123",
+                }
+            ],
+        },
+    ]
+
+    _system, contents = strategy._convert_messages_to_google(messages)
+
+    assert contents[0]["parts"][0]["thoughtSignature"] == "SIG123"
