@@ -72,19 +72,21 @@ export function Footer() {
                         </a>
                     </div>
                 </div>
+            </div>
 
-                {/* Big Text Overlay */}
-                <div className="pointer-events-none relative my-10 flex h-32 w-full select-none items-end justify-end overflow-hidden md:my-16 md:h-48">
-                    <h1
-                        className="font-heading text-[15vw] font-bold leading-none tracking-tighter text-transparent"
-                        style={{
-                            WebkitTextStroke: '1px var(--border-strong)',
-                        }}
-                    >
-                        CircuitForge
-                    </h1>
-                </div>
+            {/* Big Text Overlay (full-bleed) */}
+            <div className="pointer-events-none relative z-10 my-10 flex w-full select-none items-end justify-center md:my-16">
+                <h1
+                    className="font-heading text-[14vw] font-bold leading-none tracking-tighter text-transparent"
+                    style={{
+                        WebkitTextStroke: '1px var(--border-strong)',
+                    }}
+                >
+                    CircuitForge
+                </h1>
+            </div>
 
+            <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10">
                 {/* Bottom Bar */}
                 <div className="border-t border-border pt-8 font-mono text-xs text-text-muted">
                     <p>© 2025 CircuitForge. All rights reserved.</p>
