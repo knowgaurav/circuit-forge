@@ -74,6 +74,35 @@ def _guard_chat_message(message: str) -> None:
         )
 
 
+# How many prior chat messages to replay into the agent context. The context
+# itself caps retained turns (K=8); this bounds the request payload too.
+MAX_HISTORY_MESSAGES = 16
+
+
+class ChatMessage(BaseModel):
+    """One prior chat turn replayed into the agent context."""
+
+    role: Literal["user", "assistant"]
+    text: str
+
+
+def _seed_history(context: AgentContext, history: list[ChatMessage]) -> None:
+    """Replay prior chat turns into the context before the current message.
+
+    Pairs each user message with the assistant reply that followed it so the
+    model sees the dialogue, not just the latest line. Only the most recent
+    ``MAX_HISTORY_MESSAGES`` are used; the context's sliding window bounds it
+    further. Tool calls are not replayed — only the user/assistant text.
+    """
+    recent = history[-MAX_HISTORY_MESSAGES:]
+    for msg in recent:
+        if msg.role == "user":
+            context.add_user(msg.text)
+        elif context.turns:
+            # Only attach an assistant reply if a user turn is open.
+            context.add_assistant(msg.text, tool_calls=[])
+
+
 SYSTEM_PROMPT = (
     "You are a circuit-design assistant for CircuitForge. You have a small "
     "set of tools that read and modify the current session's circuit. "
@@ -213,6 +242,7 @@ class CourseTurnRequest(BaseModel):
     provider_id: str = Field(alias="providerId")
     api_key: str = Field(alias="apiKey")
     model: str
+    history: list[ChatMessage] = Field(default_factory=list)
 
     model_config = {"populate_by_name": True}
 
@@ -342,6 +372,7 @@ async def agent_course_turn(
 
     try:
         context = AgentContext(system_prompt)
+        _seed_history(context, req.history)
         framing = render_circuit_framing(req.circuit)
         result = await orchestrator.run_turn(
             session_id=session_id,
@@ -391,6 +422,7 @@ class PlaygroundTurnRequest(BaseModel):
     provider_id: str = Field(alias="providerId")
     api_key: str = Field(alias="apiKey")
     model: str
+    history: list[ChatMessage] = Field(default_factory=list)
 
     model_config = {"populate_by_name": True}
 
@@ -425,6 +457,7 @@ async def agent_playground_turn(
 
     try:
         context = AgentContext(system_prompt)
+        _seed_history(context, req.history)
         framing = render_circuit_framing(req.circuit)
         result = await orchestrator.run_turn(
             session_id=session_id,

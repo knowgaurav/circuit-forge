@@ -303,7 +303,8 @@ class ApiClient {
         message: string,
         circuit: CircuitState,
         actorId: string,
-        llmConfig: LLMConfig
+        llmConfig: LLMConfig,
+        history: { role: 'user' | 'assistant'; text: string }[] = []
     ): Promise<CourseTurnResponse> {
         // The backend addresses pins by component label, which it reads from
         // `properties.label`. Mirror the top-level `label` into properties so
@@ -328,6 +329,7 @@ class ApiClient {
                 providerId: llmConfig.provider,
                 apiKey: llmConfig.apiKey,
                 model: llmConfig.model,
+                history,
             }),
         });
     }
@@ -337,7 +339,8 @@ class ApiClient {
         message: string,
         circuit: CircuitState,
         actorId: string,
-        llmConfig: LLMConfig
+        llmConfig: LLMConfig,
+        history: { role: 'user' | 'assistant'; text: string }[] = []
     ): Promise<CourseTurnResponse> {
         // The backend addresses pins by component label, which it reads from
         // `properties.label`. Mirror the top-level `label` into properties so
@@ -359,6 +362,7 @@ class ApiClient {
                 providerId: llmConfig.provider,
                 apiKey: llmConfig.apiKey,
                 model: llmConfig.model,
+                history,
             }),
         });
     }

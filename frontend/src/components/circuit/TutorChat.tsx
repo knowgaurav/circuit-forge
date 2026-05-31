@@ -96,6 +96,9 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
 
         setInput('');
         setNotice(null);
+        // Snapshot prior turns before adding the new message so the tutor sees
+        // the conversation, not just the latest line.
+        const history = messages.map((m) => ({ role: m.role, text: m.text }));
         chatStore.appendMessage(key, { role: 'user', text });
         chatStore.setPending(true);
 
@@ -117,7 +120,8 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
                 text,
                 circuit,
                 actorId,
-                config
+                config,
+                history
             );
             applyMutations(result.mutations, circuitStore);
             chatStore.appendMessage(key, {
@@ -138,7 +142,18 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
         } finally {
             chatStore.setPending(false);
         }
-    }, [input, pending, llmStore, chatStore, key, circuitStore, courseId, levelNumber, mode]);
+    }, [
+        input,
+        pending,
+        llmStore,
+        chatStore,
+        key,
+        messages,
+        circuitStore,
+        courseId,
+        levelNumber,
+        mode,
+    ]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {

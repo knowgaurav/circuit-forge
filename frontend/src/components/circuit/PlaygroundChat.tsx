@@ -51,6 +51,9 @@ export function PlaygroundChat({ onClose, messages, setMessages }: PlaygroundCha
 
         setInput('');
         setNotice(null);
+        // Snapshot prior turns (excluding the message we're about to add) so the
+        // assistant has conversational context, not just the latest line.
+        const history = messages.map((m) => ({ role: m.role, text: m.text }));
         setMessages((prev) => [...prev, { role: 'user', text }]);
         setPending(true);
 
@@ -69,7 +72,8 @@ export function PlaygroundChat({ onClose, messages, setMessages }: PlaygroundCha
                 text,
                 circuit,
                 PLAYGROUND_ACTOR_ID,
-                config
+                config,
+                history
             );
             applyMutations(result.mutations, circuitStore);
             setMessages((prev) => [
@@ -93,7 +97,7 @@ export function PlaygroundChat({ onClose, messages, setMessages }: PlaygroundCha
         } finally {
             setPending(false);
         }
-    }, [input, pending, llmStore, circuitStore, setMessages]);
+    }, [input, pending, llmStore, circuitStore, messages, setMessages]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
