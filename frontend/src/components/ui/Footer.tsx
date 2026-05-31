@@ -74,9 +74,9 @@ export function Footer() {
                 </div>
 
                 {/* Big Text Overlay */}
-                <div className="pointer-events-none relative my-10 flex h-32 w-full select-none items-end justify-center overflow-hidden md:my-16 md:h-48">
+                <div className="pointer-events-none relative my-10 flex h-32 w-full select-none items-end justify-end overflow-hidden md:my-16 md:h-48">
                     <h1
-                        className="font-heading text-[15vw] font-bold leading-[0.8] tracking-tighter text-transparent"
+                        className="font-heading text-[15vw] font-bold leading-none tracking-tighter text-transparent"
                         style={{
                             WebkitTextStroke: '1px var(--border-strong)',
                         }}
