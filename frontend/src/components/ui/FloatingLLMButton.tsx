@@ -34,15 +34,11 @@ export function FloatingLLMButton() {
                     isConfigured ? `${provider?.name || 'AI'} configured` : 'Configure AI Provider'
                 }
             >
-                {isConfigured ? (
-                    <div className="relative">
-                        <Key className="h-6 w-6" />
-                        <div className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-surface">
-                            <Check className="h-2 w-2 text-success" />
-                        </div>
-                    </div>
-                ) : (
-                    <Key className="h-6 w-6" />
+                <Key className="h-6 w-6" />
+                {isConfigured && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-surface ring-2 ring-success">
+                        <Check className="h-3 w-3 text-success" />
+                    </span>
                 )}
 
                 {/* Tooltip */}
