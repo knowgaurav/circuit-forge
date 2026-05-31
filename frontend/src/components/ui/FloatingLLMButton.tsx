@@ -30,10 +30,10 @@ export function FloatingLLMButton() {
                     isConfigured ? `${provider?.name || 'AI'} configured` : 'Configure AI Provider'
                 }
             >
-                <Key className={`h-6 w-6 ${isConfigured ? 'text-success' : ''}`} />
+                <Key className="h-6 w-6" />
                 {isConfigured && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-surface ring-2 ring-success">
-                        <Check className="h-3 w-3 text-success" />
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-success ring-2 ring-primary">
+                        <Check className="h-2.5 w-2.5 text-success-foreground" />
                     </span>
                 )}
 
