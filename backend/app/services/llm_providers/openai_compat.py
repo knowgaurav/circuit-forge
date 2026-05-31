@@ -60,6 +60,34 @@ class OpenAICompatibleStrategy(LLMProviderStrategy):
             return False, f"API key for {self.provider_id} should start with '{self.key_prefix}'"
         return True, ""
 
+    async def verify_key(self, api_key: str) -> dict[str, Any]:
+        """Verify an OpenRouter key via the dedicated key endpoint.
+
+        OpenRouter's free models are capped at a handful of requests per minute
+        and per day, so testing a key by sending a chat completion burns that
+        quota and returns 429 even for valid keys. The ``GET /api/v1/key``
+        endpoint checks the key (and its limits) without consuming that quota.
+        """
+        key_url = self.base_url.replace("/chat/completions", "/key")
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(
+                    key_url,
+                    headers={"Authorization": f"Bearer {api_key}"},
+                )
+
+            if response.status_code in (401, 403):
+                raise AuthenticationError(self.provider_id)
+            if response.status_code == 429:
+                raise RateLimitError(self.provider_id)
+            if response.status_code >= 500:
+                raise ProviderUnavailableError(self.provider_id)
+            response.raise_for_status()
+            return {"success": True, "message": "Connection successful", "token_usage": 0}
+        except httpx.RequestError as e:
+            logger.error(f"Request error to {self.provider_id}: {e}")
+            raise ProviderUnavailableError(self.provider_id)
+
     async def call(self, api_key: str, request: LLMRequest) -> LLMResponse:
         """Make API call using OpenAI chat completions format."""
         headers = {
