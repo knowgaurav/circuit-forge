@@ -26,6 +26,7 @@ import {
     X,
     UserMinus,
     ShieldOff,
+    AlertTriangle,
 } from 'lucide-react';
 
 import { Canvas, SimulationOverlay } from '@/components/circuit';
@@ -47,7 +48,7 @@ import {
 } from '@/components/ui';
 
 import { createComponentInstance } from '@/constants/components';
-import { useCloseGuard, useSessionRecovery } from '@/hooks';
+import { useActiveSessionGuard, useCloseGuard, useSessionRecovery } from '@/hooks';
 import { api } from '@/services/api';
 import { exportAsPng, exportAsJson, importFromJson } from '@/services/export';
 import { WebSocketClient } from '@/services/websocket';
@@ -92,6 +93,10 @@ export default function SessionPage() {
 
     // Session recovery hook
     const { saveSession } = useSessionRecovery();
+
+    // Single-session-per-browser guard: blocks entering a different session in
+    // another tab while one is already active.
+    const { isChecked: guardChecked, blockedBy } = useActiveSessionGuard(code);
 
     // Zoom presets
     const ZOOM_PRESETS = [25, 50, 75, 100, 125, 150, 200, 300, 400];
@@ -348,6 +353,15 @@ export default function SessionPage() {
 
     // Initialize session
     useEffect(() => {
+        // Wait for the single-session guard to decide before doing anything.
+        if (!guardChecked) return undefined;
+
+        // Blocked: another session is already active in this browser.
+        if (blockedBy) {
+            setIsLoading(false);
+            return undefined;
+        }
+
         const initSession = async () => {
             try {
                 // Check if session exists
@@ -396,7 +410,7 @@ export default function SessionPage() {
             sessionStore.reset();
             uiStore.reset();
         };
-    }, [code]);
+    }, [code, guardChecked, blockedBy]);
 
     const connectWebSocket = (participantId: string) => {
         const client = new WebSocketClient({
@@ -555,12 +569,12 @@ export default function SessionPage() {
     };
 
     const handleLeave = () => {
-        // Check if we need to show confirmation modal (teacher with students)
-        const studentCount = sessionStore.participants.filter(
-            (p: Participant) => p.role === 'student' && p.isActive
-        ).length;
-
-        if (sessionStore.currentParticipant?.role === 'teacher' && studentCount > 0) {
+        // Teachers/creators always confirm before leaving: closing the session
+        // terminates it for everyone, so make that explicit even with no students.
+        if (sessionStore.currentParticipant?.role === 'teacher') {
+            const studentCount = sessionStore.participants.filter(
+                (p: Participant) => p.role === 'student' && p.isActive
+            ).length;
             setLeaveModalStudentCount(studentCount);
             setShowLeaveModal(true);
             return;
@@ -732,6 +746,43 @@ export default function SessionPage() {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background">
                 <Spinner size="lg" />
+            </div>
+        );
+    }
+
+    // Blocked: this browser is already in a different session in another tab.
+    if (blockedBy) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-background px-4">
+                <div className="border-warning/30 w-full max-w-md rounded-2xl border bg-surface p-8 text-center shadow-glass">
+                    <div className="bg-warning/15 mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full">
+                        <AlertTriangle className="h-6 w-6 text-warning" />
+                    </div>
+                    <h1 className="mb-2 font-heading text-xl font-semibold text-foreground">
+                        You&apos;re already in a session
+                    </h1>
+                    <p className="mb-6 text-sm text-text-muted">
+                        This browser is already connected to session{' '}
+                        <span className="font-mono text-foreground">{blockedBy}</span> in another
+                        tab. Leave that session before joining a new one.
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        <Button
+                            variant="primary"
+                            onClick={() => router.push(`/session/${blockedBy}`)}
+                            className="w-full"
+                        >
+                            Go to active session
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={() => router.push('/')}
+                            className="w-full"
+                        >
+                            Back to home
+                        </Button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -1361,6 +1412,7 @@ export default function SessionPage() {
             <LeaveConfirmModal
                 isOpen={showLeaveModal}
                 studentCount={leaveModalStudentCount}
+                isTeacher={isTeacher}
                 onStay={handleCancelLeave}
                 onLeave={handleConfirmLeave}
                 {...(isTeacher && { onCloseSession: handleCloseSession })}

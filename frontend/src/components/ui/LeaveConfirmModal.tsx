@@ -8,6 +8,7 @@ import { Modal } from './Modal';
 export interface LeaveConfirmModalProps {
     isOpen: boolean;
     studentCount: number;
+    isTeacher: boolean;
     onStay: () => void;
     onLeave: () => void;
     onCloseSession?: (() => void | Promise<void>) | undefined;
@@ -16,10 +17,16 @@ export interface LeaveConfirmModalProps {
 export function LeaveConfirmModal({
     isOpen,
     studentCount,
+    isTeacher,
     onStay,
     onLeave,
     onCloseSession,
 }: LeaveConfirmModalProps) {
+    const connectedLabel =
+        studentCount === 1
+            ? '1 student is still connected'
+            : `${studentCount} students are still connected`;
+
     return (
         <Modal isOpen={isOpen} onClose={onStay} title="Leave Session?" size="sm">
             <div className="space-y-4">
@@ -28,15 +35,26 @@ export function LeaveConfirmModal({
                         <AlertTriangle className="h-5 w-5 text-warning" />
                     </div>
                     <div>
-                        <p className="font-medium text-foreground">
-                            {studentCount === 1
-                                ? '1 student is still connected'
-                                : `${studentCount} students are still connected`}
-                        </p>
-                        <p className="mt-1 text-sm text-text-muted">
-                            Leaving will disconnect you but keep the session active. Closing will
-                            end the session for everyone.
-                        </p>
+                        {isTeacher ? (
+                            <>
+                                <p className="font-medium text-foreground">
+                                    You created this session
+                                </p>
+                                <p className="mt-1 text-sm text-text-muted">
+                                    {studentCount > 0 ? `${connectedLabel}. ` : ''}
+                                    Closing the session will end it and disconnect everyone. Leaving
+                                    keeps the session running for participants.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="font-medium text-foreground">{connectedLabel}</p>
+                                <p className="mt-1 text-sm text-text-muted">
+                                    Leaving will disconnect you but keep the session active for
+                                    everyone else.
+                                </p>
+                            </>
+                        )}
                     </div>
                 </div>
 
