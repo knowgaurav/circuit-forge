@@ -102,16 +102,49 @@ class GoogleStrategy(LLMProviderStrategy):
         """Google uses ADC, not an API key, so any value is accepted."""
         return True, ""
 
+    def _inline_schema(self, schema: dict[str, Any], defs: dict[str, Any]) -> dict[str, Any]:
+        """Inline ``$ref``/``$defs`` and drop keywords Vertex rejects.
+
+        Pydantic's ``model_json_schema`` emits nested models as ``$ref`` into a
+        top-level ``$defs`` table, plus ``title`` annotations. Vertex AI's
+        ``functionDeclarations`` only accepts a restricted OpenAPI subset and
+        400s on ``$defs``/``$ref``/``title``. This resolves refs against the
+        defs table and strips the unsupported keys, recursively.
+        """
+        if "$ref" in schema:
+            ref_name = schema["$ref"].split("/")[-1]
+            resolved = defs.get(ref_name, {})
+            return self._inline_schema(resolved, defs)
+
+        cleaned: dict[str, Any] = {}
+        for key, value in schema.items():
+            if key in ("$defs", "title"):
+                continue
+            if key == "properties" and isinstance(value, dict):
+                cleaned[key] = {
+                    prop: self._inline_schema(prop_schema, defs)
+                    for prop, prop_schema in value.items()
+                }
+            elif key == "items" and isinstance(value, dict):
+                cleaned[key] = self._inline_schema(value, defs)
+            elif key in ("anyOf", "allOf", "oneOf") and isinstance(value, list):
+                cleaned[key] = [self._inline_schema(item, defs) for item in value]
+            else:
+                cleaned[key] = value
+        return cleaned
+
     def _convert_tools_to_google(self, tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Convert OpenAI tool format to Google function declarations."""
         function_declarations = []
         for tool in tools:
             if tool.get("type") == "function":
                 func = tool["function"]
+                parameters = func.get("parameters", {"type": "object", "properties": {}})
+                defs = parameters.get("$defs", {})
                 function_declarations.append({
                     "name": func["name"],
                     "description": func.get("description", ""),
-                    "parameters": func.get("parameters", {"type": "object", "properties": {}}),
+                    "parameters": self._inline_schema(parameters, defs),
                 })
         return [{"functionDeclarations": function_declarations}] if function_declarations else []
 
@@ -133,12 +166,17 @@ class GoogleStrategy(LLMProviderStrategy):
                     # Convert tool calls to Google format
                     parts = []
                     for tc in msg["tool_calls"]:
-                        parts.append({
+                        part: dict[str, Any] = {
                             "functionCall": {
                                 "name": tc["function"]["name"],
                                 "args": json.loads(tc["function"]["arguments"]) if isinstance(tc["function"]["arguments"], str) else tc["function"]["arguments"],
                             }
-                        })
+                        }
+                        # Echo back the Gemini 3.x thought_signature captured on
+                        # the original response; required or the API 400s.
+                        if tc.get("thought_signature"):
+                            part["thoughtSignature"] = tc["thought_signature"]
+                        parts.append(part)
                     contents.append({"role": "model", "parts": parts})
                 else:
                     contents.append({"role": "model", "parts": [{"text": content}]})
@@ -226,14 +264,22 @@ class GoogleStrategy(LLMProviderStrategy):
                                         pass
                         elif "functionCall" in part:
                             fc = part["functionCall"]
-                            tool_calls.append({
+                            tool_call: dict[str, Any] = {
                                 "id": f"call_{fc['name']}",
                                 "type": "function",
                                 "function": {
                                     "name": fc["name"],
                                     "arguments": json.dumps(fc.get("args", {})),
                                 }
-                            })
+                            }
+                            # Gemini 3.x returns a thought_signature alongside
+                            # each functionCall that MUST be echoed back on the
+                            # next turn, or the API rejects the request (400).
+                            # Stash it on the tool_call so it round-trips
+                            # through AgentContext untouched.
+                            if "thoughtSignature" in part:
+                                tool_call["thought_signature"] = part["thoughtSignature"]
+                            tool_calls.append(tool_call)
 
                 # Google doesn't provide detailed token usage in the same way
                 usage = result.get("usageMetadata", {})
