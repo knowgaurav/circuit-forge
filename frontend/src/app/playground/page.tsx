@@ -712,7 +712,7 @@ export default function PlaygroundPage() {
 
                 {/* Right Sidebar - AI Assistant */}
                 <div
-                    className={`relative z-30 flex-shrink-0 overflow-hidden ${isResizing ? '' : 'transition-all duration-200'}`}
+                    className={`relative z-50 flex-shrink-0 overflow-hidden ${isResizing ? '' : 'transition-all duration-200'}`}
                     style={{ width: showAssistant ? rightSidebarWidth : 0 }}
                 >
                     {showAssistant && (
