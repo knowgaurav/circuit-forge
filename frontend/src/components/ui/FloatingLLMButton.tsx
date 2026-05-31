@@ -32,7 +32,7 @@ export function FloatingLLMButton() {
             >
                 <Key className="h-6 w-6" />
                 {isConfigured && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-success ring-2 ring-primary">
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-success ring-2 ring-background">
                         <Check className="h-2.5 w-2.5 text-success-foreground" />
                     </span>
                 )}
