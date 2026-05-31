@@ -1,4 +1,4 @@
-"""Google Gemini provider (Vertex AI in express mode).
+"""Google Gemini provider (Vertex AI) authenticated with ADC.
 
 Why this module exists separately
 ---------------------------------
@@ -10,16 +10,20 @@ translates to and from the common shape:
 * The system prompt is a top-level ``systemInstruction``.
 * Tools are ``functionDeclarations``; tool calls come back as
   ``functionCall`` parts and results go back as ``functionResponse`` parts.
-* The express-mode API key goes in the ``x-goog-api-key`` header.
 
-This targets the **Vertex AI** ``generateContent`` endpoint using an express
-mode API key (not the AI Studio ``generativelanguage.googleapis.com``
-endpoint). The user supplies a ``location``: it selects the regional host
-``{location}-aiplatform.googleapis.com``; when it is empty or ``"global"`` the
-global host ``aiplatform.googleapis.com`` is used instead.
+Authentication
+--------------
+Vertex AI's ``generateContent`` endpoint does not accept API keys; it requires
+an OAuth2 access token. This strategy uses **Application Default Credentials**
+(ADC) — the same credentials ``gcloud auth application-default login`` sets up
+— so all calls are billed to the configured Google Cloud project. The
+``api_key`` argument is kept for interface compatibility but is ignored.
 
-As with the other providers, tool calls are normalized back to OpenAI shape
-in the returned :class:`LLMResponse`.
+The endpoint is the project-scoped Vertex path
+``https://{host}/v1/projects/{project}/locations/{location}/publishers/google/models/{model}:generateContent``.
+The ``location`` selects the regional host ``{location}-aiplatform.googleapis.com``;
+when it is empty or ``"global"`` the global host ``aiplatform.googleapis.com``
+is used (with ``locations/global`` in the path).
 """
 
 import json
@@ -27,7 +31,11 @@ import logging
 import re
 from typing import Any
 
+import google.auth
+import google.auth.transport.requests
 import httpx
+
+from app.core.config import settings
 
 from .base import LLMProviderStrategy
 from .errors import (
@@ -39,36 +47,59 @@ from .types import LLMRequest, LLMResponse
 
 logger = logging.getLogger(__name__)
 
+# Scope required to call Vertex AI / Agent Platform endpoints.
+_CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
+
 
 class GoogleStrategy(LLMProviderStrategy):
-    """Strategy for the Google Gemini API on Vertex AI (express mode)."""
+    """Strategy for Google Gemini on Vertex AI, authenticated via ADC."""
 
     provider_id = "google"
     GLOBAL_HOST = "aiplatform.googleapis.com"
 
-    def _build_url(self, model: str, location: str) -> str:
-        """Build the Vertex AI generateContent URL for the given location.
+    def __init__(self) -> None:
+        # Cache ADC credentials and the resolved project across calls; the
+        # credentials object refreshes its own short-lived token in place.
+        self._credentials: google.auth.credentials.Credentials | None = None
+        self._project: str | None = None
+
+    def _get_token_and_project(self) -> tuple[str, str]:
+        """Return a fresh access token and the Cloud project for the request.
+
+        Uses ADC the first time, then reuses the credentials object (which
+        refreshes its own token when expired).
+        """
+        if self._credentials is None:
+            credentials, adc_project = google.auth.default(scopes=[_CLOUD_PLATFORM_SCOPE])
+            self._credentials = credentials
+            self._project = settings.google_cloud_project or adc_project
+
+        request = google.auth.transport.requests.Request()
+        self._credentials.refresh(request)
+
+        if not self._project:
+            raise ProviderUnavailableError(self.provider_id)
+
+        return self._credentials.token, self._project
+
+    def _build_url(self, model: str, location: str, project: str) -> str:
+        """Build the project-scoped Vertex AI generateContent URL.
 
         An empty location or ``"global"`` uses the global host; any other
         value selects the matching regional host.
         """
-        location = location.strip().lower()
-        if location and location != "global":
+        location = location.strip().lower() or "global"
+        if location != "global":
             host = f"{location}-{self.GLOBAL_HOST}"
         else:
             host = self.GLOBAL_HOST
-        return f"https://{host}/v1/publishers/google/models/{model}:generateContent"
+        return (
+            f"https://{host}/v1/projects/{project}/locations/{location}"
+            f"/publishers/google/models/{model}:generateContent"
+        )
 
     def validate_key_format(self, api_key: str) -> tuple[bool, str]:
-        """Validate Google API key format.
-
-        Accepts both AI Studio keys (alphanumeric, ``_``/``-``) and Vertex AI
-        express-mode keys, which start with ``AQ.`` and contain a period.
-        """
-        if not api_key or len(api_key) < 30:
-            return False, "API key is too short for Google"
-        if not re.match(r'^[A-Za-z0-9._-]+$', api_key):
-            return False, "Google API key contains invalid characters"
+        """Google uses ADC, not an API key, so any value is accepted."""
         return True, ""
 
     def _convert_tools_to_google(self, tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -126,12 +157,17 @@ class GoogleStrategy(LLMProviderStrategy):
         return system_instruction, contents
 
     async def call(self, api_key: str, request: LLMRequest, location: str = "global") -> LLMResponse:
-        """Make API call using Vertex AI generateContent format (express mode)."""
-        url = self._build_url(request.model, location)
+        """Make API call using Vertex AI generateContent with ADC auth.
+
+        ``api_key`` is ignored; authentication uses Application Default
+        Credentials so the call is billed to the configured Cloud project.
+        """
+        token, project = self._get_token_and_project()
+        url = self._build_url(request.model, location, project)
 
         headers = {
             "Content-Type": "application/json",
-            "x-goog-api-key": api_key,
+            "Authorization": f"Bearer {token}",
         }
 
         system_instruction, contents = self._convert_messages_to_google(request.messages)
