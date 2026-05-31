@@ -25,16 +25,12 @@ export function FloatingLLMButton() {
         <>
             <button
                 onClick={() => setShowModal(true)}
-                className={`group fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300 ease-out hover:scale-110 hover:shadow-glow active:scale-95 ${
-                    isConfigured
-                        ? 'border-success/40 border bg-success text-success-foreground'
-                        : 'bg-primary text-primary-foreground shadow-glow hover:scale-105'
-                } `}
+                className="group fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow shadow-lg transition-all duration-300 ease-out hover:scale-110 hover:shadow-glow active:scale-95"
                 title={
                     isConfigured ? `${provider?.name || 'AI'} configured` : 'Configure AI Provider'
                 }
             >
-                <Key className="h-6 w-6" />
+                <Key className={`h-6 w-6 ${isConfigured ? 'text-success' : ''}`} />
                 {isConfigured && (
                     <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-surface ring-2 ring-success">
                         <Check className="h-3 w-3 text-success" />
