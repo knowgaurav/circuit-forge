@@ -82,7 +82,8 @@ export default function PlaygroundPage() {
 
     // Sidebar state
     const [leftSidebarWidth, setLeftSidebarWidth] = useState(256);
-    const [isResizing, setIsResizing] = useState(false);
+    const [rightSidebarWidth, setRightSidebarWidth] = useState(384);
+    const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
 
     const ZOOM_PRESETS = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
@@ -174,22 +175,28 @@ export default function PlaygroundPage() {
     };
 
     // Sidebar resize handlers
-    const handleResizeMouseDown = (e: React.MouseEvent) => {
+    const handleResizeMouseDown = (side: 'left' | 'right') => (e: React.MouseEvent) => {
         e.preventDefault();
-        setIsResizing(true);
+        setIsResizing(side);
     };
 
     const handleResizeMouseMove = useCallback(
         (e: MouseEvent) => {
             if (!isResizing) return;
-            const newWidth = Math.max(200, Math.min(400, e.clientX - 48));
-            setLeftSidebarWidth(newWidth);
+            if (isResizing === 'left') {
+                // Account for toolbar width (48px)
+                const newWidth = Math.max(200, Math.min(400, e.clientX - 48));
+                setLeftSidebarWidth(newWidth);
+            } else {
+                const newWidth = Math.max(280, Math.min(520, window.innerWidth - e.clientX));
+                setRightSidebarWidth(newWidth);
+            }
         },
         [isResizing]
     );
 
     const handleResizeMouseUp = useCallback(() => {
-        setIsResizing(false);
+        setIsResizing(null);
     }, []);
 
     useEffect(() => {
@@ -680,12 +687,12 @@ export default function PlaygroundPage() {
                     {/* Resize handle */}
                     <div
                         className="hover:bg-primary/50 absolute right-0 top-0 z-50 h-full w-1 cursor-col-resize transition-colors"
-                        onMouseDown={handleResizeMouseDown}
+                        onMouseDown={handleResizeMouseDown('left')}
                     />
                 </div>
 
                 {/* Canvas */}
-                <div className="bg-canvas-bg relative flex-1">
+                <div className="bg-canvas-bg relative min-w-0 flex-1">
                     <Canvas
                         simulationResult={simulationResult}
                         isSimulationRunning={isSimulationRunning}
@@ -704,11 +711,21 @@ export default function PlaygroundPage() {
                 </div>
 
                 {/* Right Sidebar - AI Assistant */}
-                {showAssistant && (
-                    <div className="relative z-30 w-96 flex-shrink-0">
-                        <PlaygroundChat onClose={() => setShowAssistant(false)} />
-                    </div>
-                )}
+                <div
+                    className={`relative z-30 flex-shrink-0 overflow-hidden ${isResizing ? '' : 'transition-all duration-200'}`}
+                    style={{ width: showAssistant ? rightSidebarWidth : 0 }}
+                >
+                    {showAssistant && (
+                        <>
+                            {/* Resize handle */}
+                            <div
+                                className="absolute left-0 top-0 z-50 h-full w-1 cursor-col-resize bg-border opacity-0 transition-opacity hover:bg-primary hover:opacity-100"
+                                onMouseDown={handleResizeMouseDown('right')}
+                            />
+                            <PlaygroundChat onClose={() => setShowAssistant(false)} />
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Restore Autosave Prompt */}
