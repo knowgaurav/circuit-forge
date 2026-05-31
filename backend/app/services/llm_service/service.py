@@ -74,6 +74,24 @@ class LLMService(GenerationMixin, ToolCallMixin, BlueprintFixerMixin):
 
         provider = self._get_provider(provider_id)
 
+        # OpenRouter free models have tiny per-minute/per-day quotas, so probe
+        # the dedicated key endpoint instead of burning a chat completion.
+        if provider_id == "openrouter":
+            try:
+                return await provider.verify_key(api_key)
+            except AuthenticationError as e:
+                return {
+                    "success": False,
+                    "error": "authentication",
+                    "message": e.message,
+                }
+            except RateLimitError as e:
+                return {"success": False, "error": "rate_limit", "message": e.message}
+            except ProviderUnavailableError as e:
+                return {"success": False, "error": "unavailable", "message": e.message}
+            except Exception as e:
+                return {"success": False, "error": "unknown", "message": str(e)}
+
         # Make a minimal request to test the connection
         request = LLMRequest(
             messages=[

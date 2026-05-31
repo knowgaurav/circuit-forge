@@ -55,11 +55,12 @@ anthropic_key_strategy = st.builds(
     ),
 )
 
-# Strategy for Google-style API keys (39 chars alphanumeric only)
+# Strategy for Google-style API keys (alphanumeric, plus . _ - for
+# Vertex AI express-mode keys that start with "AQ." and contain a period)
 google_key_strategy = st.text(
     min_size=39,
     max_size=39,
-    alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-",
+    alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-",
 )
 
 # Strategy for model names
@@ -228,7 +229,7 @@ def test_google_key_format_validation(api_key: str) -> None:
     **Feature: user-llm-api-keys, Property 2: API Key Format Validation**
     **Validates: Requirements 2.2, 8.2**
 
-    For any Google API key with correct format, validation should pass.
+    Google authenticates via ADC, not an API key, so any value is accepted.
     """
     strategy = GoogleStrategy()
     is_valid, error = strategy.validate_key_format(api_key)
@@ -239,22 +240,23 @@ def test_google_key_format_validation(api_key: str) -> None:
 
 @given(
     api_key=st.text(
-        min_size=1, max_size=29, alphabet=st.characters(whitelist_categories=("L", "N"))
+        min_size=0, max_size=29, alphabet=st.characters(whitelist_categories=("L", "N"))
     ),
 )
 @settings(max_examples=100)
-def test_google_key_format_validation_rejects_short(api_key: str) -> None:
+def test_google_key_format_accepts_any_value(api_key: str) -> None:
     """
     **Feature: user-llm-api-keys, Property 2: API Key Format Validation**
     **Validates: Requirements 2.2, 8.2**
 
-    For any API key that's too short, Google validation should fail.
+    Google uses ADC for auth, so format validation accepts any value
+    (including short or empty strings) and never blocks the call.
     """
     strategy = GoogleStrategy()
     is_valid, error = strategy.validate_key_format(api_key)
 
-    assert is_valid is False
-    assert "too short" in error.lower()
+    assert is_valid is True
+    assert error == ""
 
 
 def test_openai_compatible_providers_use_correct_base_url() -> None:
@@ -449,3 +451,110 @@ def test_all_providers_are_supported() -> None:
 
     for provider in required_providers:
         assert provider in supported, f"Provider {provider} should be supported"
+
+
+def test_google_tool_conversion_inlines_refs() -> None:
+    """Nested-model schemas ($ref/$defs) are inlined; Vertex rejects $ref."""
+    strategy = GoogleStrategy()
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "add_component",
+                "description": "add",
+                "parameters": {
+                    "type": "object",
+                    "$defs": {
+                        "Position": {
+                            "type": "object",
+                            "title": "Position",
+                            "properties": {
+                                "x": {"type": "number", "title": "X"},
+                                "y": {"type": "number"},
+                            },
+                        }
+                    },
+                    "properties": {
+                        "label": {"type": "string", "title": "Label"},
+                        "position": {"$ref": "#/$defs/Position"},
+                    },
+                },
+            },
+        }
+    ]
+
+    result = strategy._convert_tools_to_google(tools)
+
+    import json as _json
+
+    blob = _json.dumps(result)
+    assert "$ref" not in blob
+    assert "$defs" not in blob
+    assert "title" not in blob
+    params = result[0]["functionDeclarations"][0]["parameters"]
+    # Position is inlined as an object with its own properties.
+    assert params["properties"]["position"]["type"] == "object"
+    assert set(params["properties"]["position"]["properties"]) == {"x", "y"}
+
+
+def test_google_groups_consecutive_tool_results_into_one_turn() -> None:
+    """Multiple tool results map to one user turn with matching functionResponse count.
+
+    Gemini requires the number of functionResponse parts to equal the number
+    of functionCall parts in the preceding model turn.
+    """
+    strategy = GoogleStrategy()
+    messages = [
+        {"role": "user", "content": "build it"},
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "c1",
+                    "type": "function",
+                    "function": {"name": "add_component", "arguments": "{}"},
+                },
+                {
+                    "id": "c2",
+                    "type": "function",
+                    "function": {"name": "add_component", "arguments": "{}"},
+                },
+            ],
+        },
+        {"role": "tool", "name": "add_component", "content": '{"component_id": "a"}'},
+        {"role": "tool", "name": "add_component", "content": '{"component_id": "b"}'},
+    ]
+
+    _system, contents = strategy._convert_messages_to_google(messages)
+
+    # model turn with 2 functionCall parts, then ONE user turn with 2 responses.
+    model_turn = contents[1]
+    tool_turn = contents[2]
+    assert len(model_turn["parts"]) == 2
+    assert tool_turn["role"] == "user"
+    assert len(tool_turn["parts"]) == 2
+    assert all("functionResponse" in p for p in tool_turn["parts"])
+
+
+def test_google_round_trips_thought_signature() -> None:
+    """A captured thought_signature is echoed back on the model functionCall part."""
+    strategy = GoogleStrategy()
+    messages = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "c1",
+                    "type": "function",
+                    "function": {"name": "add_component", "arguments": "{}"},
+                    "thought_signature": "SIG123",
+                }
+            ],
+        },
+    ]
+
+    _system, contents = strategy._convert_messages_to_google(messages)
+
+    assert contents[0]["parts"][0]["thoughtSignature"] == "SIG123"

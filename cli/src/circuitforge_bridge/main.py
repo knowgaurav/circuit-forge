@@ -4,6 +4,8 @@
 Supports: Ollama, LM Studio, vLLM, LocalAI, and any OpenAI-compatible server.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import re
@@ -12,9 +14,10 @@ import subprocess
 import sys
 import time
 import uuid
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
-from urllib.error import URLError
+from typing import IO
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 __version__ = "1.0.0"
@@ -48,14 +51,51 @@ def log_request(
         log_data["request_id"] = request_id
     print(json.dumps(log_data))
 
+
 # Common local LLM servers and their configurations
 LLM_SERVERS = [
-    {"name": "Ollama", "port": 11434, "models_path": "/api/tags", "key": "models", "name_field": "name"},
-    {"name": "LM Studio", "port": 1234, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "vLLM", "port": 8000, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "LocalAI", "port": 8080, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "Jan", "port": 1337, "models_path": "/v1/models", "key": "data", "name_field": "id"},
-    {"name": "text-gen-webui", "port": 5000, "models_path": "/v1/models", "key": "data", "name_field": "id"},
+    {
+        "name": "Ollama",
+        "port": 11434,
+        "models_path": "/api/tags",
+        "key": "models",
+        "name_field": "name",
+    },
+    {
+        "name": "LM Studio",
+        "port": 1234,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "vLLM",
+        "port": 8000,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "LocalAI",
+        "port": 8080,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "Jan",
+        "port": 1337,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
+    {
+        "name": "text-gen-webui",
+        "port": 5000,
+        "models_path": "/v1/models",
+        "key": "data",
+        "name_field": "id",
+    },
 ]
 
 # Global state
@@ -91,7 +131,10 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Bridge-Token, X-Trace-ID, X-Request-ID")
+        self.send_header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, X-Bridge-Token, X-Trace-ID, X-Request-ID",
+        )
 
     def _proxy_request(self) -> None:
         start_time = time.perf_counter()
@@ -109,15 +152,14 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
 
         try:
             with urlopen(req, timeout=120) as resp:
-                response_data = resp.read()
-                status = 200
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("X-Trace-ID", trace_id or "")
-                self.send_header("X-Request-ID", request_id)
-                self._send_cors_headers()
-                self.end_headers()
-                self.wfile.write(response_data)
+                status = resp.status
+                self._relay_response(status, resp.read(), trace_id, request_id)
+        except HTTPError as e:
+            # Forward the upstream status (e.g. 404, 401) and body verbatim. The
+            # backend relies on receiving a real 404 to fall back from the
+            # OpenAI-style endpoint to Ollama's native one.
+            status = e.code
+            self._relay_response(status, e.read(), trace_id, request_id)
         except URLError as e:
             status = 502
             self.send_error(502, f"Failed to reach local LLM: {e.reason}")
@@ -126,13 +168,33 @@ class TokenProxyHandler(BaseHTTPRequestHandler):
             self.send_error(500, str(e))
         finally:
             duration_ms = (time.perf_counter() - start_time) * 1000
-            log_request(self.command, self.path, status, duration_ms, trace_id, request_id)
+            log_request(
+                self.command, self.path, status, duration_ms, trace_id, request_id
+            )
 
-    def log_message(self, format: str, *args) -> None:
+    def _relay_response(
+        self,
+        status: int,
+        payload: bytes,
+        trace_id: str | None,
+        request_id: str,
+    ) -> None:
+        """Write an upstream response back to the caller, preserving its status."""
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("X-Trace-ID", trace_id or "")
+        self.send_header("X-Request-ID", request_id)
+        self._send_cors_headers()
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, format: str, *args: object) -> None:
         pass  # Suppress default logging
 
 
-def check_server(port: int, models_path: str, key: str, name_field: str) -> list[str] | None:
+def check_server(
+    port: int, models_path: str, key: str, name_field: str
+) -> list[str] | None:
     """Check if an LLM server is running and return available models."""
     try:
         url = f"http://localhost:{port}{models_path}"
@@ -180,7 +242,9 @@ def print_install_instructions() -> None:
     print("Install cloudflared:")
     print("  macOS:   brew install cloudflared")
     print("  Windows: winget install Cloudflare.cloudflared")
-    print("  Linux:   See https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/")
+    print(
+        "  Linux:   See https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/"
+    )
     print()
 
 
@@ -198,16 +262,20 @@ def print_no_servers_found() -> None:
     print()
 
 
-def start_proxy_server() -> tuple[HTTPServer, int]:
-    """Start the token-validating proxy server."""
-    server = HTTPServer(("127.0.0.1", 0), TokenProxyHandler)
+def start_proxy_server() -> tuple[ThreadingHTTPServer, int]:
+    """Start the token-validating proxy server.
+
+    Uses a threading server so a slow or hung model request never blocks the
+    health checks and model-list calls the backend makes alongside it.
+    """
+    server = ThreadingHTTPServer(("127.0.0.1", 0), TokenProxyHandler)
     port = server.server_address[1]
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     return server, port
 
 
-def start_tunnel(proxy_port: int) -> subprocess.Popen:
+def start_tunnel(proxy_port: int) -> subprocess.Popen[str]:
     """Start Cloudflare tunnel pointing to the proxy."""
     return subprocess.Popen(
         ["cloudflared", "tunnel", "--url", f"http://localhost:{proxy_port}"],
@@ -217,12 +285,13 @@ def start_tunnel(proxy_port: int) -> subprocess.Popen:
     )
 
 
-def wait_for_tunnel_url(proc: subprocess.Popen) -> str | None:
+def wait_for_tunnel_url(proc: subprocess.Popen[str]) -> str | None:
     """Wait for and extract the tunnel URL from cloudflared output."""
-    if proc.stderr is None:
+    stderr: IO[str] | None = proc.stderr
+    if stderr is None:
         return None
 
-    for line in proc.stderr:
+    for line in stderr:
         match = re.search(r"https://[^\s]+\.trycloudflare\.com", line)
         if match:
             return match.group(0)
@@ -298,7 +367,7 @@ Supported LLM servers:
             for i, s in enumerate(servers, 1):
                 print(f"  {i}. {s['name']} (localhost:{s['port']})")
             try:
-                choice = input(f"\nChoice [1]: ").strip() or "1"
+                choice = input("\nChoice [1]: ").strip() or "1"
                 idx = int(choice) - 1
                 if 0 <= idx < len(servers):
                     TARGET_PORT = servers[idx]["port"]

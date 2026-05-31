@@ -1,6 +1,5 @@
 """Application configuration using Pydantic Settings."""
 
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,6 +37,11 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o"
     openai_max_tokens: int = 4000
     openai_temperature: float = 0.7
+
+    # Google Vertex AI (Gemini). The provider authenticates with Application
+    # Default Credentials (ADC), so calls are billed to this Cloud project.
+    # When empty, the project resolved by ADC is used.
+    google_cloud_project: str | None = None
 
     # Axiom Logging Configuration
     axiom_token: str | None = None

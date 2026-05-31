@@ -26,12 +26,17 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/app:/app/app
+      # Mount host gcloud ADC so the container authenticates as you (read-only).
+      - ~/.config/gcloud/application_default_credentials.json:/tmp/gcp/application_default_credentials.json:ro
     environment:
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=circuitforge
       - CORS_ORIGINS=["http://localhost:3000"]
       - DEBUG=true
       - LOG_LEVEL=DEBUG
+      # Google Vertex AI auth via ADC mounted from the host.
+      - GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp/application_default_credentials.json
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
       # Force watchfiles to poll so uvicorn --reload detects edits across the bind mount
       - WATCHFILES_FORCE_POLLING=true
       - OPENAI_API_KEY=${OPENAI_API_KEY}

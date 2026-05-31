@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from app.services.agent.tool_selection import select_tools
+from app.services.component_registry import ComponentRegistry
 
 Mode = Literal["theory", "practical"]
 
@@ -97,6 +98,63 @@ def build_tutor_system_prompt(level: LevelContext, mode: Mode) -> str:
         "component label and pin name. Prefer the smallest sequence of tool "
         "calls. If the board already matches what the user wants, explain "
         "instead of editing."
+    )
+
+    return "\n\n".join(parts)
+
+
+def _component_catalog(registry: ComponentRegistry) -> str:
+    """Render a compact `TYPE (pins: A, B -> Y)` catalog grouped by category.
+
+    The playground has no lesson plan, so the model learns the legal component
+    types and pin names from the registry itself. Pins are split into inputs
+    and outputs so the model knows which side each one wires to.
+    """
+    lines: list[str] = []
+    for category, comps in registry.get_all_components().items():
+        lines.append(f"{category}:")
+        for comp in comps:
+            inputs = [p.name for p in comp.pins if p.type == "input"]
+            outputs = [p.name for p in comp.pins if p.type == "output"]
+            pin_desc = f"in: {', '.join(inputs) or 'none'}; out: {', '.join(outputs) or 'none'}"
+            lines.append(f"- {comp.type} ({comp.name}) [{pin_desc}]")
+    return "\n".join(lines)
+
+
+def build_playground_system_prompt(registry: ComponentRegistry) -> str:
+    """Assemble the system prompt for the free-practice playground assistant.
+
+    Unlike the course tutor, the playground has no lesson context. The model
+    gets the full component catalog from the registry and the full tool set,
+    and is told to build whatever circuit the user describes.
+    """
+    parts: list[str] = []
+
+    parts.append(
+        "You are CircuitForge's playground assistant. You help a user build "
+        "and debug digital logic circuits on an interactive board. The "
+        "board's current contents are described to you in each message. You "
+        "can answer questions and change the board by calling tools. Make the "
+        "smallest sequence of tool calls needed to fulfill the request, then "
+        "reply in plain language describing what you did."
+    )
+
+    parts.append("Available component types:\n" + _component_catalog(registry))
+
+    parts.append(
+        "When building a circuit from scratch, place input devices (switches, "
+        "clocks) on the left, logic in the middle, and output devices (LEDs) "
+        "on the right, spacing components about 120px apart so wires stay "
+        "readable. Give each component a short, unique label (e.g. SW1, AND1, "
+        "LED1) and wire pins by label and pin name."
+    )
+
+    parts.append(
+        "Rules: Use only component types and pin names from the catalog and "
+        "the board description — never invent them. Address pins by component "
+        "label and pin name. Prefer the smallest sequence of tool calls. If "
+        "the board already matches what the user wants, explain instead of "
+        "editing."
     )
 
     return "\n\n".join(parts)

@@ -18,6 +18,7 @@ down" uniformly without parsing status codes itself.
 
 class LLMError(Exception):
     """Base exception for LLM-related errors."""
+
     def __init__(self, code: str, message: str, provider: str):
         self.code = code
         self.message = message
@@ -27,35 +28,68 @@ class LLMError(Exception):
 
 class AuthenticationError(LLMError):
     """Invalid or expired API key."""
+
     def __init__(self, provider: str, message: str = "Invalid or expired API key"):
         super().__init__("AUTHENTICATION_ERROR", message, provider)
 
 
 class RateLimitError(LLMError):
     """Rate limit exceeded."""
-    def __init__(self, provider: str, retry_after: int | None = None):
-        super().__init__("RATE_LIMITED", "Rate limit exceeded. Please wait and try again.", provider)
+
+    def __init__(
+        self, provider: str, retry_after: int | None = None, message: str | None = None
+    ):
+        super().__init__(
+            "RATE_LIMITED",
+            message or "Rate limit exceeded. Please wait and try again.",
+            provider,
+        )
         self.retry_after = retry_after
 
 
 class QuotaExceededError(LLMError):
     """API quota/billing issue."""
+
     def __init__(self, provider: str):
-        super().__init__("QUOTA_EXCEEDED", "API quota exceeded. Check your billing.", provider)
+        super().__init__(
+            "QUOTA_EXCEEDED", "API quota exceeded. Check your billing.", provider
+        )
 
 
 class ModelUnavailableError(LLMError):
     """Model not available for this API key."""
+
     def __init__(self, provider: str, model: str, alternatives: list[str]):
         self.alternatives = alternatives
         super().__init__(
             "MODEL_UNAVAILABLE",
             f"Model {model} is not available. Try: {', '.join(alternatives)}",
-            provider
+            provider,
+        )
+
+
+class InvalidRequestError(LLMError):
+    """Provider rejected the request as malformed (HTTP 400).
+
+    Unlike ``ProviderUnavailableError`` (the provider is down), this means the
+    request itself was bad — so we carry the provider's own message through
+    instead of a generic "unavailable" string.
+    """
+
+    def __init__(self, provider: str, message: str | None = None):
+        super().__init__(
+            "INVALID_REQUEST",
+            message or f"{provider} rejected the request as invalid",
+            provider,
         )
 
 
 class ProviderUnavailableError(LLMError):
     """Provider API is unavailable."""
-    def __init__(self, provider: str):
-        super().__init__("PROVIDER_UNAVAILABLE", f"{provider} API is currently unavailable", provider)
+
+    def __init__(self, provider: str, message: str | None = None):
+        super().__init__(
+            "PROVIDER_UNAVAILABLE",
+            message or f"{provider} API is currently unavailable",
+            provider,
+        )

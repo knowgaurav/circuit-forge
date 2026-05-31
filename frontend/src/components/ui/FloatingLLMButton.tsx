@@ -25,24 +25,16 @@ export function FloatingLLMButton() {
         <>
             <button
                 onClick={() => setShowModal(true)}
-                className={`group fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300 ease-out hover:scale-110 hover:shadow-glow active:scale-95 ${
-                    isConfigured
-                        ? 'border-success/40 border bg-success text-success-foreground'
-                        : 'bg-primary text-primary-foreground shadow-glow hover:scale-105'
-                } `}
+                className="group fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow shadow-lg transition-all duration-300 ease-out hover:scale-110 hover:shadow-glow active:scale-95"
                 title={
                     isConfigured ? `${provider?.name || 'AI'} configured` : 'Configure AI Provider'
                 }
             >
-                {isConfigured ? (
-                    <div className="relative">
-                        <Key className="h-6 w-6" />
-                        <div className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-surface">
-                            <Check className="h-2 w-2 text-success" />
-                        </div>
-                    </div>
-                ) : (
-                    <Key className="h-6 w-6" />
+                <Key className="h-6 w-6" />
+                {isConfigured && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-success ring-2 ring-background">
+                        <Check className="h-2.5 w-2.5 text-success-foreground" />
+                    </span>
                 )}
 
                 {/* Tooltip */}

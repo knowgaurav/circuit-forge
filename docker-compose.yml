@@ -32,6 +32,12 @@ services:
       - CORS_ORIGINS=["http://localhost:3000"]
       - DEBUG=true
       - LOG_LEVEL=DEBUG
+      # Google Vertex AI auth via ADC mounted from the host (see volumes below).
+      - GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp/application_default_credentials.json
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
+    volumes:
+      # Mount host gcloud ADC so the container authenticates as you (read-only).
+      - ~/.config/gcloud/application_default_credentials.json:/tmp/gcp/application_default_credentials.json:ro
     depends_on:
       mongodb:
         condition: service_healthy

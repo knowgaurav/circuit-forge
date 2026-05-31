@@ -2,76 +2,35 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 
-import { Send, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Sparkles, Loader2, X, Trash2 } from 'lucide-react';
 
 import { APIKeyModal } from '@/components/ui/APIKeyModal';
 
 import { api } from '@/services/api';
 import { useCircuitStore } from '@/stores/circuitStore';
 import { useLLMConfigStore } from '@/stores/llmConfigStore';
-import { threadKey, useTutorChatStore } from '@/stores/tutorChatStore';
 
-import type { CircuitStore } from '@/stores/circuitStore';
-import type { CircuitComponent, CircuitMutation, Position, TutorMode, Wire } from '@/types';
+import { applyMutations } from './TutorChat';
 
-interface TutorChatProps {
-    courseId: string;
-    levelNumber: number;
-    mode: TutorMode;
+import type { TutorMessage } from '@/types';
+
+interface PlaygroundChatProps {
+    onClose: () => void;
+    messages: TutorMessage[];
+    setMessages: React.Dispatch<React.SetStateAction<TutorMessage[]>>;
 }
 
-/**
- * Apply the tutor's structural mutations to the local circuit store using the
- * existing store actions only. A `COMPONENT_ADDED` payload carries the label
- * inside `properties.label` (the backend has no top-level label field), so we
- * lift it back onto the component the client store expects.
- */
-export function applyMutations(mutations: CircuitMutation[], store: CircuitStore): void {
-    for (const m of mutations) {
-        switch (m.type) {
-            case 'COMPONENT_ADDED': {
-                const component = m.payload.component as CircuitComponent & {
-                    properties?: Record<string, unknown>;
-                };
-                const label =
-                    (component.properties?.label as string | undefined) ?? component.label ?? '';
-                store.addComponent({ ...component, label });
-                break;
-            }
-            case 'COMPONENT_MOVED':
-                store.moveComponent(
-                    m.payload.componentId as string,
-                    m.payload.position as Position
-                );
-                break;
-            case 'COMPONENT_DELETED':
-                store.deleteComponent(m.payload.componentId as string);
-                break;
-            case 'WIRE_ADDED':
-                store.addWire(m.payload.wire as Wire);
-                break;
-            case 'WIRE_DELETED':
-                store.deleteWire(m.payload.wireId as string);
-                break;
-            default:
-                break;
-        }
-    }
-}
+const PLAYGROUND_ACTOR_ID = 'playground-user';
 
-export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
+export function PlaygroundChat({ onClose, messages, setMessages }: PlaygroundChatProps) {
     const llmStore = useLLMConfigStore();
-    const chatStore = useTutorChatStore();
     const circuitStore = useCircuitStore();
 
     const [input, setInput] = useState('');
+    const [pending, setPending] = useState(false);
     const [showApiKeyModal, setShowApiKeyModal] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
-
-    const key = threadKey(courseId, levelNumber, mode);
-    const messages = chatStore.threads[key] ?? [];
-    const { pending } = chatStore;
 
     useEffect(() => {
         scrollRef.current?.scrollTo?.({
@@ -90,20 +49,16 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
             return;
         }
 
-        const actorId =
-            (typeof window !== 'undefined' && localStorage.getItem('participantId')) ||
-            'course-learner';
-
         setInput('');
         setNotice(null);
-        // Snapshot prior turns before adding the new message so the tutor sees
-        // the conversation, not just the latest line.
+        // Snapshot prior turns (excluding the message we're about to add) so the
+        // assistant has conversational context, not just the latest line.
         const history = messages.map((m) => ({ role: m.role, text: m.text }));
-        chatStore.appendMessage(key, { role: 'user', text });
-        chatStore.setPending(true);
+        setMessages((prev) => [...prev, { role: 'user', text }]);
+        setPending(true);
 
         const circuit = {
-            sessionId: circuitStore.sessionId ?? 'course',
+            sessionId: circuitStore.sessionId ?? 'playground',
             version: circuitStore.version,
             schemaVersion: '1.0.0',
             components: circuitStore.components,
@@ -113,47 +68,36 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
         };
 
         try {
-            const result = await api.agentCourseTurn(
-                courseId,
-                levelNumber,
-                mode,
+            const result = await api.agentPlaygroundTurn(
                 text,
                 circuit,
-                actorId,
+                PLAYGROUND_ACTOR_ID,
                 config,
                 history
             );
             applyMutations(result.mutations, circuitStore);
-            chatStore.appendMessage(key, {
-                role: 'assistant',
-                text: result.finalMessage || 'Done.',
-            });
+            setMessages((prev) => [
+                ...prev,
+                { role: 'assistant', text: result.finalMessage || 'Done.' },
+            ]);
             if (result.aborted) {
                 setNotice("I couldn't finish that one — try a smaller, more specific ask.");
             }
         } catch (err) {
-            chatStore.appendMessage(key, {
-                role: 'assistant',
-                text:
-                    err instanceof Error
-                        ? `Something went wrong: ${err.message}`
-                        : 'Something went wrong. Please try again.',
-            });
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: 'assistant',
+                    text:
+                        err instanceof Error
+                            ? `Something went wrong: ${err.message}`
+                            : 'Something went wrong. Please try again.',
+                },
+            ]);
         } finally {
-            chatStore.setPending(false);
+            setPending(false);
         }
-    }, [
-        input,
-        pending,
-        llmStore,
-        chatStore,
-        key,
-        messages,
-        circuitStore,
-        courseId,
-        levelNumber,
-        mode,
-    ]);
+    }, [input, pending, llmStore, circuitStore, messages, setMessages]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -163,21 +107,37 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
     };
 
     return (
-        <div
-            className="glass-card flex flex-col overflow-hidden rounded-2xl"
-            style={{ height: 460 }}
-        >
+        <div className="flex h-full flex-col overflow-hidden border-l border-border bg-surface">
             {/* Header */}
             <div className="flex items-center gap-2 border-b border-border px-4 py-3">
                 <span className="bg-primary/15 flex h-7 w-7 items-center justify-center rounded-lg text-primary">
                     <Sparkles className="h-4 w-4" />
                 </span>
-                <div>
-                    <p className="text-sm font-semibold text-foreground">Circuit Tutor</p>
+                <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">Circuit Assistant</p>
                     <p className="text-xs text-text-muted">
-                        Ask about this {mode === 'theory' ? 'lesson' : 'build'} or your circuit
+                        Describe a circuit and I&apos;ll build it
                     </p>
                 </div>
+                {messages.length > 0 && (
+                    <button
+                        onClick={() => setMessages([])}
+                        disabled={pending}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface-secondary hover:text-foreground disabled:opacity-50"
+                        aria-label="Clear conversation"
+                        title="Clear conversation"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </button>
+                )}
+                <button
+                    onClick={onClose}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+                    aria-label="Close assistant"
+                    title="Close assistant"
+                >
+                    <X className="h-4 w-4" />
+                </button>
             </div>
 
             {/* Messages */}
@@ -186,8 +146,8 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-text-muted">
                         <Sparkles className="h-6 w-6 opacity-50" />
                         <p>
-                            Stuck on a connection or unsure why the circuit isn&apos;t working? Ask
-                            away.
+                            Try &quot;Build a circuit where an LED lights up when both switches are
+                            on&quot; or ask me to fix a connection.
                         </p>
                     </div>
                 )}
@@ -233,9 +193,9 @@ export function TutorChat({ courseId, levelNumber, mode }: TutorChatProps) {
                         onKeyDown={handleKeyDown}
                         disabled={pending}
                         rows={1}
-                        placeholder="Ask the tutor…"
+                        placeholder="Ask the assistant to build or fix a circuit…"
                         className="max-h-32 flex-1 resize-none rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary disabled:opacity-60"
-                        aria-label="Message the tutor"
+                        aria-label="Message the assistant"
                     />
                     <button
                         onClick={() => void send()}

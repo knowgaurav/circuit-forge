@@ -19,6 +19,7 @@ from .anthropic import AnthropicStrategy
 from .base import LLMProviderStrategy
 from .errors import (
     AuthenticationError,
+    InvalidRequestError,
     LLMError,
     ModelUnavailableError,
     ProviderUnavailableError,
@@ -34,6 +35,7 @@ __all__ = [
     "AnthropicStrategy",
     "AuthenticationError",
     "GoogleStrategy",
+    "InvalidRequestError",
     "LLMError",
     "LLMProviderStrategy",
     "LLMRequest",

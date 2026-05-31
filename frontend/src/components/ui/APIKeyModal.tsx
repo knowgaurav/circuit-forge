@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import {
     X,
@@ -40,6 +40,10 @@ type TestStatus = 'idle' | 'testing' | 'success' | 'error';
 export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
     const store = useLLMConfigStore();
 
+    // Tracks the provider the key/model effect last ran for, so we only wipe
+    // the saved key on a real provider switch (not on initial open).
+    const prevProviderRef = useRef(store.provider);
+
     const [selectedProvider, setSelectedProvider] = useState(store.provider);
     const [apiKey, setApiKey] = useState('');
     const [selectedModel, setSelectedModel] = useState(store.model);
@@ -74,7 +78,10 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
         if (isOpen) {
             setSelectedProvider(store.provider);
             setSelectedModel(store.model);
-            setApiKey('');
+            // Prefill the saved key so the user can change the model (or
+            // re-test) without re-entering it. Cleared only on provider switch.
+            setApiKey(store.apiKey ?? '');
+            prevProviderRef.current = store.provider;
             setTemperature(store.temperature);
             setMaxTokens(store.maxTokens);
             setLocation(store.location);
@@ -88,32 +95,48 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
             setTokenError(null);
             setLocalModels([]);
         }
-    }, [isOpen, store.provider, store.model, store.temperature, store.maxTokens, store.location]);
+    }, [
+        isOpen,
+        store.provider,
+        store.model,
+        store.apiKey,
+        store.temperature,
+        store.maxTokens,
+        store.location,
+    ]);
 
     useEffect(() => {
         const newProvider = getProvider(selectedProvider);
-        if (newProvider) {
-            // Reset state when switching providers
-            setTestStatus('idle');
-            setTestError(null);
+        if (!newProvider) return;
 
-            if (newProvider.requiresBaseUrl) {
-                // Local provider - clear API key state, keep local state
-                setApiKey('');
-                setValidationError(null);
-                setSelectedModel('');
-            } else {
-                // Cloud provider - clear local state
-                setBaseUrl('');
-                setBridgeToken('');
-                setBaseUrlError(null);
-                setTokenError(null);
-                setLocalModels([]);
-                const defaultModel =
-                    newProvider.models.find((m) => m.isDefault) || newProvider.models[0];
-                if (defaultModel) {
-                    setSelectedModel(defaultModel.id);
-                }
+        // Only react to a genuine provider switch, not the initial open where
+        // we want to keep the prefilled saved key.
+        const providerChanged = prevProviderRef.current !== selectedProvider;
+        prevProviderRef.current = selectedProvider;
+        if (!providerChanged) return;
+
+        // Reset state when switching providers
+        setTestStatus('idle');
+        setTestError(null);
+
+        if (newProvider.requiresBaseUrl) {
+            // Local provider - clear API key state, keep local state
+            setApiKey('');
+            setValidationError(null);
+            setSelectedModel('');
+        } else {
+            // Cloud provider - clear key + local state for the new provider
+            setApiKey('');
+            setValidationError(null);
+            setBaseUrl('');
+            setBridgeToken('');
+            setBaseUrlError(null);
+            setTokenError(null);
+            setLocalModels([]);
+            const defaultModel =
+                newProvider.models.find((m) => m.isDefault) || newProvider.models[0];
+            if (defaultModel) {
+                setSelectedModel(defaultModel.id);
             }
         }
     }, [selectedProvider]);
@@ -391,7 +414,7 @@ export function APIKeyModal({ isOpen, onClose, onSave }: APIKeyModalProps) {
                                     </p>
                                 </div>
                                 <a
-                                    href={provider.docsUrl}
+                                    href="/local-llm"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:text-primary-hover"

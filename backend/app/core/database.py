@@ -57,6 +57,7 @@ class DatabaseManager:
         # Events collection indexes (sessionId + seq is the new field naming;
         # see app/events/schema.py and EventRepository.append_event for the
         # write-path enforcement that pairs with this unique index).
+        await self._drop_stale_events_indexes()
         await self.database.events.create_index("sessionId")
         await self.database.events.create_index(
             [("sessionId", 1), ("seq", 1)],
@@ -66,6 +67,32 @@ class DatabaseManager:
 
         # Snapshots collection indexes
         await self.database.snapshots.create_index([("sessionId", 1), ("seq", -1)])
+
+    async def _drop_stale_events_indexes(self) -> None:
+        """Drop orphaned ``events`` indexes from the pre-``sessionId`` schema.
+
+        Older builds keyed events on ``sessionCode``/``version``. Event
+        documents no longer carry those fields, so a leftover unique index on
+        them makes every event collide on ``(null, null)`` after the first
+        insert. Drop any events index whose key references those fields so the
+        correct ``(sessionId, seq)`` index is the only constraint.
+        """
+        try:
+            indexes = await self.database.events.index_information()
+        except Exception as e:
+            logger.warning(f"Could not inspect events indexes: {e}")
+            return
+
+        for name, info in indexes.items():
+            if name == "_id_":
+                continue
+            keyed_fields = {field for field, _direction in info.get("key", [])}
+            if keyed_fields & {"sessionCode", "version"}:
+                try:
+                    await self.database.events.drop_index(name)
+                    logger.info(f"Dropped stale events index: {name}")
+                except Exception as e:
+                    logger.warning(f"Failed to drop stale events index {name}: {e}")
 
     def get_database(self) -> AsyncIOMotorDatabase:
         """Get database instance."""
