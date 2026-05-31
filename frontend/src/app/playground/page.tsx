@@ -22,9 +22,10 @@ import {
     RotateCcw,
     Save,
     FolderOpen,
+    Sparkles,
 } from 'lucide-react';
 
-import { Canvas, SimulationOverlay } from '@/components/circuit';
+import { Canvas, SimulationOverlay, PlaygroundChat } from '@/components/circuit';
 import { ComponentPalette } from '@/components/circuit/ComponentPalette';
 import {
     Button,
@@ -66,6 +67,7 @@ export default function PlaygroundPage() {
     const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
     const [isSimulationRunning, setIsSimulationRunning] = useState(false);
     const [showZoomDropdown, setShowZoomDropdown] = useState(false);
+    const [showAssistant, setShowAssistant] = useState(false);
 
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [showSaveModal, setShowSaveModal] = useState(false);
@@ -443,6 +445,18 @@ export default function PlaygroundPage() {
 
                     <div className="mx-2 h-6 w-px bg-border" />
 
+                    {/* AI Assistant */}
+                    <Tooltip content="AI circuit assistant" position="bottom">
+                        <IconButton
+                            icon={<Sparkles className="h-4 w-4" />}
+                            onClick={() => setShowAssistant((v) => !v)}
+                            variant={showAssistant ? 'primary' : 'ghost'}
+                            aria-label="Toggle AI assistant"
+                        />
+                    </Tooltip>
+
+                    <div className="mx-2 h-6 w-px bg-border" />
+
                     {/* Save/Load */}
                     <Tooltip content="Save circuit" position="bottom">
                         <IconButton
@@ -688,6 +702,13 @@ export default function PlaygroundPage() {
                         draggingComponent={draggingComponent}
                     />
                 </div>
+
+                {/* Right Sidebar - AI Assistant */}
+                {showAssistant && (
+                    <div className="relative z-30 w-96 flex-shrink-0">
+                        <PlaygroundChat onClose={() => setShowAssistant(false)} />
+                    </div>
+                )}
             </div>
 
             {/* Restore Autosave Prompt */}

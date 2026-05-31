@@ -331,6 +331,37 @@ class ApiClient {
             }),
         });
     }
+
+    // Playground AI assistant
+    async agentPlaygroundTurn(
+        message: string,
+        circuit: CircuitState,
+        actorId: string,
+        llmConfig: LLMConfig
+    ): Promise<CourseTurnResponse> {
+        // The backend addresses pins by component label, which it reads from
+        // `properties.label`. Mirror the top-level `label` into properties so
+        // the seeded board matches what the assistant is shown.
+        const circuitForAssistant: CircuitState = {
+            ...circuit,
+            components: circuit.components.map((c) => ({
+                ...c,
+                properties: { ...c.properties, label: c.label },
+            })),
+        };
+
+        return this.request(`/agent/playground-turn`, {
+            method: 'POST',
+            body: JSON.stringify({
+                actorId,
+                message,
+                circuit: circuitForAssistant,
+                providerId: llmConfig.provider,
+                apiKey: llmConfig.apiKey,
+                model: llmConfig.model,
+            }),
+        });
+    }
 }
 
 export const api = new ApiClient(API_URL);
