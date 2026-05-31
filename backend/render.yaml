@@ -1,0 +1,41 @@
+# Render Blueprint for the CircuitForge backend (free tier).
+# Use via Render Dashboard → "New +" → "Blueprint" and point at this repo.
+# Secrets (sync: false) must be filled in the Render dashboard after creation.
+services:
+  - type: web
+    name: circuitforge-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -e .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: circuitforge
+      - key: CORS_ORIGINS
+        sync: false
+      - key: APP_NAME
+        value: CircuitForge
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o
+      - key: OPENAI_MAX_TOKENS
+        value: "4000"
+      - key: OPENAI_TEMPERATURE
+        value: "0.7"
+      - key: AXIOM_TOKEN
+        sync: false
+      - key: AXIOM_ORG_ID
+        sync: false
+      - key: AXIOM_DATASET
+        value: circuitforge-logs
