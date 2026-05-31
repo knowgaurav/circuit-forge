@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 
 from app.api.courses._shared import handle_exception
 from app.core.database import db_manager
+from app.exceptions.base import ValidationException
 from app.models.circuit import CircuitState
 from app.repositories.agent_trace_repository import AgentTraceRepository
 from app.repositories.course_repository import (
@@ -50,10 +51,27 @@ from app.services.agent.tools import ToolDeps
 from app.services.component_registry import get_component_registry
 from app.services.circuit_service import CircuitService
 from app.services.llm_provider_factory import LLMProviderFactory
+from app.services.prompt_guard import get_prompt_guard
 from app.services.simulation_engine import SimulationEngine
 
 
 router = APIRouter()
+
+
+def _guard_chat_message(message: str) -> None:
+    """Block prompt-injection attempts in a chat message before the LLM sees it.
+
+    Reuses the same ``PromptGuard`` the course generator uses. Chat is
+    conversational, so we only block clearly-malicious input (instruction
+    overrides, prompt extraction, jailbreaks) and otherwise let the message
+    through unchanged — we do not silently rewrite what the user typed.
+    """
+    guard_result = get_prompt_guard().process_input(message)
+    if not guard_result.is_allowed:
+        raise ValidationException(
+            message=f"Message blocked for safety: {guard_result.blocked_reason}",
+            code="PROMPT_INJECTION_BLOCKED",
+        )
 
 
 SYSTEM_PROMPT = (
@@ -143,6 +161,13 @@ async def agent_turn(
         )
 
     context = AgentContext(SYSTEM_PROMPT)
+    try:
+        _guard_chat_message(req.message)
+    except ValidationException as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"error": {"code": exc.code, "message": exc.message}},
+        )
     result = await orchestrator.run_turn(
         session_id=req.session_id,
         actor_id=req.actor_id,
@@ -265,6 +290,13 @@ async def agent_course_turn(
     event_repo: EventRepository = Depends(get_event_repository),
 ) -> CourseTurnResponse:
     """Run one tutor turn against an ephemeral session seeded from the board."""
+    try:
+        _guard_chat_message(req.message)
+    except ValidationException as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"error": {"code": exc.code, "message": exc.message}},
+        )
     plan = await plan_repo.get_by_id(req.course_id)
     if plan is None:
         raise HTTPException(
@@ -372,6 +404,13 @@ async def agent_playground_turn(
     event_repo: EventRepository = Depends(get_event_repository),
 ) -> CourseTurnResponse:
     """Run one playground assistant turn against a session seeded from the board."""
+    try:
+        _guard_chat_message(req.message)
+    except ValidationException as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"error": {"code": exc.code, "message": exc.message}},
+        )
     system_prompt = build_playground_system_prompt(get_component_registry())
 
     deps = ToolDeps(
