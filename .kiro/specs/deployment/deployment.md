@@ -12,20 +12,27 @@ CI/CD driven by GitHub Actions.
 | **MongoDB Atlas** | Database | M0 cluster, 512MB storage |
 | **Axiom** *(optional)* | Logs | 1TB ingest/month |
 
-```mermaid
-flowchart LR
-    Dev[Push to main] --> GHA[GitHub Actions]
-    GHA -->|validate FE + BE| Gate{Checks pass?}
-    Gate -->|no| Fail[Fail run]
-    Gate -->|yes| V[Vercel deploy]
-    Gate -->|yes| R[Render deploy hook]
-    subgraph Runtime
-        Browser[User browser] -->|HTTPS / WSS| V
-        V -->|NEXT_PUBLIC_API_URL| R
-        R -->|mongodb+srv| Atlas[(MongoDB Atlas)]
-        R -.->|optional logs| Axiom[(Axiom)]
-        R -->|OpenAI-compatible API| LLM[(LLM provider)]
-    end
+```text
+  Push to main
+       |
+       v
+  GitHub Actions
+       |
+       | validate FE + BE
+       v
+  Checks pass? --no--> fail run
+       |
+       | yes
+       +------------------+
+       v                  v
+  Vercel deploy     Render deploy hook
+
+  Runtime:
+  User browser --HTTPS/WSS--> Vercel
+  Vercel --NEXT_PUBLIC_API_URL--> Render
+  Render --mongodb+srv--> MongoDB Atlas
+  Render --OpenAI-compatible API--> LLM provider
+  Render ...optional logs...> Axiom
 ```
 
 ## CI/CD Pipeline
@@ -40,14 +47,14 @@ The pipeline lives in `.github/workflows/deploy-free.yml`:
 Deploy jobs require both validation jobs to pass and use the `production`
 GitHub Environment, so you can add required reviewers/branch protection there.
 
-```mermaid
-flowchart TD
-    A[validate-frontend] --> C[deploy-frontend]
-    B[validate-backend] --> C
-    A --> D[deploy-backend]
-    B --> D
-    C -. push to main only .-> C
-    D -. push to main only .-> D
+```text
+  validate-frontend --+
+                      |
+                      +--> deploy-frontend  (push to main only)
+                      |
+  validate-backend ---+--> deploy-backend   (push to main only)
+
+  Both deploy jobs require BOTH validation jobs to pass.
 ```
 
 > Tests run separately in `.github/workflows/test.yml` and `ci-cd.yml`. This

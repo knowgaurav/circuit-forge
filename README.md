@@ -2,6 +2,45 @@
 
 A collaborative circuit design and robotics education platform with real-time multi-user collaboration, AI-powered course generation, and comprehensive circuit simulation.
 
+## Architecture
+
+```text
++-----------------------------------------------------------------+
+|                    Frontend — Next.js 14                        |
+|                                                                 |
+|   Playground / Courses / Sessions                               |
+|              |                                                  |
+|              v                                                  |
+|   Zustand stores (circuit · session · ui)                       |
+|              |                                                  |
+|              v                                                  |
+|   Client simulation service                                     |
++-----------------------------------------------------------------+
+        |  HTTPS REST                       |  WSS sync
+        v                                   v
++-----------------------------------------------------------------+
+|                     Backend — FastAPI                           |
+|                                                                 |
+|   REST API (/api/*) ----> Simulation engine                     |
+|        |                       ^                                |
+|        |                       |                                |
+|        v                       |                                |
+|   LLM service  ----> Component registry                         |
+|   (tool calling)                                                |
+|                                                                 |
+|   WebSocket (/api/ws) ---------+                                |
++-----------------------------------------------------------------+
+     |                |                         |
+     v                v                         v
++----------+   +--------------------+   +-------------------+
+| MongoDB  |   | OpenAI-compatible  |   | Axiom logs        |
+| Atlas    |   | LLM provider       |   | (optional)        |
++----------+   +--------------------+   +-------------------+
+```
+
+The frontend renders and simulates circuits locally for responsiveness, while
+the backend owns authoritative session state, persistence, and AI generation.
+
 ## Features
 
 ### Core Features
@@ -124,17 +163,73 @@ uvicorn app.main:app --reload
 3. **State Management**: Sequential components (flip-flops, counters) maintain state across clock cycles
 4. **Real-time Visualization**: Signal states displayed on wires and components with color-coded states
 
+```text
+  Input devices            Evaluate components
+  (switches, clock)  --->  in dependency order  <--+
+                                  |                 |
+                                  v                 |
+                            Sequential? --yes--> Update stored state
+                                  |               (on clock edge)
+                                  | no              |
+                                  v                 |
+                            Drive outputs <---------+
+                            (LEDs, displays, motors)
+                                  |
+                                  v
+                            Color-code wires and pins
+                                  |
+                                  +--- next tick ---> (re-evaluate)
+```
+
 ### Real-time Collaboration
 1. **Session Creation**: Host creates a session and receives a unique 6-character code
 2. **Participants Join**: Others join using the session code
 3. **WebSocket Sync**: All changes (component add/remove, wire connections, property updates) broadcast to participants
 4. **Conflict Resolution**: Server maintains authoritative state, clients sync on reconnect
 
+```text
+  Host                  Server (FastAPI)              Participant
+   |                          |                            |
+   |--- POST /api/sessions -->|                            |
+   |<-- session code (6) -----|                            |
+   |                          |<-- WS /api/ws/{code}/{id} --|
+   |                          |--- current circuit state -->|
+   |--- edit (add comp/wire)->|                            |
+   |                          | apply to authoritative     |
+   |                          | state                      |
+   |                          |--- broadcast change ------->|
+   |                          |                            |
+   |        On reconnect, client re-syncs from server state |
+```
+
 ### AI Course Generation
 1. **Course Planning**: LLM generates 8-15 level curriculum based on topic
 2. **Content Generation**: Each level includes theory explanations and practical exercises
 3. **Circuit Blueprints**: LLM uses tool calling to create validated circuit designs
 4. **Component Validation**: Blueprints validated against component registry before saving
+
+```text
+  Topic prompt
+       |
+       v
+  LLM: generate 8-15 level plan
+       |
+       v
+  LLM: theory + exercise per level
+       |
+       v
+  Tool calling: get components / schema  <--+
+       |                                     |
+       v                                     |
+  LLM: build circuit blueprint              |
+       |                                     |
+       v                                     |
+  Valid vs component registry? --no----------+
+       |
+       | yes
+       v
+  Persist course in MongoDB
+```
 
 ## API Endpoints
 
@@ -196,10 +291,35 @@ pytest --cov=app            # Coverage
 
 ## Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions using:
+See [DEPLOYMENT.md](./DEPLOYMENT.md) and the full guide in
+[`.kiro/specs/deployment/deployment.md`](./.kiro/specs/deployment/deployment.md)
+for step-by-step instructions using:
 - **Free Tier**: Vercel (frontend) + Render (backend) + MongoDB Atlas
 - **Production**: Azure Container Apps
+
+```text
+  Push to main
+       |
+       v
+  GitHub Actions (deploy-free.yml)
+       |
+       | lint · type-check · build
+       v
+  Checks pass? --no--> fail run
+       |
+       | yes
+       +-------------------+
+       v                   v
+  Vercel (frontend)   Render (backend)
+       ^                   |
+       |                   +--> MongoDB Atlas
+  User |                   |
+  (HTTPS/WSS)              +--> LLM provider
+       |                   ^
+       +--- REST + WS -----+
+```
 
 ## License
 
 MIT
+
